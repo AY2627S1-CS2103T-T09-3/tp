@@ -91,9 +91,19 @@ public class PersonTest {
     }
 
     @Test
+    public void remark_differentValue_changesEqualityButNotIdentity() {
+        Person editedAlice = new PersonBuilder(ALICE).withRemark("Likes to swim").build();
+        assertEquals(new Remark("Likes to swim"), editedAlice.getRemark());
+        assertFalse(ALICE.equals(editedAlice));
+        assertTrue(ALICE.isSamePerson(editedAlice));
+        assertEquals(editedAlice, new PersonBuilder(editedAlice).build());
+    }
+
+    @Test
     public void toStringMethod() {
         String expected = Person.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
-                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress() + ", tags=" + ALICE.getTags() + "}";
+                + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress()
+                + ", remark=" + ALICE.getRemark() + ", tags=" + ALICE.getTags() + "}";
         assertEquals(expected, ALICE.toString());
     }
 }
