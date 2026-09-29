@@ -60,6 +60,16 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: UI
 
+### Gowrinath JK
+
+<img src="images/gowrinathjk.png" width="200px">
+
+[[github](https://github.com/GowrinathJK)]
+[[portfolio](https://gowrinathjk.github.io/portfolio/)]
+
+* Role: Developer
+* Responsibilities: Documentation, UI, testing, and DevOps
+
 ### Rahul Ganesh
 
 <img src="images/rahulg1507.png" width="200px">
@@ -68,3 +78,4 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: Implement and maintain project features, write and maintain tests, debug issues, and contribute to code reviews and technical development.
+
