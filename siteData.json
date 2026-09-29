@@ -9,7 +9,7 @@
         "project-team": "Project team",
         "john-doe": "John Doe",
         "jane-doe": "Jane Doe",
-        "johnny-doe": "Johnny Doe",
+        "sidharth-bairy": "Sidharth Bairy",
         "antara-daw": "Antara Daw",
         "james-doe": "James Doe"
       },
@@ -140,6 +140,14 @@
       "title": "John Doe's Project Portfolio Page",
       "headings": {
         "project-addressbook-level-3": "Project: AddressBook Level 3"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "team/sidharthbairy.md",
+      "title": "Sidharth Bairy's Project Portfolio Page",
+      "headings": {
+        "project-scoutly": "Project: Scoutly"
       },
       "headingKeywords": {}
     }
