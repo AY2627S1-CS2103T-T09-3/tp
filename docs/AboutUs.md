@@ -31,6 +31,15 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Team Lead
 * Responsibilities: UI
 
+### Aayushi
+
+<img src="images/aayushi122.png" width="200px">
+
+[[github](https://github.com/aayushi122)]
+
+* Role: Developer
+* Responsibilities: Manage access
+
 ### Sidharth Bairy
 
 <img src="images/sidharthbairy.png" width="200px">
