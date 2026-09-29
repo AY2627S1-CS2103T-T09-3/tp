@@ -40,15 +40,24 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Manage access
 
-### Jean Doe
+### Sidharth Bairy
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/sidharthbairy.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/sidharthbairy)]
+[[portfolio](team/sidharthbairy.md)]
 
 * Role: Developer
-* Responsibilities: Dev Ops + Threading
+* Responsibilities: Testing and code quality
+
+### Antara Daw
+
+<img src="images/antaradaw.png" width="200px">
+
+[[github](https://github.com/antaradaw)]
+
+* Role: Developer
+* Responsibilities: Integration — combine teammates' changes and resolve merge conflicts
 
 ### James Doe
 
@@ -59,3 +68,23 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: UI
+
+### Gowrinath JK
+
+<img src="images/gowrinathjk.png" width="200px">
+
+[[github](https://github.com/GowrinathJK)]
+[[portfolio](https://gowrinathjk.github.io/portfolio/)]
+
+* Role: Developer
+* Responsibilities: Documentation, UI, testing, and DevOps
+
+### Rahul Ganesh
+
+<img src="images/rahulg1507.png" width="200px">
+
+[[github](https://github.com/rahulg1507)]
+
+* Role: Developer
+* Responsibilities: Implement and maintain project features, write and maintain tests, debug issues, and contribute to code reviews and technical development.
+
