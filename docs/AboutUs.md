@@ -59,3 +59,12 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: UI
+
+### Rahul Ganesh
+
+<img src="images/rahulg1507.png" width="200px">
+
+[[github](https://github.com/rahulg1507)]
+
+* Role: Developer
+* Responsibilities: Implement and maintain project features, write and maintain tests, debug issues, and contribute to code reviews and technical development.
