@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
@@ -66,9 +67,11 @@ public class RemarkCommandTest {
     @Test
     public void equals_comparesIndexAndRemark() {
         RemarkCommand command = new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Note"));
+        assertTrue(command.equals(command));
         assertEquals(command, new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Note")));
         assertNotEquals(command, new RemarkCommand(INDEX_SECOND_PERSON, new Remark("Note")));
         assertNotEquals(command, new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Other")));
         assertNotEquals(command, null);
+        assertNotEquals(command, "Note");
     }
 }

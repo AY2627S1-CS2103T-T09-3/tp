@@ -88,6 +88,18 @@ public class PersonTest {
         // different tags -> returns false
         editedAlice = new PersonBuilder(ALICE).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(ALICE.equals(editedAlice));
+
+        // different remark -> returns false
+        editedAlice = new PersonBuilder(ALICE).withRemark("Likes swimming").build();
+        assertFalse(ALICE.equals(editedAlice));
+    }
+
+    @Test
+    public void hashCode_equalPersonsWithRemarks_sameHashCode() {
+        Person person = new PersonBuilder(ALICE).withRemark("Likes swimming").build();
+        Person copy = new PersonBuilder(person).build();
+        assertEquals(person, copy);
+        assertEquals(person.hashCode(), copy.hashCode());
     }
 
     @Test
