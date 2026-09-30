@@ -285,14 +285,18 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 | Priority | As a …                                    | I want to …                 | So that I can…                                                        |
 |----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
-
-*{More to be added}*
+| `* * *`  | new user                                   | view usage instructions       | learn how to use Scoutly's commands                                    |
+| `* * *`  | user                                       | add a contact                 | keep a new person's details in my contact list                         |
+| `* * *`  | user                                       | view all contacts             | see the contacts currently stored in Scoutly                           |
+| `* * *`  | user                                       | edit a contact                | keep a person's details accurate and up to date                        |
+| `* * *`  | user                                       | find contacts by name         | locate relevant contacts without scanning the entire list              |
+| `* * *`  | user                                       | delete a contact              | remove contact entries that I no longer need                            |
+| `* * *`  | user                                       | clear all contacts            | remove all stored contact entries when necessary                        |
+| `* * *`  | user                                       | exit Scoutly                  | close the application safely                                             |
+| `* * *`  | user                                       | receive clear feedback for invalid commands or data | correct mistakes without losing track of what went wrong |
+| `* *`    | user                                       | add optional tags to a contact | group or identify contacts for later reference                         |
+| `* *`    | user                                       | have my data saved automatically | continue using my contact list after restarting Scoutly              |
+| `*`      | user                                       | edit the data file directly  | manage my stored contacts when I need advanced control                  |
 
 ### Use cases
 
