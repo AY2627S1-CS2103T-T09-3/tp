@@ -7,12 +7,9 @@
       "headings": {
         "about-us": "About Us",
         "project-team": "Project team",
-        "john-doe": "John Doe",
-        "jane-doe": "Jane Doe",
         "aayushi": "Aayushi",
         "sidharth-bairy": "Sidharth Bairy",
         "antara-daw": "Antara Daw",
-        "james-doe": "James Doe",
         "gowrinath-jk": "Gowrinath JK",
         "rahul-ganesh": "Rahul Ganesh"
       },
@@ -133,9 +130,12 @@
     },
     {
       "src": "index.md",
-      "title": "",
+      "title": "Home",
       "headings": {
-        "addressbook-level-3": "AddressBook Level-3"
+        "scoutly": "Scoutly",
+        "planned-mvp": "Planned MVP",
+        "documentation": "Documentation",
+        "acknowledgements": "Acknowledgements"
       },
       "headingKeywords": {}
     },
