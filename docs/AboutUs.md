@@ -13,6 +13,8 @@ For project questions and bug reports, use our [issue tracker](https://github.co
 
 ## Project team
 
+The responsibilities below identify each member's primary coordination area. Everyone implements features, writes tests for their changes, reviews code, and updates the related documentation. Individual features are assigned separately.
+
 ### Aayushi
 
 <img src="images/aayushi122.png" width="200px">
@@ -20,7 +22,7 @@ For project questions and bug reports, use our [issue tracker](https://github.co
 [[github](https://github.com/aayushi122)]
 
 * Role: Developer
-* Responsibilities: Manage access
+* Responsibilities: Project coordination and repository administration — track milestones, coordinate task allocation, and manage access and repository settings.
 
 ### Sidharth Bairy
 
@@ -30,7 +32,7 @@ For project questions and bug reports, use our [issue tracker](https://github.co
 [[portfolio](team/sidharthbairy.md)]
 
 * Role: Developer
-* Responsibilities: Testing and code quality
+* Responsibilities: Testing and quality assurance — coordinate regression testing, monitor test coverage, and verify bug fixes.
 
 ### Antara Daw
 
@@ -39,7 +41,7 @@ For project questions and bug reports, use our [issue tracker](https://github.co
 [[github](https://github.com/antaradaw)]
 
 * Role: Developer
-* Responsibilities: Integration — combine teammates' changes and resolve merge conflicts
+* Responsibilities: Architecture and integration — coordinate design decisions, maintain consistency between components, and resolve integration issues.
 
 ### Gowrinath JK
 
@@ -49,7 +51,7 @@ For project questions and bug reports, use our [issue tracker](https://github.co
 [[portfolio](https://gowrinathjk.github.io/portfolio/)]
 
 * Role: Developer
-* Responsibilities: Documentation, UI, testing, and DevOps
+* Responsibilities: UI/UX and documentation — maintain interface consistency and usability, and keep the User Guide and Developer Guide accurate.
 
 ### Rahul Ganesh
 
@@ -58,5 +60,4 @@ For project questions and bug reports, use our [issue tracker](https://github.co
 [[github](https://github.com/rahulg1507)]
 
 * Role: Developer
-* Responsibilities: Implement and maintain project features, write and maintain tests, debug issues, and contribute to code reviews and technical development.
-
+* Responsibilities: Build and release management — maintain CI workflows, troubleshoot build failures, and prepare versioned releases.
