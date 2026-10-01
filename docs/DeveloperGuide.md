@@ -270,13 +270,13 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+* manages a growing list of personal or professional contacts
+* prefers a focused desktop application that works offline
+* is comfortable typing commands and values keyboard-first workflows
+* wants contact information to remain stored locally without manually managing data files
+* needs to add, update, retrieve, and remove contact details with little visual navigation
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+**Value proposition**: Scoutly helps keyboard-oriented users maintain and retrieve contact information quickly through a focused desktop application, while retaining a graphical interface and automatically saving data locally.
 
 
 ### User stories
@@ -285,56 +285,176 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 | Priority | As a …                                    | I want to …                 | So that I can…                                                        |
 |----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
-
-*{More to be added}*
+| `* * *`  | new user                                   | view usage instructions       | learn how to use Scoutly's commands                                    |
+| `* * *`  | user                                       | add a contact                 | keep a new person's details in my contact list                         |
+| `* * *`  | user                                       | view all contacts             | see the contacts currently stored in Scoutly                           |
+| `* * *`  | user                                       | edit a contact                | keep a person's details accurate and up to date                        |
+| `* * *`  | user                                       | find contacts by name         | locate relevant contacts without scanning the entire list              |
+| `* * *`  | user                                       | delete a contact              | remove contact entries that I no longer need                            |
+| `* * *`  | user                                       | clear all contacts            | remove all stored contact entries when necessary                        |
+| `* * *`  | user                                       | exit Scoutly                  | close the application safely                                            |
+| `* * *`  | user                                       | receive clear feedback for invalid commands or data | correct mistakes without losing track of what went wrong |
+| `* *`    | user                                       | add optional tags to a contact | group or identify contacts for later reference                         |
+| `* *`    | user                                       | have my data saved automatically | continue using my contact list after restarting Scoutly              |
+| `* *`    | user                                       | keep contact details together | retrieve all details from one contact record                            |
+| `* *`    | user                                       | manage contacts without an internet connection | continue working when network access is unavailable |
+| `*`      | user                                       | use Scoutly on a mainstream desktop operating system | manage contacts on my existing computer |
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is Scoutly and the **Actor** is the user, unless specified otherwise.)
 
-**Use case: Delete a person**
+**Use case: UC01, Add a contact**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1. User enters an `add` command with a name, phone number, email address, address, and optional tags.
+2. Scoutly validates the command and contact fields.
+3. Scoutly adds the contact to the contact list and saves the updated data.
+4. Scoutly displays a success message and the new contact details.
 
     Use case ends.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 2a. One or more fields are missing or invalid.
 
-  Use case ends.
+    * 2a1. Scoutly displays an error message explaining the expected format.
+    * 2a2. The use case ends without changing the contact list.
 
-* 3a. The given index is invalid.
+* 2b. A contact with the same name already exists.
 
-    * 3a1. AddressBook shows an error message.
+    * 2b1. Scoutly displays a duplicate contact error.
+    * 2b2. The use case ends without changing the contact list.
 
-      Use case resumes at step 2.
+**Use case: UC02, Find and inspect contacts**
 
-*{More to be added}*
+**MSS**
 
-### Non-Functional Requirements
+1. User enters a `find` command with one or more name keywords.
+2. Scoutly searches contact names without regard to letter case.
+3. Scoutly displays the matching contacts with their displayed indexes.
+4. User reads the required contact details from the displayed results.
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+    Use case ends.
 
-*{More to be added}*
+**Extensions**
+
+* 2a. No contact name matches the keywords.
+
+    * 2a1. Scoutly displays an empty result message.
+    * 2a2. The use case ends.
+
+* 1a. The command has no keywords or has an invalid format.
+
+    * 1a1. Scoutly displays an error message.
+    * 1a2. The use case ends without changing the contact list.
+
+**Use case: UC03, Edit a contact**
+
+**MSS**
+
+1. User enters `list` or `find` to display contacts.
+2. Scoutly displays the contacts with their current indexes.
+3. User enters an `edit` command with the index and replacement fields.
+4. Scoutly validates the index and replacement fields.
+5. Scoutly updates the selected contact and saves the updated data.
+6. Scoutly displays a success message with the updated contact details.
+
+    Use case ends.
+
+**Extensions**
+
+* 4a. The index is not a positive integer or is outside the displayed list.
+
+    * 4a1. Scoutly displays an invalid index message.
+    * 4a2. The use case resumes at step 3.
+
+* 4b. A replacement field is invalid or would create a duplicate contact.
+
+    * 4b1. Scoutly displays an error message.
+    * 4b2. The use case ends without changing the selected contact.
+
+**Use case: UC04, Remove contacts**
+
+**MSS**
+
+1. User enters `list` or `find` to display contacts.
+2. Scoutly displays the contacts with their current indexes.
+3. User enters `delete` with the index of a contact to remove.
+4. Scoutly validates the index and removes the selected contact.
+5. Scoutly saves the updated data and displays the deleted contact details.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The displayed list is empty.
+
+    * 2a1. Scoutly displays an empty list.
+    * 2a2. The use case ends.
+
+* 4a. The index is invalid.
+
+    * 4a1. Scoutly displays an invalid index message.
+    * 4a2. The use case resumes at step 3.
+
+* 3a. User enters `clear` instead of deleting one contact.
+
+    * 3a1. Scoutly removes all contacts and saves the empty contact list.
+    * 3a2. The use case ends.
+
+**Use case: UC05, Continue work after restarting**
+
+**MSS**
+
+1. User adds, edits, or deletes contacts.
+2. Scoutly saves the changed contact list to its local JSON data file.
+3. User exits Scoutly and starts it again later.
+4. Scoutly loads the local data file.
+5. Scoutly displays the saved contacts.
+
+    Use case ends.
+
+**Extensions**
+
+* 2a. The data file cannot be written.
+
+    * 2a1. Scoutly reports the storage error to the user.
+    * 2a2. The use case ends with the in memory data unchanged.
+
+* 4a. The data file is missing or invalid.
+
+    * 4a1. Scoutly reports the loading problem and starts with an empty contact list.
+    * 4a2. The use case ends.
+
+### Nonfunctional Requirements
+
+1. Scoutly must run on Windows, Linux, and macOS with the Java version specified by the project setup, currently Java `25` or above.
+2. Scoutly must respond to normal commands within 2 seconds for a contact list containing up to 1000 contacts on a supported computer.
+3. Scoutly must save contact changes automatically after every successful command that changes data.
+4. Scoutly must store contact data in a local JSON text file that a technically proficient user can read and edit.
+5. Scoutly must preserve all valid contacts when saving and loading the local data file, and must report invalid data instead of silently treating it as valid.
+6. Scoutly must support one local user at a time and must not require a network connection for normal contact management.
+7. A user who is comfortable typing regular English text must be able to complete the common add, edit, find, list, and delete tasks using commands without relying on mouse navigation.
+8. Invalid commands, invalid contact fields, duplicate contacts, and invalid indexes must produce a clear user visible error without changing the existing valid contact data.
+9. Scoutly must be distributable and launchable as a JAR without requiring a project specific installer.
+10. Scoutly must provide the same command behavior through its documented CLI on every supported operating system.
 
 ### Glossary
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+* **Address**: The postal or location information stored as one field of a contact.
+* **Command**: A keyword and its arguments entered by the user to request one operation from Scoutly.
+* **Contact**: A person record containing a name, phone number, email address, address, and zero or more tags.
+* **Displayed index**: The positive number shown beside a contact in the current displayed list and used by commands such as `edit` and `delete`.
+* **Email**: The electronic mail address stored in a contact record.
+* **GUI**: The graphical user interface that displays contacts and command results.
+* **JSON data file**: The local text file used by Scoutly to persist contact data between launches.
+* **Mainstream OS**: A commonly used desktop operating system such as Windows, Linux, Unix, or macOS.
+* **Name keyword**: A word supplied to `find` for matching against contact names without regard to letter case.
+* **Parameter**: A value supplied to a command, such as an index, field value, or name keyword.
+* **Phone**: The telephone number stored in a contact record.
+* **Tag**: An optional label attached to a contact for grouping or identification.
 
 --------------------------------------------------------------------------------------------------------------------
 
