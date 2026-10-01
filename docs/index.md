@@ -1,21 +1,34 @@
 ---
   layout: default.md
-  title: ""
+  title: "Home"
 ---
 
-# AddressBook Level-3
+# Scoutly
 
-[![CI Status](https://github.com/se-edu/addressbook-level3/workflows/Java%20CI/badge.svg)](https://github.com/se-edu/addressbook-level3/actions)
-[![codecov](https://codecov.io/gh/se-edu/addressbook-level3/branch/master/graph/badge.svg)](https://codecov.io/gh/se-edu/addressbook-level3)
+[![CI Status](https://github.com/AY2627S1-CS2103T-T09-3/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-T09-3/tp/actions/workflows/gradle.yml)
 
-![Ui](images/Ui.png)
+Scoutly is a desktop candidate pipeline and recruitment management application for recruiters who prefer typing commands. It combines a command line with a graphical interface to help recruiters manage candidate details and track progress through the hiring process.
 
-**AddressBook is a desktop application for managing your contact details.** While it has a GUI, most of the user interactions happen using a CLI (Command Line Interface).
+![Planned Scoutly interface showing a candidate list, hiring stages, and candidate profile](images/Ui.png)
 
-* If you are interested in using AddressBook, head over to the [_Quick Start_ section of the **User Guide**](UserGuide.html#quick-start).
-* If you are interested in developing AddressBook, the [**Developer Guide**](DeveloperGuide.html) is a good place to start.
+*UI mockup of the intended product. Features and layout are under development.*
 
+## Planned MVP
 
-**Acknowledgements**
+- Add, list, and delete candidates.
+- View a candidate’s profile.
+- Update a candidate’s hiring stage: Applied, Screened, Interview, Offered, or Rejected.
+- Receive clear feedback for successful commands and invalid input.
 
-* Libraries used: [JavaFX](https://openjfx.io/), [Jackson](https://github.com/FasterXML/jackson), [JUnit5](https://github.com/junit-team/junit5)
+## Documentation
+
+- [Project website](https://ay2627s1-cs2103t-t09-3.github.io/tp/)
+- [User Guide](https://ay2627s1-cs2103t-t09-3.github.io/tp/UserGuide.html)
+- [Developer Guide](https://ay2627s1-cs2103t-t09-3.github.io/tp/DeveloperGuide.html)
+- [About Us](https://ay2627s1-cs2103t-t09-3.github.io/tp/AboutUs.html)
+
+## Acknowledgements
+
+This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).
+
+Libraries used: [JavaFX](https://openjfx.io/), [Jackson](https://github.com/FasterXML/jackson), and [JUnit5](https://github.com/junit-team/junit5).
