@@ -1,20 +1,27 @@
-# Candidate pipeline application
+# Scoutly
 
 [![CI Status](https://github.com/AY2627S1-CS2103T-T09-3/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-T09-3/tp/actions/workflows/gradle.yml)
 
-![Ui](docs/images/Ui.png)
+Scoutly is a desktop candidate pipeline and recruitment management application for recruiters who prefer typing commands. It combines a command line with a graphical interface to help recruiters manage candidate details and track progress through the hiring process.
 
-This is a desktop candidate pipeline and recruitment management application for recruiters. It supports command-based interaction through a graphical user interface (GUI), helping recruiters manage candidates throughout the hiring process.
+![Planned Scoutly interface showing a candidate list, hiring stages, and candidate profile](docs/images/Ui.png)
 
-## MVP capabilities
+*UI mockup of the intended product. Features and layout are under development.*
 
-- Add Candidate
-- List Candidates
-- View Candidate Profile
-- Update Stage
-- Delete Candidate
-- Clear and specific error handling
+## Planned MVP
 
-The supported hiring stages are Applied, Screened, Interview, Offered, and Rejected.
+- Add, list, and delete candidates.
+- View a candidate’s profile.
+- Update a candidate’s hiring stage: Applied, Screened, Interview, Offered, or Rejected.
+- Receive clear feedback for successful commands and invalid input.
+
+## Documentation
+
+- [Project website](https://ay2627s1-cs2103t-t09-3.github.io/tp/)
+- [User Guide](https://ay2627s1-cs2103t-t09-3.github.io/tp/UserGuide.html)
+- [Developer Guide](https://ay2627s1-cs2103t-t09-3.github.io/tp/DeveloperGuide.html)
+- [About Us](https://ay2627s1-cs2103t-t09-3.github.io/tp/AboutUs.html)
+
+## Acknowledgements
 
 This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).

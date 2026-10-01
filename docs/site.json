@@ -2,7 +2,7 @@
   "baseUrl": "",
   "titlePrefix": "Scoutly",
   "titleSuffix": "",
-  "faviconPath": "images/SeEduLogo.png",
+  "faviconPath": "images/ScoutlyIcon.svg",
   "style": {
     "codeTheme": "light"
   },
