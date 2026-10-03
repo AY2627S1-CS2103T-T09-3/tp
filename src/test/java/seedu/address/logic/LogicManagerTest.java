@@ -71,6 +71,27 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_remarkAndEdit_persistsAcrossReloads() throws Exception {
+        model.addPerson(AMY);
+        JsonAddressBookStorage storage =
+                new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+
+        logic.execute("remark 1 r/Likes swimming! 日本語");
+        logic.execute("edit 1 p/91234567");
+        Person expected = new PersonBuilder(AMY).withPhone("91234567")
+                .withRemark("Likes swimming! 日本語").build();
+        assertEquals(expected, storage.readAddressBook().get().getPersonList().get(0));
+
+        // Recreate the model from disk, as on application restart, then clear the remark.
+        model = new ModelManager(storage.readAddressBook().get(), new UserPrefs());
+        logic = new LogicManager(model, new StorageManager(storage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("userPrefs.json"))));
+        logic.execute("remark 1 r/");
+        assertEquals(new PersonBuilder(expected).withRemark("").build(),
+                storage.readAddressBook().get().getPersonList().get(0));
+    }
+
+    @Test
     public void execute_storageThrowsIoException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_IO_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_ERROR_FORMAT, DUMMY_IO_EXCEPTION.getMessage()));
