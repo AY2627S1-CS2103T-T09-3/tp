@@ -21,8 +21,10 @@ import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.StageCommand;
 import seedu.address.logic.commands.ViewCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
@@ -100,6 +102,12 @@ public class AddressBookParserTest {
     public void parseCommand_unrecognisedInput_throwsParseException() {
         assertThrows(ParseException.class, String.format(MESSAGE_INVALID_COMMAND_FORMAT, HelpCommand.MESSAGE_USAGE), ()
             -> parser.parseCommand(""));
+    }
+
+    @Test
+    public void parseCommand_stage() throws Exception {
+        assertEquals(new StageCommand(INDEX_FIRST_PERSON, HiringStage.INTERVIEW),
+                parser.parseCommand("stage 1 Interview"));
     }
 
     @Test

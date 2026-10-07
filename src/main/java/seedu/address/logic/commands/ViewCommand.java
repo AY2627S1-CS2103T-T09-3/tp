@@ -26,7 +26,7 @@ public class ViewCommand extends Command {
     public static final String MESSAGE_INVALID_CANDIDATE_DISPLAYED_INDEX =
             "The candidate index provided is invalid.";
     public static final String MESSAGE_VIEW_CANDIDATE_SUCCESS = "Candidate profile:\n"
-            + "Name: %1$s\nPhone: %2$s\nEmail: %3$s\nAddress: %4$s\nTags: %5$s\nRemark: %6$s";
+            + "Name: %1$s\nPhone: %2$s\nEmail: %3$s\nAddress: %4$s\nTags: %5$s\nRemark: %6$s\nHiring stage: %7$s";
 
     private final Index targetIndex;
 
@@ -54,7 +54,7 @@ public class ViewCommand extends Command {
         String remark = candidate.getRemark().value;
         return new CommandResult(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
                 candidate.getName(), candidate.getPhone(), candidate.getEmail(), candidate.getAddress(),
-                tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark));
+                tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark, candidate.getStage()));
     }
 
     @Override

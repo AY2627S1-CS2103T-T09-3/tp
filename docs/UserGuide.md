@@ -80,6 +80,8 @@ Format: `help`
 
 Adds a person to the address book.
 
+New candidates start in the **Applied** hiring stage. Use `stage INDEX STAGE` after adding a candidate to change it.
+
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
 
 <box type="tip" seamless>
@@ -99,7 +101,7 @@ Format: `list`
 
 ### Viewing a candidate profile: `view`
 
-Displays a candidate's name, phone, email, address, tags, and remark in the command result area.
+Displays a candidate's name, phone, email, address, tags, remark, and hiring stage in the command result area.
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
 missing tags or an empty remark are shown as `None`.
 
@@ -122,6 +124,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 * Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
+* Editing contact details or tags preserves the candidate's hiring stage. Use `stage` to change it.
 * When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
 * To remove all of a person's tags, enter `t/` without a tag after it.
 
@@ -157,6 +160,25 @@ Format: `remark INDEX r/REMARK`
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
 * Remarks are shown on person cards and saved with your contacts. Editing other details preserves the remark.
 * After updating a remark, all contacts are displayed again.
+
+### Updating a candidate's hiring stage: `stage`
+
+Sets the hiring stage of a candidate in the currently displayed list.
+
+Format: `stage INDEX STAGE`
+
+* `INDEX` must be a positive integer from the displayed list. After `find`, it refers to the search results.
+* `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
+* Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed.
+* The command preserves the current search filter and all other candidate details.
+* The stage appears on the candidate's card and in `view INDEX`, and is saved automatically across restarts.
+* New candidates and older saved records without a stage default to **Applied**. Editing details or remarks preserves the stage.
+* Missing arguments or an invalid index format show usage instructions. An unknown stage shows the allowed values; an index outside the displayed list shows an error. Failed commands do not change the candidate's stage.
+
+Examples:
+* `stage 1 Interview` moves the first displayed candidate to Interview.
+* `find Betsy` followed by `stage 1 screened` moves the first search result to Screened, keeping the search results visible.
+* `stage 1 Applied` resets that candidate's stage to Applied.
 
 ### Deleting a person: `delete`
 
@@ -230,4 +252,5 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **View**   | `view INDEX`<br> e.g., `view 2`
+**Stage**  | `stage INDEX STAGE`<br> e.g., `stage 2 Interview`
 **Help**   | `help`

@@ -103,10 +103,33 @@ public class PersonTest {
     }
 
     @Test
+    public void constructor_withoutStage_defaultsToApplied() {
+        assertEquals(HiringStage.APPLIED, new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getAddress(), ALICE.getTags()).getStage());
+        assertEquals(HiringStage.APPLIED, new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(),
+                ALICE.getAddress(), ALICE.getRemark(), ALICE.getTags()).getStage());
+    }
+
+    @Test
+    public void constructor_nullStage_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new PersonBuilder().withStage(null).build());
+    }
+
+    @Test
+    public void stage_changesEqualityButNotIdentity() {
+        Person updated = new PersonBuilder(ALICE).withStage(HiringStage.INTERVIEW).build();
+        assertFalse(ALICE.equals(updated));
+        assertTrue(ALICE.isSamePerson(updated));
+        Person copy = new PersonBuilder(updated).build();
+        assertEquals(updated, copy);
+        assertEquals(updated.hashCode(), copy.hashCode());
+    }
+
+    @Test
     public void toStringMethod() {
         String expected = Person.class.getCanonicalName() + "{name=" + ALICE.getName() + ", phone=" + ALICE.getPhone()
                 + ", email=" + ALICE.getEmail() + ", address=" + ALICE.getAddress()
-                + ", remark=" + ALICE.getRemark() + ", tags=" + ALICE.getTags() + "}";
+                + ", remark=" + ALICE.getRemark() + ", stage=" + ALICE.getStage() + ", tags=" + ALICE.getTags() + "}";
         assertEquals(expected, ALICE.toString());
     }
 }

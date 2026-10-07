@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
@@ -30,6 +31,7 @@ class JsonAdaptedPerson {
     private final String email;
     private final String address;
     private final String remark;
+    private final String stage;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
 
     /**
@@ -42,15 +44,25 @@ class JsonAdaptedPerson {
     /**
      * Constructs a stored person, accepting older files without a remark.
      */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            String remark, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, remark, null, tags);
+    }
+
+    /**
+     * Constructs a stored person, accepting older files without a remark or hiring stage.
+     */
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
-            @JsonProperty("remark") String remark, @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("remark") String remark, @JsonProperty("stage") String stage,
+            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.remark = remark == null ? "" : remark;
+        this.stage = stage;
         if (tags != null) {
             this.tags.addAll(tags);
         }
@@ -65,6 +77,7 @@ class JsonAdaptedPerson {
         email = source.getEmail().value;
         address = source.getAddress().value;
         remark = source.getRemark().value;
+        stage = source.getStage().toString();
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -114,7 +127,13 @@ class JsonAdaptedPerson {
         final Address modelAddress = new Address(address);
 
         final Set<Tag> modelTags = new HashSet<>(personTags);
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, new Remark(remark), modelTags);
+        final HiringStage modelStage;
+        try {
+            modelStage = stage == null ? HiringStage.APPLIED : HiringStage.fromString(stage);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException(HiringStage.MESSAGE_CONSTRAINTS, e);
+        }
+        return new Person(modelName, modelPhone, modelEmail, modelAddress, new Remark(remark), modelStage, modelTags);
     }
 
 }

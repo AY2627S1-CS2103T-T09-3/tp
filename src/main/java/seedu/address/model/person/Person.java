@@ -24,6 +24,7 @@ public class Person {
     // Data fields
     private final Address address;
     private final Remark remark;
+    private final HiringStage stage;
     private final Set<Tag> tags = new HashSet<>();
 
     /**
@@ -37,7 +38,16 @@ public class Person {
      * Every field must be present and not null, including the optional remark's value.
      */
     public Person(Name name, Phone phone, Email email, Address address, Remark remark, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, remark, tags);
+        this(name, phone, email, address, remark, HiringStage.APPLIED, tags);
+    }
+
+    /**
+     * Every field must be present and not null, including the hiring stage.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Remark remark,
+            HiringStage stage, Set<Tag> tags) {
+        requireAllNonNull(name, phone, email, address, remark, stage, tags);
+        this.stage = stage;
         this.remark = remark;
         this.name = name;
         this.phone = phone;
@@ -60,6 +70,10 @@ public class Person {
 
     public Remark getRemark() {
         return remark;
+    }
+
+    public HiringStage getStage() {
+        return stage;
     }
 
     public Address getAddress() {
@@ -107,13 +121,14 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
                 && remark.equals(otherPerson.remark)
+                && stage == otherPerson.stage
                 && tags.equals(otherPerson.tags);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, remark, tags);
+        return Objects.hash(name, phone, email, address, remark, stage, tags);
     }
 
     @Override
@@ -124,6 +139,7 @@ public class Person {
                 .add("email", email)
                 .add("address", address)
                 .add("remark", remark)
+                .add("stage", stage)
                 .add("tags", tags)
                 .toString();
     }
