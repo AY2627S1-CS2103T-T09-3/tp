@@ -45,7 +45,7 @@ public class RemarkCommand extends Command {
         }
         Person person = lastShownList.get(index.getZeroBased());
         Person editedPerson = new Person(person.getName(), person.getPhone(), person.getEmail(),
-                person.getAddress(), remark, person.getTags());
+                person.getAddress(), remark, person.getStage(), person.getTags());
         model.setPerson(person, editedPerson);
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
         String message = remark.value.isEmpty() ? MESSAGE_DELETE_REMARK_SUCCESS : MESSAGE_ADD_REMARK_SUCCESS;

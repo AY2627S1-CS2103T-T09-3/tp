@@ -18,6 +18,7 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -28,14 +29,15 @@ public class ViewCommandTest {
     @Test
     public void execute_validIndex_showsAllDetailsWithoutChangingModel() {
         Person candidate = new PersonBuilder().withTags("Java", "Backend")
-                .withRemark("Available in November").build();
+                .withRemark("Available in November").withStage(HiringStage.INTERVIEW).build();
         AddressBook addressBook = new AddressBook();
         addressBook.addPerson(candidate);
         model = new ModelManager(addressBook, new UserPrefs());
         Model expectedModel = new ModelManager(addressBook, new UserPrefs());
 
         String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: amy@gmail.com\n"
-                + "Address: 123, Jurong West Ave 6, #08-111\nTags: Backend, Java\nRemark: Available in November";
+                + "Address: 123, Jurong West Ave 6, #08-111\nTags: Backend, Java\nRemark: Available in November\n"
+                + "Hiring stage: Interview";
         assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), model, expected, expectedModel);
     }
 
@@ -45,7 +47,7 @@ public class ViewCommandTest {
         model.addPerson(candidate);
         Index lastIndex = Index.fromOneBased(model.getFilteredPersonList().size());
         String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: amy@gmail.com\n"
-                + "Address: 123, Jurong West Ave 6, #08-111\nTags: None\nRemark: None";
+                + "Address: 123, Jurong West Ave 6, #08-111\nTags: None\nRemark: None\nHiring stage: Applied";
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
 
         assertCommandSuccess(new ViewCommand(lastIndex), model, expected, expectedModel);
@@ -58,7 +60,7 @@ public class ViewCommandTest {
         showPersonAtIndex(expectedModel, INDEX_SECOND_PERSON);
         String expected = "Candidate profile:\nName: Benson Meier\nPhone: 98765432\n"
                 + "Email: johnd@example.com\nAddress: 311, Clementi Ave 2, #02-25\n"
-                + "Tags: friends, owesMoney\nRemark: None";
+                + "Tags: friends, owesMoney\nRemark: None\nHiring stage: Applied";
 
         assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), model, expected, expectedModel);
     }

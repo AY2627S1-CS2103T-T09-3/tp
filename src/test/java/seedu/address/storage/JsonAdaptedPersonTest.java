@@ -14,8 +14,11 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
+import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
     private static final String INVALID_NAME = "R@chel";
@@ -36,6 +39,30 @@ public class JsonAdaptedPersonTest {
     public void toModelType_validPersonDetails_returnsPerson() throws Exception {
         JsonAdaptedPerson person = new JsonAdaptedPerson(BENSON);
         assertEquals(BENSON, person.toModelType());
+    }
+
+    @Test
+    public void toModelType_eachStage_preservesAllFields() throws Exception {
+        for (HiringStage stage : HiringStage.values()) {
+            Person original = new PersonBuilder(BENSON).withRemark("Interview notes").withStage(stage).build();
+            assertEquals(original, new JsonAdaptedPerson(original).toModelType());
+        }
+    }
+
+    @Test
+    public void toModelType_missingStage_defaultsToApplied() throws Exception {
+        JsonAdaptedPerson person =
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, "", null, VALID_TAGS);
+        assertEquals(HiringStage.APPLIED, person.toModelType().getStage());
+    }
+
+    @Test
+    public void toModelType_invalidStage_throwsIllegalValueException() {
+        for (String stage : new String[]{"", " ", "Hired", "Applied Screened"}) {
+            JsonAdaptedPerson person =
+                    new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, "", stage, VALID_TAGS);
+            assertThrows(IllegalValueException.class, HiringStage.MESSAGE_CONSTRAINTS, person::toModelType);
+        }
     }
 
     @Test

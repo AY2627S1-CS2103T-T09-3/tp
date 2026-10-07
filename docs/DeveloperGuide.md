@@ -159,6 +159,16 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Hiring stages
+
+Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTERVIEW`, `OFFERED`, or `REJECTED`. Constructors without an explicit stage default to `APPLIED`. Stage changes affect full person equality, while identity continues to depend on the name.
+
+`AddressBookParser` routes `stage INDEX s/STAGE` to `StageCommandParser`. The parser uses `ArgumentTokenizer` with `PREFIX_STAGE` (`s/`), validates the positive displayed index, rejects repeated stage prefixes, and parses a case-insensitive stage name. Missing arguments or a missing prefix and invalid indices produce usage errors; empty or unknown stages produce a list of allowed values.
+
+`StageCommand` resolves the candidate using the current filtered list and replaces that candidate with a new immutable `Person` through `Model#setPerson`. It preserves every other field and the current filter. All transitions, including backwards moves and setting the current stage again, are allowed so recruiters can correct mistakes. `EditCommand` and `RemarkCommand` carry forward the existing stage when replacing a person.
+
+`PersonCard` displays the stage, and `ViewCommand` includes it in profile output. `JsonAdaptedPerson` persists the stage name in the `stage` JSON field. Missing or null stages in older data default to Applied; unrecognized or blank stored stages are rejected with an `IllegalValueException`. Existing fixtures without stages exercise backward compatibility, alongside new valid-stage and invalid-stage fixtures.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -502,6 +512,21 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Hiring stages
+
+1. Run `list`, then `stage 1 s/Interview` and `view 1`.<br>
+   Expected: The first candidate's card and profile show Interview, and other details remain unchanged.
+1. Run `stage 1 s/rejected`, `stage 1 s/Applied`, then `stage 1 s/Applied` again.<br>
+   Expected: Case-insensitive names, backwards changes, and setting the same stage all succeed.
+1. Find a candidate by name, then run `stage 1 s/Offered`.<br>
+   Expected: Only the first displayed search result changes; the search filter remains active.
+1. Try `stage`, `stage 0 s/Interview`, `stage 1 s/Hired`, and an index larger than the displayed list.<br>
+   Expected: Clear usage, stage, or index errors, with no candidate changes.
+1. Change a stage, edit the candidate's phone, add a remark, then restart the app.<br>
+   Expected: The stage remains unchanged through the edits and restart.
+1. In a temporary copy of the data file, remove a person's `stage` property and restart.<br>
+   Expected: That candidate defaults to Applied. Restore the original test data after testing.
 
 ### Saving data
 

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.AddressBook;
+import seedu.address.model.person.HiringStage;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.TypicalPersons;
 
@@ -29,6 +30,36 @@ public class JsonSerializableAddressBookTest {
         Path file = directory.resolve("remarks.json");
         JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
         assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).get().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_allHiringStages_preserved(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        for (HiringStage stage : HiringStage.values()) {
+            book.addPerson(new PersonBuilder().withName("Candidate " + stage)
+                    .withStage(stage).withRemark("Notes").build());
+        }
+        Path file = directory.resolve("stages.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+        assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType());
+    }
+
+    @Test
+    public void toModelType_stageFixture_readsNonDefaultStage() throws Exception {
+        JsonSerializableAddressBook data = JsonUtil.readJsonFile(
+                TEST_DATA_FOLDER.resolve("personWithStageAddressBook.json"),
+                JsonSerializableAddressBook.class).orElseThrow();
+        AddressBook expected = new AddressBook();
+        expected.addPerson(new PersonBuilder(TypicalPersons.ALICE).withStage(HiringStage.INTERVIEW).build());
+        assertEquals(expected, data.toModelType());
+    }
+
+    @Test
+    public void toModelType_invalidStageFixture_throwsIllegalValueException() throws Exception {
+        JsonSerializableAddressBook data = JsonUtil.readJsonFile(
+                TEST_DATA_FOLDER.resolve("invalidStageAddressBook.json"),
+                JsonSerializableAddressBook.class).orElseThrow();
+        assertThrows(IllegalValueException.class, HiringStage.MESSAGE_CONSTRAINTS, data::toModelType);
     }
 
     @Test

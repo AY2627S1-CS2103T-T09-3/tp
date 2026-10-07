@@ -27,6 +27,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -68,6 +69,25 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, "Listed 0 candidates.", model);
+    }
+
+    @Test
+    public void execute_stageCommand_persistsThroughStorageAndAppearsInProfile() throws Exception {
+        logic.execute("add" + NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY + ADDRESS_DESC_AMY);
+        assertEquals(HiringStage.APPLIED, model.getFilteredPersonList().get(0).getStage());
+
+        CommandResult result = logic.execute("stage 1 s/iNtErViEw");
+        assertEquals("Updated Amy Bee's stage to Interview.", result.getFeedbackToUser());
+        assertEquals(HiringStage.INTERVIEW, model.getFilteredPersonList().get(0).getStage());
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Model reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(model.getAddressBook(), reloaded.getAddressBook());
+        Logic reloadedLogic = new LogicManager(reloaded, new StorageManager(storage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("reloadedPrefs.json"))));
+        assertEquals("Candidate profile:\nName: Amy Bee\nPhone: 11111111\nEmail: amy@example.com\n"
+                + "Address: Block 312, Amy Street 1\nTags: None\nRemark: None\nHiring stage: Interview",
+                reloadedLogic.execute("view 1").getFeedbackToUser());
     }
 
     @Test

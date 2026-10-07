@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
 import javafx.scene.control.Label;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -43,6 +44,21 @@ public class PersonCardTest {
             PersonCard card = new PersonCard(person, 1);
             Label remarkLabel = (Label) card.getRoot().lookup("#remark");
             assertEquals(remark, remarkLabel.getText());
+            return null;
+        });
+        Platform.runLater(assertion);
+        assertion.get(10, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void constructor_eachHiringStage_displaysStage() throws Exception {
+        FutureTask<Void> assertion = new FutureTask<>(() -> {
+            for (HiringStage stage : HiringStage.values()) {
+                Person person = new PersonBuilder().withStage(stage).build();
+                PersonCard card = new PersonCard(person, 1);
+                Label stageLabel = (Label) card.getRoot().lookup("#hiringStage");
+                assertEquals("Hiring stage: " + stage, stageLabel.getText());
+            }
             return null;
         });
         Platform.runLater(assertion);
