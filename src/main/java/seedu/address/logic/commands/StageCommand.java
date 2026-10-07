@@ -20,9 +20,9 @@ public class StageCommand extends Command {
     public static final String COMMAND_WORD = "stage";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Updates the hiring stage of the candidate at the displayed index.\n"
-            + "Parameters: INDEX (must be a positive integer) STAGE\n"
+            + "Parameters: INDEX (must be a positive integer) s/STAGE\n"
             + HiringStage.MESSAGE_CONSTRAINTS + "\n"
-            + "Example: " + COMMAND_WORD + " 1 Interview";
+            + "Example: " + COMMAND_WORD + " 1 s/Interview";
     public static final String MESSAGE_SUCCESS = "Updated hiring stage of %1$s to %2$s.";
     public static final String MESSAGE_INVALID_CANDIDATE_DISPLAYED_INDEX =
             "The candidate index provided is invalid.";

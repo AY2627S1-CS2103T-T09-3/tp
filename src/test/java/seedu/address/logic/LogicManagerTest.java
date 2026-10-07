@@ -77,7 +77,7 @@ public class LogicManagerTest {
         logic.execute("add" + NAME_DESC_AMY + PHONE_DESC_AMY + EMAIL_DESC_AMY + ADDRESS_DESC_AMY);
         assertEquals(HiringStage.APPLIED, model.getFilteredPersonList().get(0).getStage());
 
-        CommandResult result = logic.execute("stage 1 iNtErViEw");
+        CommandResult result = logic.execute("stage 1 s/iNtErViEw");
         assertEquals(String.format(StageCommand.MESSAGE_SUCCESS, AMY.getName(), HiringStage.INTERVIEW),
                 result.getFeedbackToUser());
         assertEquals(HiringStage.INTERVIEW, model.getFilteredPersonList().get(0).getStage());

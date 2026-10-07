@@ -80,7 +80,7 @@ Format: `help`
 
 Adds a person to the address book.
 
-New candidates start in the **Applied** hiring stage. Use `stage INDEX STAGE` after adding a candidate to change it.
+New candidates start in the **Applied** hiring stage. Use `stage INDEX s/STAGE` after adding a candidate to change it.
 
 Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
 
@@ -165,20 +165,20 @@ Format: `remark INDEX r/REMARK`
 
 Sets the hiring stage of a candidate in the currently displayed list.
 
-Format: `stage INDEX STAGE`
+Format: `stage INDEX s/STAGE`
 
 * `INDEX` must be a positive integer from the displayed list. After `find`, it refers to the search results.
-* `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
+* The `s/` prefix is required and may appear only once. `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
 * Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed.
 * The command preserves the current search filter and all other candidate details.
 * The stage appears on the candidate's card and in `view INDEX`, and is saved automatically across restarts.
 * New candidates and older saved records without a stage default to **Applied**. Editing details or remarks preserves the stage.
-* Missing arguments or an invalid index format show usage instructions. An unknown stage shows the allowed values; an index outside the displayed list shows an error. Failed commands do not change the candidate's stage.
+* Missing arguments or an invalid index format show usage instructions. An empty or unknown stage shows the allowed values; an index outside the displayed list shows an error. Failed commands do not change the candidate's stage.
 
 Examples:
-* `stage 1 Interview` moves the first displayed candidate to Interview.
-* `find Betsy` followed by `stage 1 screened` moves the first search result to Screened, keeping the search results visible.
-* `stage 1 Applied` resets that candidate's stage to Applied.
+* `stage 1 s/Interview` moves the first displayed candidate to Interview.
+* `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
+* `stage 1 s/Applied` resets that candidate's stage to Applied.
 
 ### Deleting a person: `delete`
 
@@ -252,5 +252,5 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **View**   | `view INDEX`<br> e.g., `view 2`
-**Stage**  | `stage INDEX STAGE`<br> e.g., `stage 2 Interview`
+**Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`

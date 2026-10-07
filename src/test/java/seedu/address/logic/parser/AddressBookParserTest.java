@@ -107,7 +107,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_stage() throws Exception {
         assertEquals(new StageCommand(INDEX_FIRST_PERSON, HiringStage.INTERVIEW),
-                parser.parseCommand("stage 1 Interview"));
+                parser.parseCommand("stage 1 s/Interview"));
     }
 
     @Test
