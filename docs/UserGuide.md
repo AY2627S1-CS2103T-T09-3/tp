@@ -97,6 +97,22 @@ Shows all candidates currently stored in Scoutly and reports the number of candi
 
 Format: `list`
 
+### Viewing a candidate profile: `view`
+
+Displays a candidate's name, phone, email, address, tags, and remark in the command result area.
+Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
+missing tags or an empty remark are shown as `None`.
+
+Format: `view INDEX`
+
+* `INDEX` must be a positive integer referring to the currently displayed list.
+* Viewing a profile leaves the candidate data and the displayed list unchanged.
+* A missing or malformed index shows the command usage. An index outside the displayed list shows an error.
+
+Examples:
+* `list` followed by `view 2` displays the second candidate's profile.
+* `find Betsy` followed by `view 1` displays the first candidate in the search results.
+
 ### Editing a person: `edit`
 
 Edits an existing person in the address book.
@@ -213,4 +229,5 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**View**   | `view INDEX`<br> e.g., `view 2`
 **Help**   | `help`
