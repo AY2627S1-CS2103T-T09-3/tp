@@ -101,4 +101,12 @@ public class StageCommandTest {
         assertNotEquals(command, null);
         assertNotEquals(command, new ListCommand());
     }
+
+    @Test
+    public void toString_includesTargetIndexAndStage() {
+        StageCommand command = new StageCommand(INDEX_SECOND_PERSON, HiringStage.INTERVIEW);
+        String expected = StageCommand.class.getCanonicalName() + "{targetIndex=" + INDEX_SECOND_PERSON
+                + ", stage=Interview}";
+        assertEquals(expected, command.toString());
+    }
 }
