@@ -180,19 +180,26 @@ Examples:
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
 
-### Deleting a person: `delete`
+### Deleting a candidate: `delete`
 
-Deletes the specified person from the address book.
+Permanently deletes the specified candidate's record (represented as a person in the address book).
 
-Format: `delete INDEX`
+Format: `delete INDEX` or `delete FULL_NAME`
 
-* Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
-* The index **must be a positive integer** 1, 2, 3, ...
+* Both formats select candidates from the **currently displayed list**. After a `find` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
+* `INDEX` refers to the index number shown in the displayed list and **must be a positive integer** 1, 2, 3, ...
+* `FULL_NAME` must match the candidate's entire name, **ignoring case**. Partial names do not match. Do not put quotation marks around the name.
+* Leading and trailing spaces in the input are ignored; spaces within the name must match the stored name.
+* If no displayed candidate matches the name, no record is deleted and an error is shown.
+* If multiple displayed candidates match the name, no record is deleted. Use `delete INDEX` to choose the intended candidate.
+* Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
+* Deletion removes the record completely; it does not archive the candidate.
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+* `list` followed by `delete 2` deletes the 2nd candidate in the address book.
+* `find Betsy` followed by `delete 1` deletes the 1st candidate in the results of the `find` command.
+* `delete Alice Pauline` deletes the candidate named Alice Pauline if exactly one displayed candidate matches.
+* `delete alice pauline` matches the same full name, ignoring case.
 
 ### Clearing all entries: `clear`
 
@@ -247,7 +254,8 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
 **Clear**  | `clear`
-**Delete** | `delete INDEX`<br> e.g., `delete 3`
+**Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
+**Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Likes swimming`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`

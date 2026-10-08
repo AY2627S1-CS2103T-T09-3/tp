@@ -496,7 +496,7 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
-### Deleting a person
+### Deleting a candidate
 
 1. Deleting a person while all persons are being shown
 
@@ -508,10 +508,34 @@ testers are expected to do more *exploratory* testing.
    1. Test case: `delete 0`<br>
       Expected: No person is deleted. The status message shows error details.
 
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
+   1. Other incorrect delete commands to try: `delete`, `delete -1`, and `delete 2147483648`. Also try an index larger than the displayed list size.<br>
       Expected: Similar to previous.
 
-1. _{ more test cases … }_
+1. Deleting a candidate by full name
+
+   1. Prerequisites: Use a test address book containing Alice Pauline and Benson Meier, with no other candidates matching those names when case is ignored. Run `list`. Restore these records before each independent test below.
+
+   1. Test case: `delete alice pauline`<br>
+      Expected: Alice Pauline's record is deleted, and the success message shows their details. Restart the app and confirm that the record remains deleted.
+
+   1. Test case: `delete Alice`<br>
+      Expected: No record is deleted. An error reports that no candidate with this full name exists in the displayed list.
+
+   1. Test case: Run `find Benson`, then `delete Alice Pauline`.<br>
+      Expected: No record is deleted because Alice Pauline is hidden. Run `list` to confirm the record still exists.
+
+   1. Test case: Run `find Alice`, then `delete Alice Pauline`.<br>
+      Expected: Alice Pauline is deleted from the filtered results and the address book. Run `list` to confirm Benson Meier remains.
+
+1. Handling ambiguous names
+
+   1. Prerequisites: Use a test address book containing both Alice Pauline and ALICE PAULINE. The current model permits these case variants. Run `list`.
+
+   1. Test case: `delete Alice Pauline`<br>
+      Expected: Neither record is deleted. An error explains that multiple candidates match and asks the user to use `delete INDEX`.
+
+   1. Test case: Use `delete INDEX`, replacing `INDEX` with the displayed index of one of these candidates.<br>
+      Expected: Only the selected candidate is deleted.
 
 ### Hiring stages
 
