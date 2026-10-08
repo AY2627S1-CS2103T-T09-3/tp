@@ -56,6 +56,14 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_deleteByName() throws Exception {
+        Person person = new PersonBuilder().build();
+        DeleteCommand command = (DeleteCommand) parser.parseCommand(
+                DeleteCommand.COMMAND_WORD + " " + person.getName().fullName);
+        assertEquals(new DeleteCommand(person.getName()), command);
+    }
+
+    @Test
     public void parseCommand_edit() throws Exception {
         Person person = new PersonBuilder().build();
         EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder(person).build();

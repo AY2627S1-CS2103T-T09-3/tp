@@ -17,7 +17,9 @@ import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for
@@ -26,6 +28,85 @@ import seedu.address.model.person.Person;
 public class DeleteCommandTest {
 
     private Model model = new ModelManager(getTypicalAddressBook(), new UserPrefs());
+
+    @Test
+    public void execute_validNameUnfilteredList_success() {
+        Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        DeleteCommand deleteCommand = new DeleteCommand(personToDelete.getName());
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+
+        assertCommandSuccess(deleteCommand, model,
+                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                expectedModel);
+    }
+
+    @Test
+    public void execute_nameWithDifferentCase_success() {
+        Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        DeleteCommand deleteCommand = new DeleteCommand(new Name("aLiCe PaUlInE"));
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+
+        assertCommandSuccess(deleteCommand, model,
+                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                expectedModel);
+    }
+
+    @Test
+    public void execute_validNameFilteredList_success() {
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+        Person personToDelete = model.getFilteredPersonList().get(0);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+        showNoPerson(expectedModel);
+
+        assertCommandSuccess(new DeleteCommand(personToDelete.getName()), model,
+                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                expectedModel);
+    }
+
+    @Test
+    public void execute_nameOutsideFilteredList_throwsCommandException() {
+        Name hiddenName = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased()).getName();
+        showPersonAtIndex(model, INDEX_FIRST_PERSON);
+
+        assertCommandFailure(new DeleteCommand(hiddenName), model, DeleteCommand.MESSAGE_NAME_NOT_FOUND);
+    }
+
+    @Test
+    public void execute_missingOrPartialName_throwsCommandException() {
+        assertCommandFailure(new DeleteCommand(new Name("Nobody Here")), model, DeleteCommand.MESSAGE_NAME_NOT_FOUND);
+        assertCommandFailure(new DeleteCommand(new Name("Alice")), model, DeleteCommand.MESSAGE_NAME_NOT_FOUND);
+    }
+
+    @Test
+    public void execute_nameInEmptyList_throwsCommandException() {
+        showNoPerson(model);
+
+        assertCommandFailure(new DeleteCommand(new Name("Alice Pauline")), model, DeleteCommand.MESSAGE_NAME_NOT_FOUND);
+    }
+
+    @Test
+    public void execute_ambiguousName_throwsCommandException() {
+        model.addPerson(new PersonBuilder().withName("ALICE PAULINE").build());
+
+        assertCommandFailure(new DeleteCommand(new Name("Alice Pauline")), model, DeleteCommand.MESSAGE_AMBIGUOUS_NAME);
+    }
+
+    @Test
+    public void execute_ambiguousNameOutsideFilteredList_success() {
+        Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        model.addPerson(new PersonBuilder().withName("ALICE PAULINE").build());
+        model.updateFilteredPersonList(person -> person.equals(personToDelete));
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+        showNoPerson(expectedModel);
+
+        assertCommandSuccess(new DeleteCommand(personToDelete.getName()), model,
+                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                expectedModel);
+    }
 
     @Test
     public void execute_validIndexUnfilteredList_success() {
@@ -106,6 +187,23 @@ public class DeleteCommandTest {
         Index targetIndex = Index.fromOneBased(1);
         DeleteCommand deleteCommand = new DeleteCommand(targetIndex);
         String expected = DeleteCommand.class.getCanonicalName() + "{targetIndex=" + targetIndex + "}";
+        assertEquals(expected, deleteCommand.toString());
+    }
+
+    @Test
+    public void equals_nameTarget() {
+        DeleteCommand command = new DeleteCommand(new Name("Alice Pauline"));
+        assertTrue(command.equals(new DeleteCommand(new Name("Alice Pauline"))));
+        assertFalse(command.equals(new DeleteCommand(new Name("Benson Meier"))));
+        assertFalse(command.equals(new DeleteCommand(INDEX_FIRST_PERSON)));
+        assertFalse(new DeleteCommand(INDEX_FIRST_PERSON).equals(command));
+    }
+
+    @Test
+    public void toStringMethod_nameTarget() {
+        Name targetName = new Name("Alice Pauline");
+        DeleteCommand deleteCommand = new DeleteCommand(targetName);
+        String expected = DeleteCommand.class.getCanonicalName() + "{targetName=" + targetName + "}";
         assertEquals(expected, deleteCommand.toString());
     }
 
