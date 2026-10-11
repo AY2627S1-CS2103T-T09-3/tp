@@ -57,6 +57,14 @@ public class UniquePersonListTest {
     }
 
     @Test
+    public void add_sameNameDifferentPhone_success() {
+        uniquePersonList.add(ALICE);
+        Person differentPhone = new PersonBuilder(ALICE).withPhone("9999999").build();
+        uniquePersonList.add(differentPhone);
+        assertEquals(List.of(ALICE, differentPhone), List.copyOf(uniquePersonList.asUnmodifiableObservableList()));
+    }
+
+    @Test
     public void setPerson_nullTargetPerson_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> uniquePersonList.setPerson(null, ALICE));
     }

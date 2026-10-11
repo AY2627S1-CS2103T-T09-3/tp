@@ -2,6 +2,7 @@ package seedu.address.storage;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.person.Remark;
+import seedu.address.model.person.Skill;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -33,12 +35,13 @@ class JsonAdaptedPerson {
     private final String remark;
     private final String stage;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
+    private final List<JsonAdaptedSkill> skills = new ArrayList<>();
 
     /**
      * Constructs a {@code JsonAdaptedPerson} with the given person details.
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, "", tags);
+        this(name, phone, email, address, "", null, tags, null);
     }
 
     /**
@@ -46,7 +49,15 @@ class JsonAdaptedPerson {
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address,
             String remark, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, remark, null, tags);
+        this(name, phone, email, address, remark, null, tags, null);
+    }
+
+    /**
+     * Constructs a stored person, accepting older files without skills.
+     */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            String remark, String stage, List<JsonAdaptedTag> tags) {
+        this(name, phone, email, address, remark, stage, tags, null);
     }
 
     /**
@@ -56,7 +67,8 @@ class JsonAdaptedPerson {
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("remark") String remark, @JsonProperty("stage") String stage,
-            @JsonProperty("tags") List<JsonAdaptedTag> tags) {
+            @JsonProperty("tags") List<JsonAdaptedTag> tags,
+            @JsonProperty("skills") List<JsonAdaptedSkill> skills) {
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -65,6 +77,9 @@ class JsonAdaptedPerson {
         this.stage = stage;
         if (tags != null) {
             this.tags.addAll(tags);
+        }
+        if (skills != null) {
+            this.skills.addAll(skills);
         }
     }
 
@@ -81,6 +96,9 @@ class JsonAdaptedPerson {
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
+        skills.addAll(source.getSkills().stream()
+                .map(JsonAdaptedSkill::new)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -92,6 +110,10 @@ class JsonAdaptedPerson {
         final List<Tag> personTags = new ArrayList<>();
         for (JsonAdaptedTag tag : tags) {
             personTags.add(tag.toModelType());
+        }
+        final Set<Skill> personSkills = new LinkedHashSet<>();
+        for (JsonAdaptedSkill skill : skills) {
+            personSkills.add(skill.toModelType());
         }
 
         if (name == null) {
@@ -133,7 +155,8 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException e) {
             throw new IllegalValueException(HiringStage.MESSAGE_CONSTRAINTS, e);
         }
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, new Remark(remark), modelStage, modelTags);
+        return new Person(modelName, modelPhone, modelEmail, modelAddress, new Remark(remark), modelStage, modelTags,
+                personSkills);
     }
 
 }

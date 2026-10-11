@@ -1,6 +1,7 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import java.nio.file.Path;
@@ -30,6 +31,47 @@ public class JsonSerializableAddressBookTest {
         Path file = directory.resolve("remarks.json");
         JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
         assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).get().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_skills_preserved(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        book.addPerson(new PersonBuilder().withSkills("Java", "SQL").build());
+        Path file = directory.resolve("skills.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_emptySkills_preserved(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        book.addPerson(new PersonBuilder().withSkills().build());
+        Path file = directory.resolve("emptySkills.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertTrue(JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType()
+                .getPersonList().get(0).getSkills().isEmpty());
+    }
+
+    @Test
+    public void saveAndRead_sameNameDifferentPhone_preservesBothCandidates(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        book.addPerson(new PersonBuilder().withName("Alex Tan").withPhone("1234567")
+                .withSkills("Java").build());
+        book.addPerson(new PersonBuilder().withName("Alex Tan").withPhone("7654321")
+                .withSkills("SQL").build());
+        Path file = directory.resolve("sameNameDifferentPhone.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType());
+    }
+
+    @Test
+    public void toModelType_legacyWithoutSkills_defaultsToEmpty() throws Exception {
+        AddressBook addressBook = JsonUtil.readJsonFile(TYPICAL_PERSONS_FILE,
+                JsonSerializableAddressBook.class).orElseThrow().toModelType();
+        assertTrue(addressBook.getPersonList().stream().allMatch(person -> person.getSkills().isEmpty()));
     }
 
     @Test

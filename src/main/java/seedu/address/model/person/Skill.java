@@ -10,7 +10,7 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Skill {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Skills should contain only alphanumeric characters and be between 1 and 30 characters long";
+            "Invalid skill: skills must be 1-30 alphanumeric characters with no spaces.";
     public static final String VALIDATION_REGEX = "\\p{Alnum}{1,30}";
 
     public final String value;

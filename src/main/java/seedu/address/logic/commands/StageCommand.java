@@ -49,7 +49,7 @@ public class StageCommand extends Command {
 
         Person person = displayedPersons.get(targetIndex.getZeroBased());
         Person updatedPerson = new Person(person.getName(), person.getPhone(), person.getEmail(),
-                person.getAddress(), person.getRemark(), stage, person.getTags());
+                person.getAddress(), person.getRemark(), stage, person.getTags(), person.getSkills());
         model.setPerson(person, updatedPerson);
         return new CommandResult(String.format(MESSAGE_SUCCESS, person.getName(), stage));
     }

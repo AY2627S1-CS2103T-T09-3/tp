@@ -3,6 +3,7 @@ package seedu.address.ui;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
 import javafx.scene.control.Label;
+import javafx.scene.layout.FlowPane;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -59,6 +61,37 @@ public class PersonCardTest {
                 Label stageLabel = (Label) card.getRoot().lookup("#hiringStage");
                 assertEquals("Hiring stage: " + stage, stageLabel.getText());
             }
+            return null;
+        });
+        Platform.runLater(assertion);
+        assertion.get(10, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void constructor_personWithSkills_displaysSkillsInOrder() throws Exception {
+        FutureTask<Void> assertion = new FutureTask<>(() -> {
+            Person person = new PersonBuilder().withSkills("SQL", "Java").build();
+            PersonCard card = new PersonCard(person, 1);
+            FlowPane skills = (FlowPane) card.getRoot().lookup("#skills");
+            List<String> displayedSkills = skills.getChildren().stream()
+                    .map(node -> ((Label) node).getText())
+                    .toList();
+            assertEquals(List.of("Java", "SQL"), displayedSkills);
+            return null;
+        });
+        Platform.runLater(assertion);
+        assertion.get(10, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void constructor_personWithEmptySkills_displaysNone() throws Exception {
+        FutureTask<Void> assertion = new FutureTask<>(() -> {
+            Person person = new PersonBuilder().withSkills().build();
+            PersonCard card = new PersonCard(person, 1);
+            FlowPane skills = (FlowPane) card.getRoot().lookup("#skills");
+            assertEquals(List.of("None"), skills.getChildren().stream()
+                    .map(node -> ((Label) node).getText())
+                    .toList());
             return null;
         });
         Platform.runLater(assertion);

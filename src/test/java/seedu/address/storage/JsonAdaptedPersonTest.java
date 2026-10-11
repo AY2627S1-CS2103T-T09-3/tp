@@ -7,6 +7,7 @@ import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
@@ -34,11 +36,26 @@ public class JsonAdaptedPersonTest {
     private static final List<JsonAdaptedTag> VALID_TAGS = BENSON.getTags().stream()
             .map(JsonAdaptedTag::new)
             .collect(Collectors.toList());
+    private static final List<JsonAdaptedSkill> VALID_SKILLS = List.of(new JsonAdaptedSkill("Java"),
+            new JsonAdaptedSkill("SQL"));
 
     @Test
     public void toModelType_validPersonDetails_returnsPerson() throws Exception {
         JsonAdaptedPerson person = new JsonAdaptedPerson(BENSON);
         assertEquals(BENSON, person.toModelType());
+    }
+
+    @Test
+    public void toModelType_skills_preservesValuesAndCasing() throws Exception {
+        Person original = new PersonBuilder(BENSON).withSkills("Java", "SQL").build();
+        assertEquals(original, new JsonAdaptedPerson(original).toModelType());
+    }
+
+    @Test
+    public void toModelType_missingSkills_defaultsToEmpty() throws Exception {
+        JsonAdaptedPerson person =
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, "", null, VALID_TAGS);
+        assertEquals(Set.of(), person.toModelType().getSkills());
     }
 
     @Test
@@ -132,6 +149,22 @@ public class JsonAdaptedPersonTest {
         JsonAdaptedPerson person =
                 new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, invalidTags);
         assertThrows(IllegalValueException.class, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_invalidSkills_throwsIllegalValueException() {
+        List<JsonAdaptedSkill> invalidSkills = new ArrayList<>(VALID_SKILLS);
+        invalidSkills.add(new JsonAdaptedSkill("Java Script"));
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, invalidSkills);
+        assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullSkill_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, List.of(new JsonAdaptedSkill((String) null)));
+        assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
     }
 
 }
