@@ -62,7 +62,7 @@ public class AddressBookParser {
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
-            case ListCommand.COMMAND_WORD -> new ListCommand();
+            case ListCommand.COMMAND_WORD -> parseListCommand(arguments);
             case ViewCommand.COMMAND_WORD -> new ViewCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();
@@ -71,6 +71,14 @@ public class AddressBookParser {
                 throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
             }
         };
+    }
+
+    /** Parses the list command, which does not accept any arguments. */
+    private Command parseListCommand(String arguments) throws ParseException {
+        if (!arguments.trim().isEmpty()) {
+            throw new ParseException("The list command does not take any parameters.");
+        }
+        return new ListCommand();
     }
 
 }

@@ -95,9 +95,11 @@ Examples:
 
 ### Listing all candidates: `list`
 
-Shows all candidates currently stored in Scoutly and reports the number of candidates listed.
+Shows all candidates currently stored in Scoutly and reports the number of candidates listed. If there are no candidates, Scoutly displays `No candidates in your pipeline yet. Use 'add' to add one.`
 
 Format: `list`
+
+The `list` command does not take any parameters. For example, `list all` is rejected with `The list command does not take any parameters.`
 
 ### Viewing a candidate profile: `view`
 

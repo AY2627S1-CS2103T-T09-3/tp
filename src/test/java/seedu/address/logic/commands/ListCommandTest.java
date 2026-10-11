@@ -44,7 +44,7 @@ public class ListCommandTest {
         Model emptyModel = new ModelManager(new AddressBook(), new UserPrefs());
         Model expectedEmptyModel = new ModelManager(new AddressBook(), new UserPrefs());
 
-        assertCommandSuccess(new ListCommand(), emptyModel, "Listed 0 candidates.", expectedEmptyModel);
+        assertCommandSuccess(new ListCommand(), emptyModel, ListCommand.MESSAGE_EMPTY_LIST, expectedEmptyModel);
     }
 
     @Test
