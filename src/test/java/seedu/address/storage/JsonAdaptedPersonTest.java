@@ -226,4 +226,22 @@ public class JsonAdaptedPersonTest {
         assertEquals(legacyName, person.toModelType().getName().fullName);
     }
 
+    @Test
+    public void toModelType_currentNameFormat_preservesValue() throws Exception {
+        String currentName = "Anne-Marie O'Connor";
+        JsonAdaptedPerson person = new JsonAdaptedPerson(currentName, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(currentName, person.toModelType().getName().fullName);
+    }
+
+    @Test
+    public void toModelType_currentPhoneFormat_preservesValue() throws Exception {
+        String currentPhone = "+6591234567";
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, currentPhone, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(currentPhone, person.toModelType().getPhone().value);
+    }
+
 }
