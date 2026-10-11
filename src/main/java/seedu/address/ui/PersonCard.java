@@ -65,13 +65,11 @@ public class PersonCard extends UiPart<Region> {
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
 
-        Comparator<Skill> skillComparator = Comparator.comparing((Skill skill) -> skill.value,
-                String.CASE_INSENSITIVE_ORDER).thenComparing(skill -> skill.value);
         if (person.getSkills().isEmpty()) {
             skills.getChildren().add(new Label("None"));
         } else {
             person.getSkills().stream()
-                    .sorted(skillComparator)
+                    .sorted(Skill.DISPLAY_ORDER)
                     .forEach(skill -> skills.getChildren().add(new Label(skill.value)));
         }
     }

@@ -45,11 +45,11 @@ public class AddCommandParserTest {
     }
 
     @Test
-    public void parse_emptyContactFields_defaultsToEmptyValues() {
-        Person expectedPerson = new PersonBuilder(BOB).withEmail("").withAddress("").withTags()
-                .withSkills("Java").build();
+    public void parse_nameWithNumbersHyphensAndApostrophes_success() {
+        Person expectedPerson = new PersonBuilder(BOB).withName("Anne-Marie O'Connor 2")
+                .withEmail("").withAddress("").withTags().withSkills("Java").build();
 
-        assertParseSuccess(parser, NAME_DESC_BOB + PHONE_DESC_BOB + " " + PREFIX_SKILL + "Java",
+        assertParseSuccess(parser, " n/Anne-Marie O'Connor 2" + PHONE_DESC_BOB + " " + PREFIX_SKILL + "Java",
                 new AddCommand(expectedPerson));
     }
 

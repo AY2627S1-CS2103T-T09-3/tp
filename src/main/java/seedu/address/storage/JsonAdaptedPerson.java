@@ -2,8 +2,11 @@ package seedu.address.storage;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -111,26 +114,39 @@ class JsonAdaptedPerson {
         for (JsonAdaptedTag tag : tags) {
             personTags.add(tag.toModelType());
         }
-        final Set<Skill> personSkills = new LinkedHashSet<>();
+        final Map<String, Skill> skillsByLowerCase = new LinkedHashMap<>();
         for (JsonAdaptedSkill skill : skills) {
-            personSkills.add(skill.toModelType());
+            if (skill == null) {
+                throw new IllegalValueException(Skill.MESSAGE_CONSTRAINTS);
+            }
+            Skill modelSkill = skill.toModelType();
+            skillsByLowerCase.putIfAbsent(modelSkill.value.toLowerCase(Locale.ROOT), modelSkill);
         }
+        final Set<Skill> personSkills = new LinkedHashSet<>(skillsByLowerCase.values());
 
         if (name == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Name.class.getSimpleName()));
         }
-        if (!Name.isValidName(name)) {
+        final Name modelName;
+        if (Name.isValidLegacyName(name)) {
+            modelName = Name.fromLegacyValue(name);
+        } else if (Name.isValidName(name)) {
+            modelName = new Name(name);
+        } else {
             throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);
         }
-        final Name modelName = new Name(name);
 
         if (phone == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Phone.class.getSimpleName()));
         }
-        if (!Phone.isValidPhone(phone)) {
+        final Phone modelPhone;
+        if (Phone.isValidLegacyPhone(phone)) {
+            modelPhone = Phone.fromLegacyValue(phone);
+        } else if (Phone.isValidPhone(phone)) {
+            modelPhone = new Phone(phone);
+        } else {
             throw new IllegalValueException(Phone.MESSAGE_CONSTRAINTS);
         }
-        final Phone modelPhone = new Phone(phone);
 
         if (email == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Email.class.getSimpleName()));

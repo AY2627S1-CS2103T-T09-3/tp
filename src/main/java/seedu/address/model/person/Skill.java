@@ -3,6 +3,8 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import java.util.Comparator;
+
 /**
  * Represents a candidate's skill.
  * Guarantees: immutable; is valid as declared in {@link #isValidSkill(String)}.
@@ -12,6 +14,9 @@ public class Skill {
     public static final String MESSAGE_CONSTRAINTS =
             "Invalid skill: skills must be 1-30 alphanumeric characters with no spaces.";
     public static final String VALIDATION_REGEX = "\\p{Alnum}{1,30}";
+    public static final Comparator<Skill> DISPLAY_ORDER =
+            Comparator.comparing((Skill skill) -> skill.value, String.CASE_INSENSITIVE_ORDER)
+                    .thenComparing(skill -> skill.value);
 
     public final String value;
 

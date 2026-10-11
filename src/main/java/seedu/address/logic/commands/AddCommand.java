@@ -5,7 +5,6 @@ import static seedu.address.logic.parser.CliSyntax.PREFIX_NAME;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_SKILL;
 
-import java.util.Comparator;
 import java.util.stream.Collectors;
 
 import seedu.address.commons.util.ToStringBuilder;
@@ -58,8 +57,7 @@ public class AddCommand extends Command {
 
         model.addPerson(toAdd);
         String skills = toAdd.getSkills().stream()
-                .sorted(Comparator.comparing((Skill skill) -> skill.value, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(skill -> skill.value))
+                .sorted(Skill.DISPLAY_ORDER)
                 .map(Object::toString)
                 .collect(Collectors.joining(", "));
         return new CommandResult(String.format(MESSAGE_SUCCESS, toAdd.getName(), toAdd.getPhone(), skills));

@@ -54,6 +54,16 @@ public class JsonAdaptedPersonTest {
     }
 
     @Test
+    public void toModelType_duplicateSkills_deduplicatesCaseInsensitively() throws Exception {
+        List<JsonAdaptedSkill> duplicateSkills = List.of(new JsonAdaptedSkill("Java"),
+                new JsonAdaptedSkill("java"), new JsonAdaptedSkill("SQL"));
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, duplicateSkills);
+
+        assertEquals(Set.of(new Skill("Java"), new Skill("SQL")), person.toModelType().getSkills());
+    }
+
+    @Test
     public void toModelType_missingSkills_defaultsToEmpty() throws Exception {
         JsonAdaptedPerson person =
                 new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, "", null, VALID_TAGS);
@@ -180,6 +190,40 @@ public class JsonAdaptedPersonTest {
         JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
                 "", null, VALID_TAGS, List.of(new JsonAdaptedSkill((String) null)));
         assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullSkillEntry_throwsIllegalValueException() {
+        List<JsonAdaptedSkill> skillsWithNull = new ArrayList<>();
+        skillsWithNull.add(null);
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, skillsWithNull);
+        assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_legacyShortPhone_preservesValue() throws Exception {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, "123456", VALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+
+        assertEquals("123456", person.toModelType().getPhone().value);
+    }
+
+    @Test
+    public void toModelType_legacyLongPhone_preservesValue() throws Exception {
+        String legacyPhone = "1234567890123456";
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, legacyPhone, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(legacyPhone, person.toModelType().getPhone().value);
+    }
+
+    @Test
+    public void toModelType_legacyLongName_preservesValue() throws Exception {
+        String legacyName = "A".repeat(101);
+        JsonAdaptedPerson person = new JsonAdaptedPerson(legacyName, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(legacyName, person.toModelType().getName().fullName);
     }
 
 }

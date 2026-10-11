@@ -96,7 +96,7 @@ Format: `add n/NAME p/PHONE s/SKILL [s/SKILL]...`
   the same name but different phone numbers, or different names but the same phone number, are allowed.
 
 Successful additions use the message `New candidate added: NAME | PHONE | Skills: SKILL1, SKILL2`.
-* Invalid names report `Invalid name: names may only contain letters, spaces, hyphens, and apostrophes, and must be 1-100 characters long.`
+* Invalid names report `Invalid name: names may only contain letters, numbers, hyphens, spaces, and apostrophes, and must be 1-100 characters long.`
 * Invalid phone numbers report `Invalid phone number: must be 7-15 digits, optionally starting with +.`
 * Invalid skills report `Invalid skill: skills must be 1-30 alphanumeric characters with no spaces.`
 * Missing skills report `At least one skill (s/) must be provided.`

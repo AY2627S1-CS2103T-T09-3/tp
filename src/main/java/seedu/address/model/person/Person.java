@@ -117,7 +117,8 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getName().fullName.equalsIgnoreCase(getName().fullName)
+                && Name.normalizeName(otherPerson.getName().fullName)
+                        .equalsIgnoreCase(Name.normalizeName(getName().fullName))
                 && otherPerson.getPhone().equals(getPhone());
     }
 

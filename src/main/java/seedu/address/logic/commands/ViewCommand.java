@@ -2,7 +2,6 @@ package seedu.address.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,8 +55,7 @@ public class ViewCommand extends Command {
                 .collect(Collectors.joining(", "));
         String remark = candidate.getRemark().value;
         String skills = candidate.getSkills().stream()
-                .sorted(Comparator.comparing((Skill skill) -> skill.value, String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(skill -> skill.value))
+                .sorted(Skill.DISPLAY_ORDER)
                 .map(skill -> skill.value)
                 .collect(Collectors.joining(", "));
         return new CommandResult(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
