@@ -150,6 +150,12 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseEmail_whitespaceOnlyValue_throwsParseException() {
+        assertThrows(ParseException.class, Email.MESSAGE_CONSTRAINTS, ()
+                -> ParserUtil.parseEmail(WHITESPACE));
+    }
+
+    @Test
     public void parseEmail_emptyValue_returnsEmptyEmail() throws Exception {
         assertEquals(new Email(""), ParserUtil.parseEmail(""));
     }

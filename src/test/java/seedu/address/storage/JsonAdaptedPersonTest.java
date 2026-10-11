@@ -1,6 +1,7 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.storage.JsonAdaptedPerson.MISSING_FIELD_MESSAGE_FORMAT;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.BENSON;
@@ -19,6 +20,7 @@ import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Remark;
 import seedu.address.model.person.Skill;
 import seedu.address.testutil.PersonBuilder;
 
@@ -56,6 +58,19 @@ public class JsonAdaptedPersonTest {
         JsonAdaptedPerson person =
                 new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, "", null, VALID_TAGS);
         assertEquals(Set.of(), person.toModelType().getSkills());
+    }
+
+    @Test
+    public void toModelType_legacyPersonWithoutStageAndSkills_defaultsCorrectly() throws Exception {
+        JsonAdaptedPerson person =
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                        "Legacy remark", VALID_TAGS);
+
+        Person modelPerson = person.toModelType();
+
+        assertEquals(new Remark("Legacy remark"), modelPerson.getRemark());
+        assertEquals(HiringStage.APPLIED, modelPerson.getStage());
+        assertTrue(modelPerson.getSkills().isEmpty());
     }
 
     @Test

@@ -122,6 +122,15 @@ public class PersonTest {
     }
 
     @Test
+    public void constructor_withoutSkills_defaultsToEmpty() {
+        Person person = new Person(ALICE.getName(), ALICE.getPhone(), ALICE.getEmail(), ALICE.getAddress(),
+                ALICE.getRemark(), HiringStage.INTERVIEW, ALICE.getTags());
+
+        assertEquals(HiringStage.INTERVIEW, person.getStage());
+        assertTrue(person.getSkills().isEmpty());
+    }
+
+    @Test
     public void constructor_nullStage_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> new PersonBuilder().withStage(null).build());
     }
