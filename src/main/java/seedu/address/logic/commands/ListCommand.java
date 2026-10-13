@@ -11,6 +11,7 @@ import seedu.address.model.Model;
 public class ListCommand extends Command {
 
     public static final String COMMAND_WORD = "list";
+    public static final String MESSAGE_EMPTY_LIST = "No candidates in your pipeline yet. Use 'add' to add one.";
 
     private static final String MESSAGE_SUCCESS_FORMAT = "Listed %d candidate%s.";
 
@@ -26,6 +27,9 @@ public class ListCommand extends Command {
      * Returns the feedback message for the number of listed candidates.
      */
     private static String getSuccessMessage(int candidateCount) {
+        if (candidateCount == 0) {
+            return MESSAGE_EMPTY_LIST;
+        }
         String suffix = candidateCount == 1 ? "" : "s";
         return String.format(MESSAGE_SUCCESS_FORMAT, candidateCount, suffix);
     }
