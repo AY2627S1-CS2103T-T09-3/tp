@@ -14,11 +14,13 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
+import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -91,8 +93,94 @@ public class ViewCommandTest {
 
     @Test
     public void nullArguments_throwNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new ViewCommand(null));
+        assertThrows(NullPointerException.class, () -> new ViewCommand((Index) null));
         assertThrows(NullPointerException.class, () -> new ViewCommand(INDEX_FIRST_PERSON).execute(null));
+    }
+
+    @Test
+    public void execute_fullName_ignoresCaseAndPreservesFilteredList() throws Exception {
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        showPersonAtIndex(expectedModel, INDEX_SECOND_PERSON);
+        CommandResult expected = new ViewCommand(INDEX_FIRST_PERSON).execute(model);
+
+        assertCommandSuccess(new ViewCommand(new Name("bEnSoN mEiEr")), model, expected, expectedModel);
+    }
+
+    @Test
+    public void execute_nameNotFound_throwsCommandException() {
+        assertCommandFailure(new ViewCommand(new Name("Unknown Candidate")), model,
+                ViewCommand.MESSAGE_NAME_NOT_FOUND);
+        assertCommandFailure(new ViewCommand(new Name("Alice")), model,
+                ViewCommand.MESSAGE_NAME_NOT_FOUND);
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+        assertCommandFailure(new ViewCommand(new Name("Alice Pauline")), model,
+                ViewCommand.MESSAGE_NAME_NOT_FOUND);
+        assertCommandFailure(new ViewCommand(new Name("Alice Pauline")), new ModelManager(),
+                ViewCommand.MESSAGE_NAME_NOT_FOUND);
+    }
+
+    @Test
+    public void execute_ambiguousName_requiresIndex() throws Exception {
+        Person first = new PersonBuilder().withName("Amy Bee").build();
+        Person second = new PersonBuilder().withName("AMY BEE").withEmail("other@example.com").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(first);
+        addressBook.addPerson(second);
+        model = new ModelManager(addressBook, new UserPrefs());
+        assertCommandFailure(new ViewCommand(new Name("amy bee")), model, ViewCommand.MESSAGE_AMBIGUOUS_NAME);
+        assertTrue(new ViewCommand(INDEX_SECOND_PERSON).execute(model).getFeedbackToUser()
+                .contains("Email: other@example.com"));
+
+        model.updateFilteredPersonList(person -> person.getEmail().equals(first.getEmail()));
+        Model expectedModel = new ModelManager(addressBook, new UserPrefs());
+        expectedModel.updateFilteredPersonList(person -> person.getEmail().equals(first.getEmail()));
+        CommandResult expected = new ViewCommand(INDEX_FIRST_PERSON).execute(model);
+        assertCommandSuccess(new ViewCommand(new Name("amy bee")), model, expected, expectedModel);
+    }
+
+    @Test
+    public void execute_stageThenViewByName_displaysLatestStage() throws Exception {
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+        for (HiringStage stage : HiringStage.values()) {
+            new StageCommand(INDEX_FIRST_PERSON, stage).execute(model);
+            CommandResult result = new ViewCommand(new Name("Benson Meier")).execute(model);
+            assertTrue(result.getFeedbackToUser().endsWith("Hiring stage: " + stage));
+        }
+    }
+
+    @Test
+    public void execute_candidateWorkflow_viewsUpdatedProfileAndReportsDeletedCandidate() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        Model workflowModel = new ModelManager();
+        parser.parseCommand("add n/Amy Bee p/85355255 e/amy@gmail.com a/Jurong t/Java")
+                .execute(workflowModel);
+        parser.parseCommand("list").execute(workflowModel);
+        parser.parseCommand("remark 1 r/Ready for interview").execute(workflowModel);
+        parser.parseCommand("stage 1 s/Interview").execute(workflowModel);
+        Model expectedModel = new ModelManager(workflowModel.getAddressBook(), new UserPrefs());
+        String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: amy@gmail.com\n"
+                + "Address: Jurong\nTags: Java\nRemark: Ready for interview\nHiring stage: Interview";
+        assertCommandSuccess(parser.parseCommand("view amy bee"), workflowModel, expected, expectedModel);
+        parser.parseCommand("delete Amy Bee").execute(workflowModel);
+        assertCommandFailure(parser.parseCommand("view Amy Bee"), workflowModel, ViewCommand.MESSAGE_NAME_NOT_FOUND);
+    }
+
+    @Test
+    public void nameConstructor_null_throwsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> new ViewCommand((Name) null));
+    }
+
+    @Test
+    public void nameCommand_equalsAndToString() {
+        Name name = new Name("Alice Pauline");
+        ViewCommand command = new ViewCommand(name);
+        assertTrue(command.equals(command));
+        assertTrue(command.equals(new ViewCommand(name)));
+        assertFalse(command.equals(new ViewCommand(new Name("Benson Meier"))));
+        assertFalse(command.equals(new ViewCommand(INDEX_FIRST_PERSON)));
+        assertFalse(new ViewCommand(INDEX_FIRST_PERSON).equals(command));
+        assertEquals(ViewCommand.class.getCanonicalName() + "{targetName=" + name + "}", command.toString());
     }
 
     @Test

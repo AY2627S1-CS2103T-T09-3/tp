@@ -107,15 +107,21 @@ Displays a candidate's name, phone, email, address, tags, remark, and hiring sta
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
 missing tags or an empty remark are shown as `None`.
 
-Format: `view INDEX`
+Format: `view INDEX` or `view FULL_NAME`
 
 * `INDEX` must be a positive integer referring to the currently displayed list.
 * Viewing a profile leaves the candidate data and the displayed list unchanged.
-* A missing or malformed index shows the command usage. An index outside the displayed list shows an error.
+* `FULL_NAME` must match the full name of exactly one candidate in the displayed list, ignoring case.
+* Name lookup follows the same rules as `delete FULL_NAME`. Partial names do not match.
+* All-digit input is treated as an index. Use the displayed index to view a candidate whose full name is numeric.
+* A missing or malformed argument shows the command usage. An index outside the displayed list shows an error.
+* If no displayed candidate matches the name, Scoutly suggests using `list` to show all candidates.
+* If multiple displayed candidates match the name, use `view INDEX` to choose the intended candidate.
 
 Examples:
 * `list` followed by `view 2` displays the second candidate's profile.
 * `find Betsy` followed by `view 1` displays the first candidate in the search results.
+* `view alice pauline` displays Alice Pauline's profile if she is in the displayed list.
 
 ### Editing a person: `edit`
 
@@ -261,6 +267,6 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
-**View**   | `view INDEX`<br> e.g., `view 2`
+**View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`

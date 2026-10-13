@@ -344,7 +344,8 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 1. User enters a `find` command with one or more name keywords.
 2. Scoutly searches contact names without regard to letter case.
 3. Scoutly displays the matching contacts with their displayed indexes.
-4. User reads the required contact details from the displayed results.
+4. User enters `view INDEX` or `view FULL_NAME` to inspect a candidate in the displayed results.
+5. Scoutly displays the candidate's profile, including hiring stage, without changing the data or search results.
 
     Use case ends.
 
@@ -359,6 +360,16 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
     * 1a1. Scoutly displays an error message.
     * 1a2. The use case ends without changing the contact list.
+
+* 4a. The profile index or full name is invalid, missing, or outside the displayed results.
+
+    * 4a1. Scoutly displays usage instructions or a lookup error.
+    * 4a2. The use case resumes at step 4 without changing candidate data or the displayed list.
+
+* 4b. More than one displayed candidate matches the full name, ignoring case.
+
+    * 4b1. Scoutly asks the user to select a candidate using `view INDEX`.
+    * 4b2. The use case resumes at step 4 without changing candidate data or the displayed list.
 
 **Use case: UC03, Edit a contact**
 
