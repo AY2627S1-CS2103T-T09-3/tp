@@ -26,7 +26,7 @@ public class ParserUtilTest {
     private static final String INVALID_TAG = "#friend";
 
     private static final String VALID_NAME = "Rachel Walker";
-    private static final String VALID_PHONE = "123456";
+    private static final String VALID_PHONE = "1234567";
     private static final String VALID_ADDRESS = "123 Main Street #0505";
     private static final String VALID_EMAIL = "rachel@example.com";
     private static final String VALID_TAG_1 = "friend";
@@ -72,7 +72,7 @@ public class ParserUtilTest {
 
     @Test
     public void parseName_validValueWithWhitespace_returnsTrimmedName() throws Exception {
-        String nameWithWhitespace = WHITESPACE + VALID_NAME + WHITESPACE;
+        String nameWithWhitespace = WHITESPACE + "Rachel   Walker" + WHITESPACE;
         Name expectedName = new Name(VALID_NAME);
         assertEquals(expectedName, ParserUtil.parseName(nameWithWhitespace));
     }
@@ -101,6 +101,17 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parsePhone_validValueWithLeadingPlus_returnsPhone() throws Exception {
+        Phone expectedPhone = new Phone("+6591234567");
+        assertEquals(expectedPhone, ParserUtil.parsePhone("+6591234567"));
+    }
+
+    @Test
+    public void parseSkill_validValue_returnsSkill() throws Exception {
+        assertEquals(new seedu.address.model.person.Skill("Java"), ParserUtil.parseSkill("Java"));
+    }
+
+    @Test
     public void parseAddress_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseAddress((String) null));
     }
@@ -108,6 +119,11 @@ public class ParserUtilTest {
     @Test
     public void parseAddress_invalidValue_throwsParseException() {
         assertThrows(ParseException.class, () -> ParserUtil.parseAddress(INVALID_ADDRESS));
+    }
+
+    @Test
+    public void parseAddress_emptyValue_returnsEmptyAddress() throws Exception {
+        assertEquals(new Address(""), ParserUtil.parseAddress(""));
     }
 
     @Test
@@ -131,6 +147,17 @@ public class ParserUtilTest {
     @Test
     public void parseEmail_invalidValue_throwsParseException() {
         assertThrows(ParseException.class, () -> ParserUtil.parseEmail(INVALID_EMAIL));
+    }
+
+    @Test
+    public void parseEmail_whitespaceOnlyValue_throwsParseException() {
+        assertThrows(ParseException.class, Email.MESSAGE_CONSTRAINTS, ()
+                -> ParserUtil.parseEmail(WHITESPACE));
+    }
+
+    @Test
+    public void parseEmail_emptyValue_returnsEmptyEmail() throws Exception {
+        assertEquals(new Email(""), ParserUtil.parseEmail(""));
     }
 
     @Test

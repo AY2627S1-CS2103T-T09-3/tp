@@ -25,7 +25,7 @@ public class RemarkTest {
     }
 
     @Test
-    public void personEquality_includesRemarkButIdentityDoesNot() {
+    public void personEquality_includesRemarkButIdentityUsesNameAndPhone() {
         Person original = new PersonBuilder().build();
         Person edited = new PersonBuilder(original).withRemark("Note").build();
         assertNotEquals(original, edited);

@@ -9,14 +9,12 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Name {
 
-    public static final String MESSAGE_CONSTRAINTS =
-            "Names should only contain alphanumeric characters and spaces, and should not be blank";
+    public static final String MESSAGE_CONSTRAINTS = "Invalid name: names may only contain letters, spaces, hyphens, "
+            + "numbers, hyphens, spaces, and apostrophes, and must be 1-100 characters long.";
 
-    /*
-     * The first character of the name must not be a whitespace,
-     * otherwise " " (a blank string) becomes a valid input.
-     */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
+    public static final String VALIDATION_REGEX = "[\\p{L}\\p{N}][\\p{L}\\p{N} '-]{0,99}";
+
+    private static final String LEGACY_VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
 
     public final String fullName;
 
@@ -27,7 +25,12 @@ public class Name {
      */
     public Name(String name) {
         requireNonNull(name);
-        checkArgument(isValidName(name), MESSAGE_CONSTRAINTS);
+        String normalizedName = normalizeName(name);
+        checkArgument(isValidName(normalizedName), MESSAGE_CONSTRAINTS);
+        fullName = normalizedName;
+    }
+
+    private Name(String name, boolean legacyValue) {
         fullName = name;
     }
 
@@ -35,7 +38,34 @@ public class Name {
      * Returns true if a given string is a valid name.
      */
     public static boolean isValidName(String test) {
-        return test.matches(VALIDATION_REGEX);
+        requireNonNull(test);
+        return normalizeName(test).matches(VALIDATION_REGEX);
+    }
+
+    /**
+     * Returns true if a given string was valid under the original AB3 name constraints.
+     */
+    public static boolean isValidLegacyName(String test) {
+        requireNonNull(test);
+        return test.matches(LEGACY_VALIDATION_REGEX);
+    }
+
+    /**
+     * Creates a name from an old stored value without applying the current normalization or length limit.
+     * This path is intended only for deserializing legacy address-book data.
+     */
+    public static Name fromLegacyValue(String name) {
+        requireNonNull(name);
+        checkArgument(isValidLegacyName(name), MESSAGE_CONSTRAINTS);
+        return new Name(name, true);
+    }
+
+    /**
+     * Trims leading and trailing whitespace and collapses repeated internal whitespace.
+     */
+    public static String normalizeName(String name) {
+        requireNonNull(name);
+        return name.trim().replaceAll("\\s+", " ");
     }
 
 

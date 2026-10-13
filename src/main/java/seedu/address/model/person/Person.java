@@ -4,6 +4,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -26,19 +27,20 @@ public class Person {
     private final Remark remark;
     private final HiringStage stage;
     private final Set<Tag> tags = new HashSet<>();
+    private final Set<Skill> skills = new LinkedHashSet<>();
 
     /**
      * Every field must be present and not null.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        this(name, phone, email, address, new Remark(""), tags);
+        this(name, phone, email, address, new Remark(""), HiringStage.APPLIED, tags, Collections.emptySet());
     }
 
     /**
      * Every field must be present and not null, including the optional remark's value.
      */
     public Person(Name name, Phone phone, Email email, Address address, Remark remark, Set<Tag> tags) {
-        this(name, phone, email, address, remark, HiringStage.APPLIED, tags);
+        this(name, phone, email, address, remark, HiringStage.APPLIED, tags, Collections.emptySet());
     }
 
     /**
@@ -46,7 +48,15 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, Remark remark,
             HiringStage stage, Set<Tag> tags) {
-        requireAllNonNull(name, phone, email, address, remark, stage, tags);
+        this(name, phone, email, address, remark, stage, tags, Collections.emptySet());
+    }
+
+    /**
+     * Every field must be present and not null, including the hiring stage and skills.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Remark remark,
+            HiringStage stage, Set<Tag> tags, Set<Skill> skills) {
+        requireAllNonNull(name, phone, email, address, remark, stage, tags, skills);
         this.stage = stage;
         this.remark = remark;
         this.name = name;
@@ -54,6 +64,7 @@ public class Person {
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
+        this.skills.addAll(skills);
     }
 
     public Name getName() {
@@ -89,7 +100,15 @@ public class Person {
     }
 
     /**
-     * Returns true if both persons have the same name.
+     * Returns an immutable skill set, which throws {@code UnsupportedOperationException}
+     * if modification is attempted.
+     */
+    public Set<Skill> getSkills() {
+        return Collections.unmodifiableSet(skills);
+    }
+
+    /**
+     * Returns true if both persons have the same name and phone number.
      * This defines a weaker notion of equality between two persons.
      */
     public boolean isSamePerson(Person otherPerson) {
@@ -98,7 +117,9 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getName().equals(getName());
+                && Name.normalizeName(otherPerson.getName().fullName)
+                        .equalsIgnoreCase(Name.normalizeName(getName().fullName))
+                && otherPerson.getPhone().equals(getPhone());
     }
 
     /**
@@ -122,13 +143,14 @@ public class Person {
                 && address.equals(otherPerson.address)
                 && remark.equals(otherPerson.remark)
                 && stage == otherPerson.stage
-                && tags.equals(otherPerson.tags);
+                && tags.equals(otherPerson.tags)
+                && skills.equals(otherPerson.skills);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, remark, stage, tags);
+        return Objects.hash(name, phone, email, address, remark, stage, tags, skills);
     }
 
     @Override
@@ -141,6 +163,7 @@ public class Person {
                 .add("remark", remark)
                 .add("stage", stage)
                 .add("tags", tags)
+                .add("skills", skills)
                 .toString();
     }
 
