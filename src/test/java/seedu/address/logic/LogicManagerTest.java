@@ -83,6 +83,8 @@ public class LogicManagerTest {
         CommandResult result = logic.execute("stage 1 s/iNtErViEw");
         assertEquals("Updated Amy Bee's stage to Interview.", result.getFeedbackToUser());
         assertEquals(HiringStage.INTERVIEW, model.getFilteredPersonList().get(0).getStage());
+        assertEquals("Amy Bee is already at Interview.",
+                logic.execute("stage 1 s/interview").getFeedbackToUser());
 
         JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
         Model reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());

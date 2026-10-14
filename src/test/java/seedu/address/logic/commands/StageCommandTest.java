@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
@@ -40,10 +41,40 @@ public class StageCommandTest {
                 Model expected = new ModelManager(book, new UserPrefs());
                 expected.setPerson(candidate, new PersonBuilder(candidate).withStage(to).build());
 
+                String message = from == to ? StageCommand.MESSAGE_ALREADY_AT_STAGE : StageCommand.MESSAGE_SUCCESS;
                 assertCommandSuccess(new StageCommand(INDEX_FIRST_PERSON, to), model,
-                        String.format(StageCommand.MESSAGE_SUCCESS, original.getName(), to), expected);
+                        String.format(message, original.getName(), to), expected);
             }
         }
+    }
+
+    @Test
+    public void execute_currentStage_reportsUnchangedAndKeepsCandidateInstance() throws Exception {
+        for (HiringStage stage : HiringStage.values()) {
+            Person candidate = new PersonBuilder().withStage(stage).withRemark("Interview notes")
+                    .withTags("Backend").withSkills("Java", "SQL").build();
+            AddressBook book = new AddressBook();
+            book.addPerson(candidate);
+            Model unchangedModel = new ModelManager(book, new UserPrefs());
+
+            CommandResult result = new StageCommand(INDEX_FIRST_PERSON, stage).execute(unchangedModel);
+
+            assertEquals("Amy Bee is already at " + stage + ".", result.getFeedbackToUser());
+            assertEquals(book, unchangedModel.getAddressBook());
+            assertSame(candidate, unchangedModel.getFilteredPersonList().get(0));
+        }
+    }
+
+    @Test
+    public void execute_currentStageFilteredList_preservesFilterAndCandidate() {
+        Person target = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased());
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+        Model expected = new ModelManager(model.getAddressBook(), new UserPrefs());
+        showPersonAtIndex(expected, INDEX_SECOND_PERSON);
+
+        assertCommandSuccess(new StageCommand(INDEX_FIRST_PERSON, target.getStage()), model,
+                "Benson Meier is already at Applied.", expected);
+        assertSame(target, model.getFilteredPersonList().get(0));
     }
 
     @Test

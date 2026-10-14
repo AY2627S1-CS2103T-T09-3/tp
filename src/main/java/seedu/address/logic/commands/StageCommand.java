@@ -24,6 +24,7 @@ public class StageCommand extends Command {
             + HiringStage.MESSAGE_CONSTRAINTS + "\n"
             + "Example: " + COMMAND_WORD + " 1 s/Interview";
     public static final String MESSAGE_SUCCESS = "Updated %1$s's stage to %2$s.";
+    public static final String MESSAGE_ALREADY_AT_STAGE = "%1$s is already at %2$s.";
     public static final String MESSAGE_INVALID_CANDIDATE_DISPLAYED_INDEX =
             "The candidate index provided is invalid.";
 
@@ -48,6 +49,10 @@ public class StageCommand extends Command {
         }
 
         Person person = displayedPersons.get(targetIndex.getZeroBased());
+        if (person.getStage() == stage) {
+            return new CommandResult(String.format(MESSAGE_ALREADY_AT_STAGE, person.getName(), stage));
+        }
+
         Person updatedPerson = new Person(person.getName(), person.getPhone(), person.getEmail(),
                 person.getAddress(), person.getRemark(), stage, person.getTags(), person.getSkills());
         model.setPerson(person, updatedPerson);
