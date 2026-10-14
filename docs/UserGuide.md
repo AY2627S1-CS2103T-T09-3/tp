@@ -193,7 +193,7 @@ Format: `stage INDEX s/STAGE`
 
 * `INDEX` must be a positive integer from the displayed list. After `find`, it refers to the search results.
 * The `s/` prefix is required and may appear only once. `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
-* Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed.
+* Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed and reports `[Name] is already at [Stage].` without changing the candidate.
 * The command preserves the current search filter and all other candidate details.
 * The stage appears on the candidate's card and in `view INDEX`, and is saved automatically across restarts.
 * New candidates and older saved records without a stage default to **Applied**. Editing details or remarks preserves the stage.
@@ -201,6 +201,7 @@ Format: `stage INDEX s/STAGE`
 
 Examples:
 * `stage 1 s/Interview` moves the first displayed candidate to Interview.
+* Running it again for Alex Yeoh already at Interview displays `Alex Yeoh is already at Interview.`
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
 

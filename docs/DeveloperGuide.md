@@ -165,7 +165,7 @@ Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTE
 
 `AddressBookParser` routes `stage INDEX s/STAGE` to `StageCommandParser`. The parser uses `ArgumentTokenizer` with `PREFIX_STAGE` (`s/`), validates the positive displayed index, rejects repeated stage prefixes, and parses a case-insensitive stage name. Missing arguments or a missing prefix and invalid indices produce usage errors; empty or unknown stages produce a list of allowed values.
 
-`StageCommand` resolves the candidate using the current filtered list and replaces that candidate with a new immutable `Person` through `Model#setPerson`. It preserves every other field and the current filter. All transitions, including backwards moves and setting the current stage again, are allowed so recruiters can correct mistakes. `EditCommand` and `RemarkCommand` carry forward the existing stage when replacing a person.
+`StageCommand` resolves the candidate using the current filtered list. If the requested stage is already current, it returns `[Name] is already at [Stage].` without replacing the candidate. Otherwise, it replaces that candidate with a new immutable `Person` through `Model#setPerson`. It preserves every other field and the current filter. All transitions, including backwards moves and setting the current stage again, are allowed so recruiters can correct mistakes. `EditCommand` and `RemarkCommand` carry forward the existing stage when replacing a person.
 
 `PersonCard` displays the stage, and `ViewCommand` includes it in profile output. `JsonAdaptedPerson` persists the stage name in the `stage` JSON field. Missing or null stages in older data default to Applied; unrecognized or blank stored stages are rejected with an `IllegalValueException`. Existing fixtures without stages exercise backward compatibility, alongside new valid-stage and invalid-stage fixtures.
 
@@ -553,7 +553,7 @@ testers are expected to do more *exploratory* testing.
 1. Run `list`, then `stage 1 s/Interview` and `view 1`.<br>
    Expected: The first candidate's card and profile show Interview, and other details remain unchanged.
 1. Run `stage 1 s/rejected`, `stage 1 s/Applied`, then `stage 1 s/Applied` again.<br>
-   Expected: Case-insensitive names, backwards changes, and setting the same stage all succeed.
+   Expected: Case-insensitive names and backwards changes succeed. The repeated Applied command reports `[Name] is already at Applied.` and leaves the candidate unchanged.
 1. Find a candidate by name, then run `stage 1 s/Offered`.<br>
    Expected: Only the first displayed search result changes; the search filter remains active.
 1. Try `stage`, `stage 0 s/Interview`, `stage 1 s/Hired`, and an index larger than the displayed list.<br>
