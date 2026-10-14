@@ -80,16 +80,7 @@ public class DeleteCommand extends Command {
      * @throws CommandException if no person or more than one person matches.
      */
     private Person getPersonByName(List<Person> lastShownList) throws CommandException {
-        List<Person> matches = lastShownList.stream()
-                .filter(person -> person.getName().fullName.equalsIgnoreCase(targetName.fullName))
-                .toList();
-        if (matches.isEmpty()) {
-            throw new CommandException(MESSAGE_NAME_NOT_FOUND);
-        }
-        if (matches.size() > 1) {
-            throw new CommandException(MESSAGE_AMBIGUOUS_NAME);
-        }
-        return matches.get(0);
+        return PersonLookup.findByName(lastShownList, targetName, MESSAGE_NAME_NOT_FOUND, MESSAGE_AMBIGUOUS_NAME);
     }
 
     @Override

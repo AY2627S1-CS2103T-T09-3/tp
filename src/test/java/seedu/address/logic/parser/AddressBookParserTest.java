@@ -25,6 +25,7 @@ import seedu.address.logic.commands.StageCommand;
 import seedu.address.logic.commands.ViewCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
@@ -104,6 +105,7 @@ public class AddressBookParserTest {
     @Test
     public void parseCommand_view() throws Exception {
         assertEquals(new ViewCommand(INDEX_FIRST_PERSON), parser.parseCommand("view 1"));
+        assertEquals(new ViewCommand(new Name("Alice Pauline")), parser.parseCommand("view Alice Pauline"));
         assertEquals(new ViewCommand(INDEX_FIRST_PERSON), parser.parseCommand("  view   1  "));
         assertThrows(ParseException.class, String.format(MESSAGE_INVALID_COMMAND_FORMAT, ViewCommand.MESSAGE_USAGE), ()
             -> parser.parseCommand("view"));

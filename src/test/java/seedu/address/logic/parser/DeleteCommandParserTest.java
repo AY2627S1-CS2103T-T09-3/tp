@@ -32,6 +32,11 @@ public class DeleteCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithWhitespace_normalizesName() {
+        assertParseSuccess(parser, "  Alice \t Pauline  ", new DeleteCommand(new Name("Alice Pauline")));
+    }
+
+    @Test
     public void parse_invalidArgs_throwsParseException() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE);
         assertParseFailure(parser, "", expectedMessage);

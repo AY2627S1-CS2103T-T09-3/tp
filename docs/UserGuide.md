@@ -121,15 +121,23 @@ Displays a candidate's name, phone, email, address, tags, remark, hiring stage, 
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
 skills are shown in deterministic alphabetical order. Missing tags, skills, or an empty remark are shown as `None`.
 
-Format: `view INDEX`
+Format: `view INDEX` or `view FULL_NAME`
 
 * `INDEX` must be a positive integer referring to the currently displayed list.
 * Viewing a profile leaves the candidate data and the displayed list unchanged.
-* A missing or malformed index shows the command usage. An index outside the displayed list shows an error.
+* `FULL_NAME` must match the full name of exactly one candidate in the displayed list, ignoring case.
+  Leading/trailing whitespace is removed and repeated internal whitespace is treated as one space,
+  consistently with candidate identity.
+* Name lookup follows the same rules as `delete FULL_NAME`. Partial names do not match.
+* All-digit input is treated as an index. Use the displayed index to view a candidate whose full name is numeric.
+* A missing or malformed argument shows the command usage. An index outside the displayed list shows an error.
+* If no displayed candidate matches the name, Scoutly suggests using `list` to show all candidates.
+* If multiple displayed candidates match the name, use `view INDEX` to choose the intended candidate.
 
 Examples:
 * `list` followed by `view 2` displays the second candidate's profile.
 * `find Betsy` followed by `view 1` displays the first candidate in the search results.
+* `view alice pauline` displays Alice Pauline's profile if she is in the displayed list.
 
 ### Editing a person: `edit`
 
@@ -205,7 +213,8 @@ Format: `delete INDEX` or `delete FULL_NAME`
 * Both formats select candidates from the **currently displayed list**. After a `find` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
 * `INDEX` refers to the index number shown in the displayed list and **must be a positive integer** 1, 2, 3, ...
 * `FULL_NAME` must match the candidate's entire name, **ignoring case**. Partial names do not match. Do not put quotation marks around the name.
-* Leading and trailing spaces in the input are ignored; spaces within the name must match the stored name.
+* Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
+  consistently with candidate identity.
 * If no displayed candidate matches the name, no record is deleted and an error is shown.
 * If multiple displayed candidates match the name, no record is deleted. Use `delete INDEX` to choose the intended candidate.
 * Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
@@ -275,6 +284,6 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
-**View**   | `view INDEX`<br> e.g., `view 2`
+**View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`

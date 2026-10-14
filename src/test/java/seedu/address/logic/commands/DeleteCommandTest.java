@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
@@ -51,6 +52,32 @@ public class DeleteCommandTest {
         assertCommandSuccess(deleteCommand, model,
                 String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
+    }
+
+    @Test
+    public void execute_legacyName_normalizesWhitespace() {
+        Person defaults = new PersonBuilder().build();
+        Person candidate = new Person(Name.fromLegacyValue("Amy   Bee"), defaults.getPhone(), defaults.getEmail(),
+                defaults.getAddress(), defaults.getTags());
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(candidate);
+        model = new ModelManager(addressBook, new UserPrefs());
+        Model expectedModel = new ModelManager(addressBook, new UserPrefs());
+        expectedModel.deletePerson(candidate);
+
+        assertCommandSuccess(new DeleteCommand(new Name("aMy \t Bee")), model,
+                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(candidate)), expectedModel);
+    }
+
+    @Test
+    public void execute_legacyNameWithNormalizedMatch_requiresIndex() {
+        Person defaults = new PersonBuilder().build();
+        Person candidate = new Person(Name.fromLegacyValue("Amy   Bee"), defaults.getPhone(), defaults.getEmail(),
+                defaults.getAddress(), defaults.getTags());
+        model.addPerson(candidate);
+        model.addPerson(new PersonBuilder().withName("AMY BEE").withPhone("91234567").build());
+
+        assertCommandFailure(new DeleteCommand(new Name("Amy Bee")), model, DeleteCommand.MESSAGE_AMBIGUOUS_NAME);
     }
 
     @Test
