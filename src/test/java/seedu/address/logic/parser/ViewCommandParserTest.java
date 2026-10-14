@@ -31,6 +31,11 @@ public class ViewCommandParserTest {
     }
 
     @Test
+    public void parse_nameWithWhitespace_normalizesName() {
+        assertParseSuccess(parser, "  Alice \t Pauline  ", new ViewCommand(new Name("Alice Pauline")));
+    }
+
+    @Test
     public void parse_invalidArgs_throwsParseException() {
         for (String input : new String[] {"", " ", "0", "-1", "1.5", "Alice!",
             "2147483648", "999999999999999999999999999999"}) {

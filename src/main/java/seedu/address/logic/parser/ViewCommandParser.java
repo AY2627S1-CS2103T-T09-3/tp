@@ -16,13 +16,8 @@ public class ViewCommandParser implements Parser<ViewCommand> {
      * @throws ParseException if the input does not contain a valid index or full name
      */
     public ViewCommand parse(String args) throws ParseException {
-        String trimmedArgs = args.trim();
         try {
-            // All-digit input remains an index, including zero and overflowing values.
-            if (trimmedArgs.matches("[0-9]+")) {
-                return new ViewCommand(ParserUtil.parseIndex(trimmedArgs));
-            }
-            return new ViewCommand(ParserUtil.parseName(trimmedArgs));
+            return ParserUtil.parseIndexOrName(args, ViewCommand::new, ViewCommand::new);
         } catch (ParseException pe) {
             throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, ViewCommand.MESSAGE_USAGE), pe);

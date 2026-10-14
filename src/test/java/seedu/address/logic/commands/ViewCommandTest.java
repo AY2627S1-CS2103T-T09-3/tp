@@ -124,7 +124,8 @@ public class ViewCommandTest {
     @Test
     public void execute_ambiguousName_requiresIndex() throws Exception {
         Person first = new PersonBuilder().withName("Amy Bee").build();
-        Person second = new PersonBuilder().withName("AMY BEE").withEmail("other@example.com").build();
+        Person second = new PersonBuilder().withName("AMY BEE").withPhone("91234567")
+                .withEmail("other@example.com").build();
         AddressBook addressBook = new AddressBook();
         addressBook.addPerson(first);
         addressBook.addPerson(second);
@@ -146,7 +147,7 @@ public class ViewCommandTest {
         for (HiringStage stage : HiringStage.values()) {
             new StageCommand(INDEX_FIRST_PERSON, stage).execute(model);
             CommandResult result = new ViewCommand(new Name("Benson Meier")).execute(model);
-            assertTrue(result.getFeedbackToUser().endsWith("Hiring stage: " + stage));
+            assertTrue(result.getFeedbackToUser().contains("Hiring stage: " + stage + "\nSkills: None"));
         }
     }
 
@@ -154,17 +155,49 @@ public class ViewCommandTest {
     public void execute_candidateWorkflow_viewsUpdatedProfileAndReportsDeletedCandidate() throws Exception {
         AddressBookParser parser = new AddressBookParser();
         Model workflowModel = new ModelManager();
-        parser.parseCommand("add n/Amy Bee p/85355255 e/amy@gmail.com a/Jurong t/Java")
+        parser.parseCommand("add n/Amy Bee p/85355255 s/Java s/SQL")
                 .execute(workflowModel);
         parser.parseCommand("list").execute(workflowModel);
         parser.parseCommand("remark 1 r/Ready for interview").execute(workflowModel);
         parser.parseCommand("stage 1 s/Interview").execute(workflowModel);
         Model expectedModel = new ModelManager(workflowModel.getAddressBook(), new UserPrefs());
-        String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: amy@gmail.com\n"
-                + "Address: Jurong\nTags: Java\nRemark: Ready for interview\nHiring stage: Interview";
+        String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: \n"
+                + "Address: \nTags: None\nRemark: Ready for interview\nHiring stage: Interview\nSkills: Java, SQL";
         assertCommandSuccess(parser.parseCommand("view amy bee"), workflowModel, expected, expectedModel);
         parser.parseCommand("delete Amy Bee").execute(workflowModel);
         assertCommandFailure(parser.parseCommand("view Amy Bee"), workflowModel, ViewCommand.MESSAGE_NAME_NOT_FOUND);
+    }
+
+    @Test
+    public void execute_numericName_usesIndexSemanticsAndPreservesModel() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        Model workflowModel = new ModelManager();
+        parser.parseCommand("add n/Amy Bee p/85355255 s/Java").execute(workflowModel);
+        parser.parseCommand("add n/123 p/91234567 s/SQL").execute(workflowModel);
+        Model expectedModel = new ModelManager(workflowModel.getAddressBook(), new UserPrefs());
+
+        assertCommandFailure(parser.parseCommand("view 123"), workflowModel,
+                ViewCommand.MESSAGE_INVALID_CANDIDATE_DISPLAYED_INDEX);
+        String expected = "Candidate profile:\nName: 123\nPhone: 91234567\nEmail: \nAddress: \n"
+                + "Tags: None\nRemark: None\nHiring stage: Applied\nSkills: SQL";
+        assertCommandSuccess(parser.parseCommand("view 2"), workflowModel, expected, expectedModel);
+    }
+
+    @Test
+    public void execute_legacyName_normalizesWhitespaceAndPreservesStoredName() throws Exception {
+        Person defaults = new PersonBuilder().build();
+        Person candidate = new Person(Name.fromLegacyValue("Amy   Bee"), defaults.getPhone(), defaults.getEmail(),
+                defaults.getAddress(), defaults.getTags());
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(candidate);
+        model = new ModelManager(addressBook, new UserPrefs());
+        Model expectedModel = new ModelManager(addressBook, new UserPrefs());
+        CommandResult expected = new ViewCommand(INDEX_FIRST_PERSON).execute(model);
+
+        assertCommandSuccess(new AddressBookParser().parseCommand("view  aMy \t Bee  "),
+                model, expected, expectedModel);
+        model.addPerson(new PersonBuilder().withName("AMY BEE").withPhone("91234567").build());
+        assertCommandFailure(new ViewCommand(new Name("Amy Bee")), model, ViewCommand.MESSAGE_AMBIGUOUS_NAME);
     }
 
     @Test

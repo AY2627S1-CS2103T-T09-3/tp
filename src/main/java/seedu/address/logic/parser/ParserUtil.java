@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StringUtil;
@@ -34,6 +35,21 @@ public class ParserUtil {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }
         return Index.fromOneBased(Integer.parseInt(trimmedIndex));
+    }
+
+    /**
+     * Parses a displayed index or full name using the supplied command constructors.
+     * All-digit input is always an index, including zero and overflowing values.
+     *
+     * @throws ParseException if the input is neither a valid index nor a valid name
+     */
+    public static <T> T parseIndexOrName(String args, Function<Index, T> byIndex,
+            Function<Name, T> byName) throws ParseException {
+        String trimmedArgs = args.trim();
+        if (trimmedArgs.matches("[0-9]+")) {
+            return byIndex.apply(parseIndex(trimmedArgs));
+        }
+        return byName.apply(parseName(trimmedArgs));
     }
 
     /**

@@ -126,6 +126,8 @@ Format: `view INDEX` or `view FULL_NAME`
 * `INDEX` must be a positive integer referring to the currently displayed list.
 * Viewing a profile leaves the candidate data and the displayed list unchanged.
 * `FULL_NAME` must match the full name of exactly one candidate in the displayed list, ignoring case.
+  Leading/trailing whitespace is removed and repeated internal whitespace is treated as one space,
+  consistently with candidate identity.
 * Name lookup follows the same rules as `delete FULL_NAME`. Partial names do not match.
 * All-digit input is treated as an index. Use the displayed index to view a candidate whose full name is numeric.
 * A missing or malformed argument shows the command usage. An index outside the displayed list shows an error.
@@ -211,7 +213,8 @@ Format: `delete INDEX` or `delete FULL_NAME`
 * Both formats select candidates from the **currently displayed list**. After a `find` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
 * `INDEX` refers to the index number shown in the displayed list and **must be a positive integer** 1, 2, 3, ...
 * `FULL_NAME` must match the candidate's entire name, **ignoring case**. Partial names do not match. Do not put quotation marks around the name.
-* Leading and trailing spaces in the input are ignored; spaces within the name must match the stored name.
+* Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
+  consistently with candidate identity.
 * If no displayed candidate matches the name, no record is deleted and an error is shown.
 * If multiple displayed candidates match the name, no record is deleted. Use `delete INDEX` to choose the intended candidate.
 * Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
