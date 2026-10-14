@@ -8,6 +8,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Skill;
 
 /**
  * A UI component that displays information of a {@code Person}.
@@ -41,6 +42,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private FlowPane tags;
     @FXML
+    private FlowPane skills;
+    @FXML
     private Label remark;
     @FXML
     private Label hiringStage;
@@ -61,5 +64,13 @@ public class PersonCard extends UiPart<Region> {
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
+
+        if (person.getSkills().isEmpty()) {
+            skills.getChildren().add(new Label("None"));
+        } else {
+            person.getSkills().stream()
+                    .sorted(Skill.DISPLAY_ORDER)
+                    .forEach(skill -> skills.getChildren().add(new Label(skill.value)));
+        }
     }
 }

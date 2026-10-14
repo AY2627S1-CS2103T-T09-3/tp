@@ -161,7 +161,7 @@ This section describes some noteworthy details on how certain features are imple
 
 ### Hiring stages
 
-Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTERVIEW`, `OFFERED`, or `REJECTED`. Constructors without an explicit stage default to `APPLIED`. Stage changes affect full person equality, while identity continues to depend on the name.
+Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTERVIEW`, `OFFERED`, or `REJECTED`. Constructors without an explicit stage default to `APPLIED`. Stage changes affect full person equality, while identity continues to depend on the normalized name and phone number.
 
 `AddressBookParser` routes `stage INDEX s/STAGE` to `StageCommandParser`. The parser uses `ArgumentTokenizer` with `PREFIX_STAGE` (`s/`), validates the positive displayed index, rejects repeated stage prefixes, and parses a case-insensitive stage name. Missing arguments or a missing prefix and invalid indices produce usage errors; empty or unknown stages produce a list of allowed values.
 
@@ -332,7 +332,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 2a1. Scoutly displays an error message explaining the expected format.
     * 2a2. The use case ends without changing the contact list.
 
-* 2b. A contact with the same name already exists.
+* 2b. A contact with the same normalized name and phone number already exists.
 
     * 2b1. Scoutly displays a duplicate contact error.
     * 2b2. The use case ends without changing the contact list.
@@ -391,7 +391,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
     * 4a1. Scoutly displays an invalid index message.
     * 4a2. The use case resumes at step 3.
 
-* 4b. A replacement field is invalid or would create a duplicate contact.
+* 4b. A replacement field is invalid or would create a duplicate contact with the same normalized name and phone number.
 
     * 4b1. Scoutly displays an error message.
     * 4b2. The use case ends without changing the selected contact.

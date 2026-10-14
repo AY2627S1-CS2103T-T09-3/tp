@@ -31,7 +31,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
    * `list` : Lists all contacts.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   * `add n/John Doe p/98765432 s/Java s/SQL` : Adds a candidate named `John Doe` with two skills.
 
    * `delete 3` : Deletes the 3rd contact shown in the current list.
 
@@ -76,22 +76,36 @@ Shows a message explaining how to access the help page.
 Format: `help`
 
 
-### Adding a person: `add`
+### Adding a candidate: `add`
 
-Adds a person to the address book.
+Adds a candidate to the pipeline. New candidates start in the **Applied** hiring stage and have empty email,
+address, remark, and tags.
 
-New candidates start in the **Applied** hiring stage. Use `stage INDEX s/STAGE` after adding a candidate to change it.
+Use `stage INDEX s/STAGE` after adding a candidate to change its hiring stage.
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
+Format: `add n/NAME p/PHONE s/SKILL [s/SKILL]...`
 
-<box type="tip" seamless>
+* `n/NAME` and `p/PHONE` are required exactly once.
+* At least one `s/SKILL` is required. Multiple skills may be provided.
+* Names must contain 1–100 letters, numbers, spaces, hyphens, or apostrophes. Leading/trailing whitespace is
+  removed and repeated spaces are normalized.
+* Phone numbers must contain 7–15 digits and may have one leading `+`.
+* Skills must contain 1–30 alphanumeric characters with no spaces.
+* Duplicate skills are removed case-insensitively, preserving the first spelling.
+* A candidate is a duplicate when both the normalized name (ignoring case) and phone number match. Candidates with
+  the same name but different phone numbers, or different names but the same phone number, are allowed.
 
-**Tip:** A person can have any number of tags, including zero.
-</box>
+Successful additions use the message `New candidate added: NAME | PHONE | Skills: SKILL1, SKILL2`.
+* Invalid names report `Invalid name: names may only contain letters, numbers, hyphens, spaces, and apostrophes, and must be 1-100 characters long.`
+* Invalid phone numbers report `Invalid phone number: must be 7-15 digits, optionally starting with +.`
+* Invalid skills report `Invalid skill: skills must be 1-30 alphanumeric characters with no spaces.`
+* Missing skills report `At least one skill (s/) must be provided.`
+
+Duplicate candidates report `This candidate already exists in your pipeline (same name and phone number).`
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+* `add n/John Doe p/98765432 s/Java s/SQL`
+* `add n/Betsy Crowe p/91234567 s/Python`
 
 ### Listing all candidates: `list`
 
@@ -103,9 +117,9 @@ The `list` command does not take any parameters. For example, `list all` is reje
 
 ### Viewing a candidate profile: `view`
 
-Displays a candidate's name, phone, email, address, tags, remark, and hiring stage in the command result area.
+Displays a candidate's name, phone, email, address, tags, remark, hiring stage, and skills in the command result area.
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
-missing tags or an empty remark are shown as `None`.
+skills are shown in deterministic alphabetical order. Missing tags, skills, or an empty remark are shown as `None`.
 
 Format: `view INDEX` or `view FULL_NAME`
 
@@ -260,7 +274,7 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add**    | `add n/NAME p/PHONE s/SKILL [s/SKILL]...` <br> e.g., `add n/James Ho p/22224444 s/Java s/SQL`
 **Clear**  | `clear`
 **Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Likes swimming`

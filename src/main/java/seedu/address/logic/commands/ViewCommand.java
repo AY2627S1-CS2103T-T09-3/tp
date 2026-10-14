@@ -12,6 +12,7 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.Model;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Skill;
 
 /**
  * Displays the profile of a candidate identified by the displayed index or full name.
@@ -30,7 +31,8 @@ public class ViewCommand extends Command {
     public static final String MESSAGE_INVALID_CANDIDATE_DISPLAYED_INDEX =
             "The candidate index provided is invalid.";
     public static final String MESSAGE_VIEW_CANDIDATE_SUCCESS = "Candidate profile:\n"
-            + "Name: %1$s\nPhone: %2$s\nEmail: %3$s\nAddress: %4$s\nTags: %5$s\nRemark: %6$s\nHiring stage: %7$s";
+            + "Name: %1$s\nPhone: %2$s\nEmail: %3$s\nAddress: %4$s\nTags: %5$s\nRemark: %6$s\n"
+            + "Hiring stage: %7$s\nSkills: %8$s";
 
     public static final String MESSAGE_NAME_NOT_FOUND =
             "No candidate with this full name exists in the displayed list. Use list to show all candidates.";
@@ -68,9 +70,14 @@ public class ViewCommand extends Command {
                 .sorted()
                 .collect(Collectors.joining(", "));
         String remark = candidate.getRemark().value;
+        String skills = candidate.getSkills().stream()
+                .sorted(Skill.DISPLAY_ORDER)
+                .map(skill -> skill.value)
+                .collect(Collectors.joining(", "));
         return new CommandResult(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
                 candidate.getName(), candidate.getPhone(), candidate.getEmail(), candidate.getAddress(),
-                tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark, candidate.getStage()));
+                tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark, candidate.getStage(),
+                skills.isEmpty() ? "None" : skills));
     }
 
     /**

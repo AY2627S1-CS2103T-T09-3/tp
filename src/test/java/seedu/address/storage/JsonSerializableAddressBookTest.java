@@ -1,10 +1,13 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -12,7 +15,14 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.AddressBook;
+import seedu.address.model.person.Address;
+import seedu.address.model.person.Email;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Name;
+import seedu.address.model.person.Person;
+import seedu.address.model.person.Phone;
+import seedu.address.model.person.Remark;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.TypicalPersons;
 
@@ -30,6 +40,90 @@ public class JsonSerializableAddressBookTest {
         Path file = directory.resolve("remarks.json");
         JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
         assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).get().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_skills_preserved(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        book.addPerson(new PersonBuilder().withSkills("Java", "SQL").build());
+        Path file = directory.resolve("skills.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_emptySkills_preserved(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        book.addPerson(new PersonBuilder().withSkills().build());
+        Path file = directory.resolve("emptySkills.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertTrue(JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType()
+                .getPersonList().get(0).getSkills().isEmpty());
+    }
+
+    @Test
+    public void saveAndRead_sameNameDifferentPhone_preservesBothCandidates(@TempDir Path directory) throws Exception {
+        AddressBook book = new AddressBook();
+        book.addPerson(new PersonBuilder().withName("Alex Tan").withPhone("1234567")
+                .withSkills("Java").build());
+        book.addPerson(new PersonBuilder().withName("Alex Tan").withPhone("7654321")
+                .withSkills("SQL").build());
+        Path file = directory.resolve("sameNameDifferentPhone.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_legacyNameAndPhone_preservesValues(@TempDir Path directory) throws Exception {
+        String legacyNameValue = "A".repeat(101);
+        String legacyPhoneValue = "123456";
+        Person legacyPerson = new Person(Name.fromLegacyValue(legacyNameValue),
+                Phone.fromLegacyValue(legacyPhoneValue), new Email(""), new Address(""), new Remark(""),
+                HiringStage.APPLIED, Set.of(), Set.<Skill>of());
+        AddressBook book = new AddressBook();
+        book.addPerson(legacyPerson);
+        Path file = directory.resolve("legacyPerson.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        assertEquals(book, JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow().toModelType());
+    }
+
+    @Test
+    public void saveAndRead_legacyLongPhone_preservesValue(@TempDir Path directory) throws Exception {
+        String legacyPhoneValue = "1234567890123456";
+        Person legacyPerson = new Person(Name.fromLegacyValue("Legacy Candidate"),
+                Phone.fromLegacyValue(legacyPhoneValue), new Email(""), new Address(""), new Remark(""),
+                HiringStage.APPLIED, Set.of(), Set.<Skill>of());
+        AddressBook book = new AddressBook();
+        book.addPerson(legacyPerson);
+        Path file = directory.resolve("legacyLongPhone.json");
+        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(book), file);
+
+        Person readPerson = JsonUtil.readJsonFile(file, JsonSerializableAddressBook.class).orElseThrow()
+                .toModelType().getPersonList().get(0);
+        assertEquals(legacyPhoneValue, readPerson.getPhone().value);
+    }
+
+    @Test
+    public void toModelType_legacyNormalizedIdentityCollision_throwsIllegalValueException() {
+        JsonAdaptedPerson first = new JsonAdaptedPerson("John  Doe", "123456", "", "", "", null, List.of(),
+                List.of());
+        JsonAdaptedPerson second = new JsonAdaptedPerson("John Doe", "123456", "", "", "", null, List.of(),
+                List.of());
+        JsonSerializableAddressBook data = new JsonSerializableAddressBook(List.of(first, second));
+
+        assertThrows(IllegalValueException.class, JsonSerializableAddressBook.MESSAGE_DUPLICATE_PERSON,
+                data::toModelType);
+    }
+
+    @Test
+    public void toModelType_legacyWithoutSkills_defaultsToEmpty() throws Exception {
+        AddressBook addressBook = JsonUtil.readJsonFile(TYPICAL_PERSONS_FILE,
+                JsonSerializableAddressBook.class).orElseThrow().toModelType();
+        assertTrue(addressBook.getPersonList().stream().allMatch(person -> person.getSkills().isEmpty()));
     }
 
     @Test

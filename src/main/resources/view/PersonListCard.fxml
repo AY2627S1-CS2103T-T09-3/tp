@@ -28,6 +28,10 @@
         <Label fx:id="name" text="\$first" styleClass="cell_big_label" />
       </HBox>
       <FlowPane fx:id="tags" />
+      <HBox spacing="5" alignment="CENTER_LEFT">
+        <Label text="Skills:" styleClass="cell_small_label" />
+        <FlowPane fx:id="skills" />
+      </HBox>
       <Label fx:id="hiringStage" styleClass="cell_small_label" />
       <Label fx:id="phone" styleClass="cell_small_label" text="\$phone" />
       <Label fx:id="address" styleClass="cell_small_label" text="\$address" />

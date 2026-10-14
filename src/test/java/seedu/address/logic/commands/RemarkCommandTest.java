@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
@@ -62,6 +63,18 @@ public class RemarkCommandTest {
         descriptor.setPhone(new seedu.address.model.person.Phone("12345678"));
         new EditCommand(INDEX_FIRST_PERSON, descriptor).execute(model);
         assertEquals(new Remark("Keep me"), model.getFilteredPersonList().get(0).getRemark());
+    }
+
+    @Test
+    public void execute_preservesSkills() throws Exception {
+        Person original = new PersonBuilder().withSkills("Java", "SQL").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(original);
+        Model skillsModel = new ModelManager(addressBook, new UserPrefs());
+
+        new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Keep skills")).execute(skillsModel);
+
+        assertEquals(original.getSkills(), skillsModel.getFilteredPersonList().get(0).getSkills());
     }
 
     @Test

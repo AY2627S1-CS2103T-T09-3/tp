@@ -1,12 +1,14 @@
 package seedu.address.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.storage.JsonAdaptedPerson.MISSING_FIELD_MESSAGE_FORMAT;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.BENSON;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,8 @@ import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Remark;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.PersonBuilder;
 
 public class JsonAdaptedPersonTest {
@@ -34,11 +38,49 @@ public class JsonAdaptedPersonTest {
     private static final List<JsonAdaptedTag> VALID_TAGS = BENSON.getTags().stream()
             .map(JsonAdaptedTag::new)
             .collect(Collectors.toList());
+    private static final List<JsonAdaptedSkill> VALID_SKILLS = List.of(new JsonAdaptedSkill("Java"),
+            new JsonAdaptedSkill("SQL"));
 
     @Test
     public void toModelType_validPersonDetails_returnsPerson() throws Exception {
         JsonAdaptedPerson person = new JsonAdaptedPerson(BENSON);
         assertEquals(BENSON, person.toModelType());
+    }
+
+    @Test
+    public void toModelType_skills_preservesValuesAndCasing() throws Exception {
+        Person original = new PersonBuilder(BENSON).withSkills("Java", "SQL").build();
+        assertEquals(original, new JsonAdaptedPerson(original).toModelType());
+    }
+
+    @Test
+    public void toModelType_duplicateSkills_deduplicatesCaseInsensitively() throws Exception {
+        List<JsonAdaptedSkill> duplicateSkills = List.of(new JsonAdaptedSkill("Java"),
+                new JsonAdaptedSkill("java"), new JsonAdaptedSkill("SQL"));
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, duplicateSkills);
+
+        assertEquals(Set.of(new Skill("Java"), new Skill("SQL")), person.toModelType().getSkills());
+    }
+
+    @Test
+    public void toModelType_missingSkills_defaultsToEmpty() throws Exception {
+        JsonAdaptedPerson person =
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, "", null, VALID_TAGS);
+        assertEquals(Set.of(), person.toModelType().getSkills());
+    }
+
+    @Test
+    public void toModelType_legacyPersonWithoutStageAndSkills_defaultsCorrectly() throws Exception {
+        JsonAdaptedPerson person =
+                new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                        "Legacy remark", VALID_TAGS);
+
+        Person modelPerson = person.toModelType();
+
+        assertEquals(new Remark("Legacy remark"), modelPerson.getRemark());
+        assertEquals(HiringStage.APPLIED, modelPerson.getStage());
+        assertTrue(modelPerson.getSkills().isEmpty());
     }
 
     @Test
@@ -132,6 +174,74 @@ public class JsonAdaptedPersonTest {
         JsonAdaptedPerson person =
                 new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS, invalidTags);
         assertThrows(IllegalValueException.class, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_invalidSkills_throwsIllegalValueException() {
+        List<JsonAdaptedSkill> invalidSkills = new ArrayList<>(VALID_SKILLS);
+        invalidSkills.add(new JsonAdaptedSkill("Java Script"));
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, invalidSkills);
+        assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullSkill_throwsIllegalValueException() {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, List.of(new JsonAdaptedSkill((String) null)));
+        assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_nullSkillEntry_throwsIllegalValueException() {
+        List<JsonAdaptedSkill> skillsWithNull = new ArrayList<>();
+        skillsWithNull.add(null);
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                "", null, VALID_TAGS, skillsWithNull);
+        assertThrows(IllegalValueException.class, Skill.MESSAGE_CONSTRAINTS, person::toModelType);
+    }
+
+    @Test
+    public void toModelType_legacyShortPhone_preservesValue() throws Exception {
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, "123456", VALID_EMAIL, VALID_ADDRESS, VALID_TAGS);
+
+        assertEquals("123456", person.toModelType().getPhone().value);
+    }
+
+    @Test
+    public void toModelType_legacyLongPhone_preservesValue() throws Exception {
+        String legacyPhone = "1234567890123456";
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, legacyPhone, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(legacyPhone, person.toModelType().getPhone().value);
+    }
+
+    @Test
+    public void toModelType_legacyLongName_preservesValue() throws Exception {
+        String legacyName = "A".repeat(101);
+        JsonAdaptedPerson person = new JsonAdaptedPerson(legacyName, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(legacyName, person.toModelType().getName().fullName);
+    }
+
+    @Test
+    public void toModelType_currentNameFormat_preservesValue() throws Exception {
+        String currentName = "Anne-Marie O'Connor";
+        JsonAdaptedPerson person = new JsonAdaptedPerson(currentName, VALID_PHONE, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(currentName, person.toModelType().getName().fullName);
+    }
+
+    @Test
+    public void toModelType_currentPhoneFormat_preservesValue() throws Exception {
+        String currentPhone = "+6591234567";
+        JsonAdaptedPerson person = new JsonAdaptedPerson(VALID_NAME, currentPhone, VALID_EMAIL, VALID_ADDRESS,
+                VALID_TAGS);
+
+        assertEquals(currentPhone, person.toModelType().getPhone().value);
     }
 
 }

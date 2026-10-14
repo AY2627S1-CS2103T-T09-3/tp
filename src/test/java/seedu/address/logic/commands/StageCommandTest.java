@@ -29,7 +29,8 @@ public class StageCommandTest {
 
     @Test
     public void execute_anyTransition_preservesOtherCandidateDetails() {
-        Person original = new PersonBuilder().withRemark("Available in November").withTags("Java", "Backend").build();
+        Person original = new PersonBuilder().withRemark("Available in November").withTags("Java", "Backend")
+                .withSkills("Java", "SQL").build();
         for (HiringStage from : HiringStage.values()) {
             for (HiringStage to : HiringStage.values()) {
                 AddressBook book = new AddressBook();

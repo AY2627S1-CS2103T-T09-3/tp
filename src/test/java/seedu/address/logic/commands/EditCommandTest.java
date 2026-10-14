@@ -53,6 +53,9 @@ public class EditCommandTest {
     public void execute_someFieldsSpecifiedUnfilteredList_success() {
         Index indexLastPerson = Index.fromOneBased(model.getFilteredPersonList().size());
         Person lastPerson = model.getFilteredPersonList().get(indexLastPerson.getZeroBased());
+        Person lastPersonWithSkills = new PersonBuilder(lastPerson).withSkills("Java", "SQL").build();
+        model.setPerson(lastPerson, lastPersonWithSkills);
+        lastPerson = lastPersonWithSkills;
 
         PersonBuilder personInList = new PersonBuilder(lastPerson);
         Person editedPerson = personInList.withName(VALID_NAME_BOB).withPhone(VALID_PHONE_BOB)
