@@ -216,7 +216,7 @@ Format: `delete INDEX` or `delete FULL_NAME`
 * Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
 * If no displayed candidate matches the name, no record is deleted and an error is shown.
-* If multiple displayed candidates match the name, no record is deleted. Use `delete INDEX` to choose the intended candidate.
+* If multiple displayed candidates match the name, no record is deleted. The error lists each matching candidate's displayed index, name, and email. Use `delete INDEX` with one of those indexes to choose the intended candidate.
 * Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
 * Deletion removes the record completely; it does not archive the candidate.
 
@@ -225,6 +225,17 @@ Examples:
 * `find Betsy` followed by `delete 1` deletes the 1st candidate in the results of the `find` command.
 * `delete Alice Pauline` deletes the candidate named Alice Pauline if exactly one displayed candidate matches.
 * `delete alice pauline` matches the same full name, ignoring case.
+
+For example, if two displayed candidates match `delete Alice Pauline`, the feedback could be:
+
+```text
+Multiple candidates match "Alice Pauline":
+1. Alice Pauline — alice@example.com
+3. ALICE PAULINE — alice.work@example.com
+Use delete INDEX to choose a candidate.
+```
+
+The numbers refer to positions in the currently displayed list, including after `find`; they are not a separate numbering of the matches. In this example, `delete 3` deletes the candidate with email `alice.work@example.com`.
 
 ### Clearing all entries: `clear`
 

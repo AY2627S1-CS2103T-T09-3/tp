@@ -540,13 +540,23 @@ testers are expected to do more *exploratory* testing.
 
 1. Handling ambiguous names
 
-   1. Prerequisites: Use a test address book containing both Alice Pauline and ALICE PAULINE. The current model permits these case variants. Run `list`.
+   1. Prerequisites: Use a test address book containing Alice Pauline and ALICE PAULINE, with different phone numbers and emails. The current model requires different phone numbers for candidates whose normalized names match when case is ignored. Run `list` and note their displayed indexes.
 
    1. Test case: `delete Alice Pauline`<br>
-      Expected: Neither record is deleted. An error explains that multiple candidates match and asks the user to use `delete INDEX`.
+      Expected: Neither record is deleted and the displayed list remains unchanged. The error lists both candidates' actual displayed indexes, names, and emails, then asks the user to use `delete INDEX`. No unrelated candidates appear in the error.
 
-   1. Test case: Use `delete INDEX`, replacing `INDEX` with the displayed index of one of these candidates.<br>
-      Expected: Only the selected candidate is deleted.
+   1. Test case: Use `delete INDEX`, replacing `INDEX` with one of the indexes shown in the error.<br>
+      Expected: Only the selected candidate is deleted; the other matching candidate remains.
+
+1. Handling ambiguous names in a filtered list
+
+   1. Prerequisites: Use a test address book containing Alice Pauline, Alice Tan, and ALICE PAULINE in that order, with different phone numbers and emails. Other candidates may also be present. Run `find Alice` so the displayed list contains these three candidates.
+
+   1. Test case: `delete alice pauline`<br>
+      Expected: No record is deleted and the filter remains unchanged. The error lists Alice Pauline at index 1 and ALICE PAULINE at index 3, with their respective emails. Alice Tan is not listed in the error. The second match must be numbered 3, matching its displayed position.
+
+   1. Test case: `delete 3`<br>
+      Expected: ALICE PAULINE is deleted. Alice Pauline and Alice Tan remain visible. Run `list` to confirm that candidates hidden by the filter remain stored.
 
 ### Hiring stages
 
