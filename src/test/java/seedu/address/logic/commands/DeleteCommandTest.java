@@ -77,7 +77,11 @@ public class DeleteCommandTest {
         model.addPerson(candidate);
         model.addPerson(new PersonBuilder().withName("AMY BEE").withPhone("91234567").build());
 
-        assertCommandFailure(new DeleteCommand(new Name("Amy Bee")), model, DeleteCommand.MESSAGE_AMBIGUOUS_NAME);
+        String expectedMessage = "Multiple candidates match \"Amy Bee\":\n"
+                + "8. Amy   Bee — " + defaults.getEmail() + "\n"
+                + "9. AMY BEE — " + defaults.getEmail() + "\n"
+                + "Use delete INDEX to choose a candidate.";
+        assertCommandFailure(new DeleteCommand(new Name("Amy Bee")), model, expectedMessage);
     }
 
     @Test
@@ -116,9 +120,39 @@ public class DeleteCommandTest {
 
     @Test
     public void execute_ambiguousName_throwsCommandException() {
-        model.addPerson(new PersonBuilder().withName("ALICE PAULINE").build());
+        model.addPerson(new PersonBuilder().withName("ALICE PAULINE").withEmail("alice.work@example.com").build());
+        model.addPerson(new PersonBuilder().withName("alice pauline").withPhone("91234567")
+                .withEmail("alice.other@example.com").build());
 
-        assertCommandFailure(new DeleteCommand(new Name("Alice Pauline")), model, DeleteCommand.MESSAGE_AMBIGUOUS_NAME);
+        String expectedMessage = "Multiple candidates match \"Alice Pauline\":\n"
+                + "1. Alice Pauline — alice@example.com\n"
+                + "8. ALICE PAULINE — alice.work@example.com\n"
+                + "9. alice pauline — alice.other@example.com\n"
+                + "Use delete INDEX to choose a candidate.";
+        assertCommandFailure(new DeleteCommand(new Name("Alice Pauline")), model, expectedMessage);
+    }
+
+    @Test
+    public void execute_ambiguousNameFilteredList_showsDisplayedIndexes() {
+        model.addPerson(new PersonBuilder().withName("ALICE PAULINE").withEmail("alice.work@example.com").build());
+        model.updateFilteredPersonList(person -> person.getName().fullName.equals("Benson Meier")
+                || person.getName().fullName.equalsIgnoreCase("Alice Pauline"));
+
+        String expectedMessage = "Multiple candidates match \"aLiCe PaUlInE\":\n"
+                + "1. Alice Pauline — alice@example.com\n"
+                + "3. ALICE PAULINE — alice.work@example.com\n"
+                + "Use delete INDEX to choose a candidate.";
+        assertCommandFailure(new DeleteCommand(new Name("aLiCe PaUlInE")), model, expectedMessage);
+
+        // The suggested index selects the intended candidate in the unchanged filtered list.
+        Person personToDelete = model.getFilteredPersonList().get(2);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedModel.deletePerson(personToDelete);
+        expectedModel.updateFilteredPersonList(person -> person.getName().fullName.equals("Benson Meier")
+                || person.getName().fullName.equalsIgnoreCase("Alice Pauline"));
+        assertCommandSuccess(new DeleteCommand(Index.fromOneBased(3)), model,
+                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                expectedModel);
     }
 
     @Test
