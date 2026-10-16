@@ -1,6 +1,7 @@
 name: MarkBind Action
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
