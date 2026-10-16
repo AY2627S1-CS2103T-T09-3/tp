@@ -4,9 +4,9 @@
   pageNav: 3
 ---
 
-# AB-3 User Guide
+# Scoutly User Guide
 
-AddressBook Level 3 (AB3) is a **desktop application for managing contacts, optimized for use through a Command Line Interface (CLI)** while retaining the benefits of a Graphical User Interface (GUI). If you type quickly, AB3 can help you manage contacts faster than traditional GUI applications.
+Scoutly is a **desktop application for managing recruitment candidates through typed commands**, with a graphical interface for viewing your candidate pipeline. You can store candidate details and skills, add recruitment notes, and track hiring stages from application to decision.
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -22,27 +22,39 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
    Choose `addressbook-mac-arm64.jar` for an Apple Silicon Mac (M-series chip), or `addressbook.jar` for
    an Intel Mac, Windows, or Linux. On Mac, check **Apple menu → About This Mac** to identify your chip.
 
-1. Copy the file to the folder you want to use as the _home folder_ for your AddressBook.
+1. Copy the file to the folder you want to use as the _home folder_ for Scoutly.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    **Apple Silicon Mac:** Run `java -jar addressbook-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
-   A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+   The application window should appear in a few seconds. On first launch, it contains sample candidates.
+   Use the command box to enter commands, the result area to read feedback, and the candidate list to find displayed indexes.
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `list` : Lists all contacts.
+   * `list` : Lists all candidates.
 
    * `add n/John Doe p/98765432 s/Java s/SQL` : Adds a candidate named `John Doe` with two skills.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
+   * `delete 3` : Deletes the 3rd candidate shown in the current list.
 
-   * `clear` : Deletes all contacts.
+   * `clear` : Deletes all candidates.
 
    * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
+
+### Try a recruitment workflow
+
+1. Add a candidate: `add n/Jordan Lee p/91234567 s/Java s/SQL`.
+1. Run `list` to show all candidates and note Jordan Lee's displayed index.
+1. Run `view INDEX`, replacing `INDEX` with that number, to inspect the candidate's profile.
+1. Run `remark INDEX r/Available for interviews next week` to record a recruitment note.
+1. Run `stage INDEX s/Interview` to update the hiring stage.
+
+Use the candidate's current displayed index each time. Commands such as `find` change the displayed list,
+so the same candidate may have a different index afterward. If the example candidate already exists,
+use their displayed index or add a candidate with a different name or phone number.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -56,25 +68,25 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
   For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
 
 * Items in square brackets are optional.<br>
-  For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
+  For example, `remark INDEX [r/REMARK]` can be used as `remark 1 r/Available immediately` or as `remark 1`.
 
 * Items followed by `...` can appear zero or more times.<br>
-  For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
+  For example, `[t/TAG]... ` may be omitted, or written as `t/shortlisted` or `t/shortlisted t/referral`.
 
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
-  For example, `help 123` is interpreted as `help`.
+* Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
+  For example, `help 123` is interpreted as `help`. The `list` command rejects extra parameters; use `list` on its own.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
+Shows a message with a link to Scoutly's User Guide.
 
-![help message](images/helpMessage.png)
+You can also open the [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html) directly.
 
 Format: `help`
 
@@ -142,26 +154,26 @@ Examples:
 * `find Betsy` followed by `view 1` displays the first candidate in the search results.
 * `view alice pauline` displays Alice Pauline's profile if she is in the displayed list.
 
-### Editing a person: `edit`
+### Editing a candidate: `edit`
 
-Edits an existing person in the address book.
+Edits an existing candidate in your pipeline.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 
-* Edits the person at the specified `INDEX`. The index refers to the index number shown in the displayed person list. The index **must be a positive integer** 1, 2, 3, ...
+* Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* Editing contact details or tags preserves the candidate's hiring stage. Use `stage` to change it.
-* When editing tags, all of the person's existing tags are removed; adding tags is not cumulative.
-* To remove all of a person's tags, enter `t/` without a tag after it.
+* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage; `edit` does not support changing skills.
+* When editing tags, all of the candidate's existing tags are removed; adding tags is not cumulative.
+* To remove all of a candidate's tags, enter `t/` without a tag after it.
 
 Examples:
-*  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
-*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+*  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st candidate to be `91234567` and `johndoe@example.com` respectively.
+*  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd candidate to be `Betsy Crower` and clears all existing tags.
 
-### Locating persons by name: `find`
+### Finding candidates by name: `find`
 
-Finds persons whose names contain any of the given keywords.
+Finds candidates whose names contain any of the given keywords.
 
 Format: `find KEYWORD [MORE_KEYWORDS]`
 
@@ -169,24 +181,23 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
 * Only full words match; for example, `Han` does not match `Hans`.
-* Persons matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* Candidates matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 
 Examples:
 * `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
+* `find alex david` returns `Alex Yeoh` and `David Li` if those candidates are in your pipeline.
 
 ### Adding or removing a remark: `remark`
 
-Adds or replaces the remark for a person in the currently displayed list.
+Adds or replaces the remark for a candidate in the currently displayed list.
 
-Format: `remark INDEX r/REMARK`
+Format: `remark INDEX [r/REMARK]`
 
 * `INDEX` must be a positive integer referring to the displayed list.
-* Example: `remark 2 r/Likes baseball`.
+* Example: `remark 2 r/Available for interviews next week`.
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
-* Remarks are shown on person cards and saved with your contacts. Editing other details preserves the remark.
-* After updating a remark, all contacts are displayed again.
+* Remarks are shown on candidate cards and saved with your candidates. Editing other details preserves the remark.
+* After updating a remark, all candidates are displayed again.
 
 ### Updating a candidate's hiring stage: `stage`
 
@@ -210,7 +221,7 @@ Examples:
 
 ### Deleting a candidate: `delete`
 
-Permanently deletes the specified candidate's record (represented as a person in the address book).
+Permanently deletes the specified candidate's record.
 
 Format: `delete INDEX` or `delete FULL_NAME`
 
@@ -225,7 +236,7 @@ Format: `delete INDEX` or `delete FULL_NAME`
 * Deletion removes the record completely; it does not archive the candidate.
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd candidate in the address book.
+* `list` followed by `delete 2` deletes the 2nd candidate in the candidate pipeline.
 * `find Betsy` followed by `delete 1` deletes the 1st candidate in the results of the `find` command.
 * `delete Alice Pauline` deletes the candidate named Alice Pauline if exactly one displayed candidate matches.
 * `delete alice pauline` matches the same full name, ignoring case.
@@ -243,7 +254,7 @@ The numbers refer to positions in the currently displayed list, including after 
 
 ### Clearing all entries: `clear`
 
-Clears all entries from the address book.
+Clears all entries from the candidate pipeline.
 
 Format: `clear`
 
@@ -255,29 +266,30 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+Scoutly automatically saves data after each successfully executed command. You do not need to save manually.
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+Scoutly saves candidate data in `data/addressbook.json`, relative to the folder from which you launch the application.
+If you follow the quick-start instructions, this is `[JAR file location]/data/addressbook.json`.
+Advanced users can edit this file while Scoutly is closed. Back up the file first.
 
 <box type="warning" seamless>
 
 **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+If the data file cannot be loaded, Scoutly aborts startup to prevent overwriting it. The existing file remains unchanged.
+Correct the invalid data or restore a valid backup before launching Scoutly again.<br>
+Furthermore, certain edits can cause Scoutly to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
 </box>
-
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous AddressBook home folder.
+**A**: Install Scoutly on the other computer. Close Scoutly on both computers, then copy `data/addressbook.json`
+from the old home folder into the new home folder's `data` folder. Back up any existing destination file before replacing it.
+Launch Scoutly from the new home folder to load your candidates.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -295,10 +307,11 @@ Action     | Format, Examples
 **Add**    | `add n/NAME p/PHONE s/SKILL [s/SKILL]...` <br> e.g., `add n/James Ho p/22224444 s/Java s/SQL`
 **Clear**  | `clear`
 **Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
-**Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Likes swimming`
+**Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`
+**Exit**   | `exit`
