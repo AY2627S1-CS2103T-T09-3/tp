@@ -41,3 +41,8 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Build release JARs for both Mac architectures
+        run: |
+          ./gradlew shadowJar
+          ./gradlew shadowJar -PjavafxMacPlatform=mac-aarch64
