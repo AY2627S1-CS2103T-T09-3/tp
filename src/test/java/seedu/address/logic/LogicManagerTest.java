@@ -1,5 +1,6 @@
 package seedu.address.logic;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
@@ -7,10 +8,13 @@ import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
+import static seedu.address.testutil.TypicalPersons.BOB;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,12 +25,12 @@ import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
-import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -107,6 +111,92 @@ public class LogicManagerTest {
     public void execute_storageThrowsAdException_throwsCommandException() {
         assertCommandFailureForExceptionFromStorage(DUMMY_AD_EXCEPTION, String.format(
                 LogicManager.FILE_OPS_PERMISSION_ERROR_FORMAT, DUMMY_AD_EXCEPTION.getMessage()));
+    }
+
+    @Test
+    public void execute_failedDelete_retryDeletesOriginalTargetOnly() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+        storage.failNextSave(DUMMY_IO_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute("delete 1"));
+        assertEquals(List.of(AMY, BOB), model.getFilteredPersonList());
+        assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+
+        logic.execute("delete 1");
+        assertEquals(List.of(BOB), model.getFilteredPersonList());
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+    }
+
+    @Test
+    public void execute_failedDelete_listDoesNotPersistDeletion() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        storage.failNextSave(DUMMY_AD_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute("delete 1"));
+        logic.execute("list");
+
+        assertEquals(List.of(AMY, BOB), storage.readAddressBook().orElseThrow().getPersonList());
+    }
+
+    @Test
+    public void execute_failedSave_restoresDataAndSearchPredicate() throws Exception {
+        for (String command : List.of("edit 1 n/Changed", "clear", "remark 1 r/Changed",
+                "stage 1 s/Offered", "add n/Carol p/99999999 s/Java", "list", "find Bob")) {
+            model = new ModelManager();
+            model.addPerson(AMY);
+            model.addPerson(BOB);
+            FailOnceAddressBookStorage storage = useFailOnceStorage();
+            logic.execute("find Amy");
+            AddressBook originalData = new AddressBook(model.getAddressBook());
+            storage.failNextSave(DUMMY_IO_EXCEPTION);
+
+            assertThrows(CommandException.class, () -> logic.execute(command));
+            assertEquals(originalData, model.getAddressBook(), command);
+            assertEquals(List.of(AMY), model.getFilteredPersonList(), command);
+            assertEquals(originalData, storage.readAddressBook().orElseThrow(), command);
+
+            // The restored filter must keep matching even when the person's other details change.
+            logic.execute("stage 1 s/Interview");
+            assertEquals(1, model.getFilteredPersonList().size(), command);
+            assertEquals(HiringStage.INTERVIEW, model.getFilteredPersonList().get(0).getStage(), command);
+        }
+    }
+
+    private FailOnceAddressBookStorage useFailOnceStorage() throws IOException {
+        FailOnceAddressBookStorage storage = new FailOnceAddressBookStorage(
+                temporaryFolder.resolve("rollback.json"));
+        storage.saveAddressBook(model.getAddressBook());
+        logic = new LogicManager(model, new StorageManager(storage,
+                new JsonUserPrefsStorage(temporaryFolder.resolve("rollbackPrefs.json"))));
+        return storage;
+    }
+
+    /** A real file-backed store that can fail one save before writing anything. */
+    private static class FailOnceAddressBookStorage extends JsonAddressBookStorage {
+        private IOException nextFailure;
+
+        FailOnceAddressBookStorage(Path path) {
+            super(path);
+        }
+
+        void failNextSave(IOException failure) {
+            nextFailure = failure;
+        }
+
+        @Override
+        public void saveAddressBook(ReadOnlyAddressBook addressBook) throws IOException {
+            if (nextFailure != null) {
+                IOException failure = nextFailure;
+                nextFailure = null;
+                throw failure;
+            }
+            super.saveAddressBook(addressBook);
+        }
     }
 
     @Test
@@ -192,10 +282,7 @@ public class LogicManagerTest {
 
         // Triggers the saveAddressBook method by executing an add command
         String addCommand = AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY + " s/Java";
-        Person expectedPerson = new PersonBuilder(AMY).withEmail("").withAddress("").withTags()
-                .withSkills("Java").build();
         ModelManager expectedModel = new ModelManager();
-        expectedModel.addPerson(expectedPerson);
         assertCommandFailure(addCommand, CommandException.class, expectedMessage, expectedModel);
     }
 }
