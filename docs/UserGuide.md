@@ -84,10 +84,9 @@ use their displayed index or add a candidate with a different name or phone numb
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
+Shows a message with a link to Scoutly's User Guide.
 
 You can also open the [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html) directly.
-The current Help window still links to the original AddressBook guide; use this Scoutly guide for candidate commands.
 
 Format: `help`
 
