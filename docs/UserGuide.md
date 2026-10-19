@@ -122,13 +122,19 @@ Examples:
 * `add n/John Doe p/98765432 s/Java s/SQL`
 * `add n/Betsy Crowe p/91234567 s/Python`
 
-### Listing all candidates: `list`
+### Listing candidates: `list`
 
 Shows all candidates currently stored in Scoutly and reports the number of candidates listed. If there are no candidates, Scoutly displays `No candidates in your pipeline yet. Use 'add' to add one.`
 
-Format: `list`
+Format: `list` or `list sort/name`
 
-The `list` command does not take any parameters. For example, `list all` is rejected with `The list command does not take any parameters.`
+Use `list sort/name` to display candidates in ascending alphabetical order by name. Name sorting is case-insensitive. The plain `list` command preserves the existing candidate order.
+
+The only supported parameter is `sort/name`; invalid parameters show the command usage instructions.
+
+Examples:
+* `list` displays all candidates in the current order.
+* `list sort/name` displays all candidates alphabetically by name.
 
 ### Viewing a candidate profile: `view`
 

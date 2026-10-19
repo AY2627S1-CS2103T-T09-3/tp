@@ -73,12 +73,16 @@ public class AddressBookParser {
         };
     }
 
-    /** Parses the list command, which does not accept any arguments. */
+    /** Parses the list command and its optional sorting argument. */
     private Command parseListCommand(String arguments) throws ParseException {
-        if (!arguments.trim().isEmpty()) {
-            throw new ParseException("The list command does not take any parameters.");
+        String trimmedArguments = arguments.trim();
+        if (trimmedArguments.isEmpty()) {
+            return new ListCommand();
         }
-        return new ListCommand();
+        if (ListCommand.SORT_BY_NAME_ARGUMENT.equals(trimmedArguments)) {
+            return new ListCommand(true);
+        }
+        throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE));
     }
 
 }

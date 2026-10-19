@@ -1,10 +1,14 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BOB;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,5 +60,26 @@ public class ListCommandTest {
 
         assertCommandSuccess(new ListCommand(), oneCandidateModel,
                 "Listed 1 candidate.", expectedOneCandidateModel);
+    }
+
+    @Test
+    public void execute_sortByName_listsCandidatesAlphabetically() {
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(BOB);
+        addressBook.addPerson(ALICE);
+        Model unsortedModel = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(true).execute(unsortedModel);
+
+        assertEquals(List.of(ALICE, BOB), unsortedModel.getFilteredPersonList());
+        assertEquals(List.of(BOB, ALICE), unsortedModel.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_sortByName_emptyList() throws Exception {
+        Model emptyModel = new ModelManager(new AddressBook(), new UserPrefs());
+
+        assertCommandSuccess(new ListCommand(true), emptyModel, ListCommand.MESSAGE_EMPTY_LIST,
+                new ModelManager(new AddressBook(), new UserPrefs()));
     }
 }
