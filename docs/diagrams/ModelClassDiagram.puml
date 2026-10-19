@@ -20,6 +20,14 @@ Class Name
 Class Phone
 Class Tag
 
+enum HiringStage {
+    APPLIED
+    SCREENED
+    INTERVIEW
+    OFFERED
+    REJECTED
+}
+
 Class I #FFFFFF
 }
 
@@ -42,6 +50,7 @@ Person *--> Phone
 Person *--> Email
 Person *--> Address
 Person *--> "*" Tag
+Person --> HiringStage
 
 Person -[hidden]up--> I
 UniquePersonList -[hidden]right-> I
