@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.CollectionUtil;
@@ -52,7 +53,10 @@ public class EditCommand extends Command {
             + PREFIX_PHONE + "91234567 "
             + PREFIX_EMAIL + "johndoe@example.com";
 
-    public static final String MESSAGE_EDIT_PERSON_SUCCESS = "Edited person: %1$s";
+    public static final String MESSAGE_EDIT_CANDIDATE_SUCCESS = "Edited candidate: %1$s";
+    public static final String MESSAGE_EDIT_CANDIDATE_SKILLS_SUCCESS =
+            "Edited candidate: %1$s | Skills: %2$s";
+    public static final String MESSAGE_EDIT_PERSON_SUCCESS = MESSAGE_EDIT_CANDIDATE_SUCCESS;
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_PERSON = "This person already exists in the address book.";
 
@@ -89,7 +93,15 @@ public class EditCommand extends Command {
 
         model.setPerson(personToEdit, editedPerson);
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
-        return new CommandResult(String.format(MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson)));
+        if (editPersonDescriptor.getSkills().isPresent()) {
+            String skills = editedPerson.getSkills().stream()
+                    .sorted(Skill.DISPLAY_ORDER)
+                    .map(Object::toString)
+                    .collect(Collectors.joining(", "));
+            return new CommandResult(String.format(MESSAGE_EDIT_CANDIDATE_SKILLS_SUCCESS,
+                    Messages.format(editedPerson), skills));
+        }
+        return new CommandResult(String.format(MESSAGE_EDIT_CANDIDATE_SUCCESS, Messages.format(editedPerson)));
     }
 
     /**

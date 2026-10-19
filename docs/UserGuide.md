@@ -165,6 +165,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL
 * Existing values will be updated to the input values.
 * Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
 * If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
+* Successful edits use candidate-oriented feedback; when skills are changed, the resulting skills are listed in deterministic alphabetical order.
 * When editing tags, all of the candidate's existing tags are removed; adding tags is not cumulative.
 * To remove all of a candidate's tags, enter `t/` without a tag after it.
 
