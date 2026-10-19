@@ -158,12 +158,13 @@ Examples:
 
 Edits an existing candidate in your pipeline.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`
 
 * Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage; `edit` does not support changing skills.
+* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
+* If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
 * When editing tags, all of the candidate's existing tags are removed; adding tags is not cumulative.
 * To remove all of a candidate's tags, enter `t/` without a tag after it.
 

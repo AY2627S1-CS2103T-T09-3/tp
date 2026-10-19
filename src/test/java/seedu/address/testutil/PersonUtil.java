@@ -56,6 +56,8 @@ public class PersonUtil {
                 tags.forEach(s -> sb.append(PREFIX_TAG).append(s.tagName).append(" "));
             }
         }
+        descriptor.getSkills().ifPresent(skills ->
+                skills.forEach(skill -> sb.append(PREFIX_SKILL).append(skill.value).append(" ")));
         return sb.toString();
     }
 }

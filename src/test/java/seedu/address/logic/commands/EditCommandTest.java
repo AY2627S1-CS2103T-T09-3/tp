@@ -20,10 +20,12 @@ import org.junit.jupiter.api.Test;
 import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.logic.parser.EditCommandParser;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
@@ -98,6 +100,73 @@ public class EditCommandTest {
 
         Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
         expectedModel.setPerson(model.getFilteredPersonList().get(0), editedPerson);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_skillOnlyEdit_success() {
+        Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person personWithDetails = new PersonBuilder(personToEdit)
+                .withRemark("Useful note")
+                .withStage(HiringStage.INTERVIEW)
+                .withTags("existing")
+                .withSkills("Java", "SQL")
+                .build();
+        model.setPerson(personToEdit, personWithDetails);
+
+        Person editedPerson = new PersonBuilder(personWithDetails).withSkills("Python", "SQL").build();
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withSkills("Python", "SQL").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON, descriptor);
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(personWithDetails, editedPerson);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_skillOnlyEditFiltered_success() {
+        showPersonAtIndex(model, INDEX_FIRST_PERSON);
+        Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person editedPerson = new PersonBuilder(personToEdit).withSkills("Python").build();
+        EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
+                new EditPersonDescriptorBuilder().withSkills("Python").build());
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(personToEdit, editedPerson);
+
+        assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+    }
+
+    @Test
+    public void execute_multipleFields_success() throws Exception {
+        Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        Person personWithDetails = new PersonBuilder(personToEdit)
+                .withEmail("preserved@example.com")
+                .withAddress("Preserved address")
+                .withRemark("Preserved remark")
+                .withStage(HiringStage.INTERVIEW)
+                .withTags("oldTag")
+                .withSkills("Java", "SQL")
+                .build();
+        model.setPerson(personToEdit, personWithDetails);
+
+        EditCommand editCommand = new EditCommandParser().parse(
+                "1 n/Updated Candidate p/7654321 t/NewTag s/Python s/python s/SQL");
+        Person editedPerson = new PersonBuilder(personWithDetails)
+                .withName("Updated Candidate")
+                .withPhone("7654321")
+                .withTags("NewTag")
+                .withSkills("Python", "SQL")
+                .build();
+
+        String expectedMessage = String.format(EditCommand.MESSAGE_EDIT_PERSON_SUCCESS, Messages.format(editedPerson));
+        Model expectedModel = new ModelManager(new AddressBook(model.getAddressBook()), new UserPrefs());
+        expectedModel.setPerson(personWithDetails, editedPerson);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
     }

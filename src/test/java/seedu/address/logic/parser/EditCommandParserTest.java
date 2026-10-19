@@ -25,6 +25,7 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_ADDRESS;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_EMAIL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_PHONE;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_SKILL;
 import static seedu.address.logic.parser.CliSyntax.PREFIX_TAG;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
@@ -41,6 +42,7 @@ import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Skill;
 import seedu.address.model.tag.Tag;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 
@@ -165,6 +167,33 @@ public class EditCommandParserTest {
         descriptor = new EditPersonDescriptorBuilder().withTags(VALID_TAG_FRIEND).build();
         expectedCommand = new EditCommand(targetIndex, descriptor);
         assertParseSuccess(parser, userInput, expectedCommand);
+
+        // skills
+        userInput = targetIndex.getOneBased() + " " + PREFIX_SKILL + "Java";
+        descriptor = new EditPersonDescriptorBuilder().withSkills("Java").build();
+        expectedCommand = new EditCommand(targetIndex, descriptor);
+        assertParseSuccess(parser, userInput, expectedCommand);
+    }
+
+    @Test
+    public void parse_skillsWithCaseInsensitiveDuplicates_success() {
+        Index targetIndex = INDEX_FIRST_PERSON;
+        String userInput = targetIndex.getOneBased() + " " + PREFIX_SKILL + "Java"
+                + " " + PREFIX_SKILL + "java" + " " + PREFIX_SKILL + "SQL";
+
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withSkills("Java", "SQL").build();
+        EditCommand expectedCommand = new EditCommand(targetIndex, descriptor);
+
+        assertParseSuccess(parser, userInput, expectedCommand);
+    }
+
+    @Test
+    public void parse_invalidSkillValue_failure() {
+        String[] invalidSkills = {"", " ", "Java Script", "C++", "abcdefghijklmnopqrstuvwxyzABCDE"};
+        for (String invalidSkill : invalidSkills) {
+            String userInput = INDEX_FIRST_PERSON.getOneBased() + " " + PREFIX_SKILL + invalidSkill;
+            assertParseFailure(parser, userInput, Skill.MESSAGE_CONSTRAINTS);
+        }
     }
 
     @Test

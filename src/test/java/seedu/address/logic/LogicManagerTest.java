@@ -15,6 +15,7 @@ import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Skill;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -77,6 +79,29 @@ public class LogicManagerTest {
     public void execute_invalidAdd_doesNotModifyModel() {
         assertParseException(AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY,
                 AddCommand.MESSAGE_NO_SKILL);
+    }
+
+    @Test
+    public void execute_editEmptySkill_doesNotModifyModel() {
+        model.addPerson(AMY);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+
+        assertCommandFailure("edit 1 n/Updated s/", ParseException.class,
+                Skill.MESSAGE_CONSTRAINTS, expectedModel);
+    }
+
+    @Test
+    public void execute_editSkills_persists() throws Exception {
+        model.addPerson(new PersonBuilder(AMY).withSkills("Java", "SQL").build());
+
+        logic.execute("edit 1 s/Python s/python s/SQL");
+
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Model reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+
+        assertEquals(Set.of(new Skill("Python"), new Skill("SQL")),
+                reloaded.getFilteredPersonList().get(0).getSkills());
+        assertEquals(model.getAddressBook(), reloaded.getAddressBook());
     }
 
     @Test
