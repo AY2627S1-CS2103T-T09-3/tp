@@ -77,7 +77,7 @@ use their displayed index or add a candidate with a different name or phone numb
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
 * Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
-  For example, `help 123` is interpreted as `help`. The `list` command rejects extra parameters; use `list` on its own.
+  For example, `help 123` is interpreted as `help`. The `list` command accepts only the optional `s/STAGE` parameter.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
@@ -122,13 +122,17 @@ Examples:
 * `add n/John Doe p/98765432 s/Java s/SQL`
 * `add n/Betsy Crowe p/91234567 s/Python`
 
-### Listing all candidates: `list`
+### Listing candidates: `list`
 
-Shows all candidates currently stored in Scoutly and reports the number of candidates listed. If there are no candidates, Scoutly displays `No candidates in your pipeline yet. Use 'add' to add one.`
+Shows candidates currently stored in Scoutly and reports the number of candidates listed. You can optionally filter the list by hiring stage. If there are no candidates, Scoutly displays `No candidates in your pipeline yet. Use 'add' to add one.`
 
-Format: `list`
+Format: `list [s/STAGE]`
 
-The `list` command does not take any parameters. For example, `list all` is rejected with `The list command does not take any parameters.`
+* `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
+* `list` displays all candidates.
+* `list s/Interview` displays only candidates currently at the Interview stage.
+* If no candidates match the selected stage, Scoutly displays `No candidates found at the Interview stage.`
+* Invalid parameters show either the command usage instructions or the allowed stage values.
 
 ### Viewing a candidate profile: `view`
 

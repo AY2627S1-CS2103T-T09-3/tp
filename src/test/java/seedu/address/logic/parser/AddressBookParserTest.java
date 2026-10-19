@@ -98,8 +98,21 @@ public class AddressBookParserTest {
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
         assertTrue(parser.parseCommand("  " + ListCommand.COMMAND_WORD + "  ") instanceof ListCommand);
-        assertThrows(ParseException.class, "The list command does not take any parameters.", () ->
-                parser.parseCommand(ListCommand.COMMAND_WORD + " 3"));
+    }
+
+    @Test
+    public void parseCommand_listByStage() throws Exception {
+        assertEquals(new ListCommand(HiringStage.INTERVIEW), parser.parseCommand("list s/Interview"));
+        assertEquals(new ListCommand(HiringStage.INTERVIEW), parser.parseCommand("  list   s/interview  "));
+    }
+
+    @Test
+    public void parseCommand_listRejectsInvalidArguments() {
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list 3"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list interview"));
+        assertThrows(ParseException.class, HiringStage.MESSAGE_CONSTRAINTS, ()
+                -> parser.parseCommand("list s/Interview extra"));
     }
 
     @Test

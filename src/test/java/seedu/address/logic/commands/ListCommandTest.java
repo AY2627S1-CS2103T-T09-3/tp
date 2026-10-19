@@ -4,6 +4,7 @@ import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalPersons.ALICE;
+import static seedu.address.testutil.TypicalPersons.BOB;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,8 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.HiringStage;
+import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for ListCommand.
@@ -56,5 +59,27 @@ public class ListCommandTest {
 
         assertCommandSuccess(new ListCommand(), oneCandidateModel,
                 "Listed 1 candidate.", expectedOneCandidateModel);
+    }
+
+    @Test
+    public void execute_stageFilter_reportsMatchingCandidates() {
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(new PersonBuilder(ALICE).withStage(HiringStage.INTERVIEW).build());
+        addressBook.addPerson(new PersonBuilder(BOB).withStage(HiringStage.APPLIED).build());
+        Model stageModel = new ModelManager(addressBook, new UserPrefs());
+        Model expectedStageModel = new ModelManager(addressBook, new UserPrefs());
+        expectedStageModel.updateFilteredPersonList(person -> person.getStage() == HiringStage.INTERVIEW);
+
+        assertCommandSuccess(new ListCommand(HiringStage.INTERVIEW), stageModel,
+                "Listed 1 candidate.", expectedStageModel);
+    }
+
+    @Test
+    public void execute_stageFilterWithNoMatches_reportsNoMatches() {
+        Model expectedStageModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+        expectedStageModel.updateFilteredPersonList(person -> person.getStage() == HiringStage.INTERVIEW);
+
+        assertCommandSuccess(new ListCommand(HiringStage.INTERVIEW), model,
+                "No candidates found at the Interview stage.", expectedStageModel);
     }
 }
