@@ -13,6 +13,7 @@ Class ModelManager
 Class UserPrefs
 
 Class UniquePersonList
+Class SortedList
 Class Person
 Class Address
 Class Email
@@ -60,4 +61,5 @@ Phone -[hidden]right-> Address
 Address -[hidden]right-> Email
 
 ModelManager --> "~* filtered" Person
+ModelManager --> SortedList
 @enduml
