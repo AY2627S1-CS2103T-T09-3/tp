@@ -61,5 +61,6 @@ Phone -[hidden]right-> Address
 Address -[hidden]right-> Email
 
 ModelManager --> "~* filtered" Person
-ModelManager --> SortedList
+ModelManager --> "1" SortedList
+SortedList --> "~* sorted" Person
 @enduml
