@@ -130,7 +130,7 @@ Format: `list` or `list sort/name`
 
 Use `list sort/name` to display candidates in ascending alphabetical order by name. Name sorting is case-insensitive. The plain `list` command preserves the existing candidate order.
 
-The only supported parameter is `sort/name`; invalid parameters show the command usage instructions.
+The only supported sorting parameter is `sort/name`; invalid parameters show the command usage instructions.
 
 Only one optional mode may be supplied at a time. The `sort/name` option cannot be combined with a hiring-stage
 filter; use either `list sort/name` or `list s/STAGE`.
