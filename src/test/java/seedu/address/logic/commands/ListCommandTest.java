@@ -1,5 +1,6 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
@@ -81,5 +82,27 @@ public class ListCommandTest {
 
         assertCommandSuccess(new ListCommand(HiringStage.INTERVIEW), model,
                 "No candidates found at the Interview stage.", expectedStageModel);
+    }
+
+    @Test
+    public void execute_stageFilterThenView_usesDisplayedIndex() throws Exception {
+        PersonBuilder interviewCandidate = new PersonBuilder()
+                .withName("Interview Candidate")
+                .withPhone("11111111")
+                .withStage(HiringStage.INTERVIEW);
+        PersonBuilder appliedCandidate = new PersonBuilder()
+                .withName("Applied Candidate")
+                .withPhone("22222222")
+                .withStage(HiringStage.APPLIED);
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(appliedCandidate.build());
+        addressBook.addPerson(interviewCandidate.build());
+        Model stageModel = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(HiringStage.INTERVIEW).execute(stageModel);
+        CommandResult result = new ViewCommand(INDEX_FIRST_PERSON).execute(stageModel);
+
+        assertTrue(result.getFeedbackToUser().contains("Name: Interview Candidate"));
+        assertTrue(result.getFeedbackToUser().contains("Hiring stage: Interview"));
     }
 }
