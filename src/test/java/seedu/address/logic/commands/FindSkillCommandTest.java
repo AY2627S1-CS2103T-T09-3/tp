@@ -90,7 +90,7 @@ public class FindSkillCommandTest {
         FindSkillCommand command = new FindSkillCommand(new Skill("JAVA"));
         expectedModel.updateFilteredPersonList(person -> hasSkill(person, "JAVA"));
 
-        assertCommandSuccess(command, model, "2 person(s) listed!", expectedModel);
+        assertCommandSuccess(command, model, "Listed 2 candidates.", expectedModel);
         assertEquals(javaCandidate, model.getFilteredPersonList().get(0));
         assertEquals(anotherJavaCandidate, model.getFilteredPersonList().get(1));
         assertEquals(javaCandidate.getRemark(), model.getFilteredPersonList().get(0).getRemark());
@@ -104,7 +104,7 @@ public class FindSkillCommandTest {
                 List.of(new Skill("Java"), new Skill("Python")));
         expectedModel.updateFilteredPersonList(person -> hasSkill(person, "Java") || hasSkill(person, "Python"));
 
-        assertCommandSuccess(command, model, "3 person(s) listed!", expectedModel);
+        assertCommandSuccess(command, model, "Listed 3 candidates.", expectedModel);
         assertEquals(List.of(javaCandidate, anotherJavaCandidate, pythonCandidate), model.getFilteredPersonList());
     }
 
@@ -114,7 +114,7 @@ public class FindSkillCommandTest {
                 List.of(new Skill("java"), new Skill("sql")));
         expectedModel.updateFilteredPersonList(person -> hasSkill(person, "java") && hasSkill(person, "sql"));
 
-        assertCommandSuccess(command, model, "1 person(s) listed!", expectedModel);
+        assertCommandSuccess(command, model, "Listed 1 candidate.", expectedModel);
         assertEquals(javaCandidate, model.getFilteredPersonList().get(0));
     }
 
@@ -123,7 +123,7 @@ public class FindSkillCommandTest {
         FindSkillCommand command = new FindSkillCommand(new Skill("SQL"));
         expectedModel.updateFilteredPersonList(person -> hasSkill(person, "SQL"));
 
-        assertCommandSuccess(command, model, "1 person(s) listed!", expectedModel);
+        assertCommandSuccess(command, model, "Listed 1 candidate.", expectedModel);
         assertEquals(javaCandidate, model.getFilteredPersonList().get(0));
         assertFalse(model.getFilteredPersonList().contains(noSqlCandidate));
     }

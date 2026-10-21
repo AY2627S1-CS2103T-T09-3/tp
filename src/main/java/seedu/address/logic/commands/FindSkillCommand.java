@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import seedu.address.commons.util.ToStringBuilder;
-import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Skill;
@@ -30,6 +29,7 @@ public class FindSkillCommand extends Command {
             + "Examples: " + COMMAND_WORD + " Java; " + COMMAND_WORD + " any s/Java s/Python";
 
     public static final String MESSAGE_NO_MATCH = "No candidates found matching skill search: %1$s.";
+    private static final String MESSAGE_SUCCESS_FORMAT = "Listed %d candidate%s.";
 
     /** The supported ways of combining multiple skill terms. */
     public enum SearchMode {
@@ -67,7 +67,8 @@ public class FindSkillCommand extends Command {
         if (matchingCandidates == 0) {
             return new CommandResult(String.format(MESSAGE_NO_MATCH, getSkillDescription()));
         }
-        return new CommandResult(String.format(Messages.MESSAGE_PERSONS_LISTED_OVERVIEW, matchingCandidates));
+        String suffix = matchingCandidates == 1 ? "" : "s";
+        return new CommandResult(String.format(MESSAGE_SUCCESS_FORMAT, matchingCandidates, suffix));
     }
 
     private boolean matchesSearch(Person person) {
