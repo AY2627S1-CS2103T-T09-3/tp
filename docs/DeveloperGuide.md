@@ -169,6 +169,12 @@ Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTE
 
 `PersonCard` displays the stage, and `ViewCommand` includes it in profile output. `JsonAdaptedPerson` persists the stage name in the `stage` JSON field. Missing or null stages in older data default to Applied; unrecognized or blank stored stages are rejected with an `IllegalValueException`. Existing fixtures without stages exercise backward compatibility, alongside new valid-stage and invalid-stage fixtures.
 
+### Hiring-stage summary
+
+`SummaryCommandParser` accepts `summary` without arguments; `AddressBookParser` routes it to `SummaryCommand`. Extra parameters are rejected with command usage instructions.
+
+`SummaryCommand` reads `Model#getAddressBook().getPersonList()` so the summary includes all candidates, independently of the active filter. It counts stages in an `EnumMap` in one pass and formats every `HiringStage` in enum order, using zero for absent stages, followed by the total. Counts are recalculated on every invocation. The command does not replace candidates or modify the displayed list, filter, or order.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -572,6 +578,19 @@ testers are expected to do more *exploratory* testing.
    Expected: The stage remains unchanged through the edits and restart.
 1. In a temporary copy of the data file, remove a person's `stage` property and restart.<br>
    Expected: That candidate defaults to Applied. Restore the original test data after testing.
+
+### Hiring-stage summary
+
+1. Start with an empty pipeline and run `summary`.<br>
+   Expected: All five stages and the total are zero, in pipeline order.
+1. Add candidates and use `stage INDEX s/STAGE` to assign different stages, then run `summary`.<br>
+   Expected: Each count matches the stored candidates and the total equals their sum.
+1. Run `find NAME` to hide some candidates, then run `summary`.<br>
+   Expected: Counts still cover all stored candidates. The search results and their displayed order are unchanged, including when the search has no matches.
+1. Add or delete a candidate, or change a stage, then run `summary` again.<br>
+   Expected: Counts reflect the current data immediately.
+1. Try `summary all` and `summary s/Interview`.<br>
+   Expected: Usage instructions are shown; candidate data and the active filter are unchanged.
 
 ### Saving data
 

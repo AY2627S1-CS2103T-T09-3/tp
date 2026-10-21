@@ -31,6 +31,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -77,6 +78,23 @@ public class LogicManagerTest {
     public void execute_invalidAdd_doesNotModifyModel() {
         assertParseException(AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY,
                 AddCommand.MESSAGE_NO_SKILL);
+    }
+
+    @Test
+    public void execute_summaryAfterFind_countsEntirePipelineAndPreservesResults() throws Exception {
+        Person first = new PersonBuilder(AMY).withStage(HiringStage.SCREENED).build();
+        Person second = new PersonBuilder().withName("Other Candidate").withStage(HiringStage.INTERVIEW).build();
+        model.addPerson(first);
+        model.addPerson(second);
+        logic.execute("find Amy");
+
+        CommandResult result = logic.execute("summary");
+
+        assertEquals("Hiring-stage summary — all candidates\n"
+                + "Applied: 0\nScreened: 1\nInterview: 1\nOffered: 0\nRejected: 0\nTotal: 2",
+                result.getFeedbackToUser());
+        assertEquals(List.of(first), model.getFilteredPersonList());
+        assertEquals(List.of(first, second), model.getAddressBook().getPersonList());
     }
 
     @Test
