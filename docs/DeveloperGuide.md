@@ -159,6 +159,10 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Viewing candidates with matching names
+
+`ViewCommand` resolves full names using `PersonLookup.findByName`. For ambiguous names, its callback formats only the matching candidates with their one-based indices in the current displayed list, names, and phone numbers. Phone numbers distinguish candidates even when optional email fields are empty. The command leaves candidate data and the displayed list unchanged, so the user can select a match with `view INDEX` immediately.
+
 ### Hiring stages
 
 Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTERVIEW`, `OFFERED`, or `REJECTED`. Constructors without an explicit stage default to `APPLIED`. Stage changes affect full person equality, while identity continues to depend on the normalized name and phone number.
@@ -368,7 +372,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 4b. More than one displayed candidate matches the full name, ignoring case.
 
-    * 4b1. Scoutly asks the user to select a candidate using `view INDEX`.
+    * 4b1. Scoutly lists the matching candidates with their displayed indices, names, and phone numbers, then asks the user to select a candidate using `view INDEX`.
     * 4b2. The use case resumes at step 4 without changing candidate data or the displayed list.
 
 **Use case: UC03, Edit a contact**
@@ -557,6 +561,18 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `delete 3`<br>
       Expected: ALICE PAULINE is deleted. Alice Pauline and Alice Tan remain visible. Run `list` to confirm that candidates hidden by the filter remain stored.
+
+### Viewing candidates with matching names
+
+1. Prerequisites: In a test address book, run `add n/Amy Bee p/85355255 s/Java`, `add n/Amy Tan p/82345678 s/SQL`, and `add n/AMY BEE p/91234567 s/Python`. Ensure there are no other candidates whose names contain the word Amy. Run `list` and note each candidate's displayed index.
+1. Test case: `view amy bee`<br>
+   Expected: The error lists only Amy Bee and AMY BEE, with their actual displayed indices and phone numbers 85355255 and 91234567. It asks the user to use `view INDEX`. Candidate data and the displayed list remain unchanged. This also works when both candidates have no email or address.
+1. Test case: Run `view INDEX` using the index shown for AMY BEE.<br>
+   Expected: The profile contains AMY BEE and phone 91234567. Candidate data and the displayed list remain unchanged.
+1. Test case: Run `find Amy`, then `view AMY BEE`.<br>
+   Expected: The error shows Amy Bee at index 1 and AMY BEE at index 3, with their respective phone numbers. Amy Tan is absent from the error. The filter and list order remain unchanged.
+1. Test case: `view 3`<br>
+   Expected: The profile shows AMY BEE and phone 91234567. The filtered list still contains all three Amy candidates in the same order. Run `list` to confirm any candidates hidden by the filter remain stored.
 
 ### Hiring stages
 

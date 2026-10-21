@@ -147,7 +147,7 @@ Format: `view INDEX` or `view FULL_NAME`
 * All-digit input is treated as an index. Use the displayed index to view a candidate whose full name is numeric.
 * A missing or malformed argument shows the command usage. An index outside the displayed list shows an error.
 * If no displayed candidate matches the name, Scoutly suggests using `list` to show all candidates.
-* If multiple displayed candidates match the name, use `view INDEX` to choose the intended candidate.
+* If multiple displayed candidates match the name, the error lists their displayed indices, names, and phone numbers. Use `view INDEX` with one of those indices to choose the intended candidate.
 
 Examples:
 * `list` followed by `view 2` displays the second candidate's profile.
