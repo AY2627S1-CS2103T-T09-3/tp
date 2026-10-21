@@ -210,6 +210,7 @@ Format: `stage INDEX s/STAGE`
 * Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed and reports `[Name] is already at [Stage].` without changing the candidate.
 * The command preserves the current search filter and all other candidate details.
 * The stage appears on the candidate's card and in `view INDEX`, and is saved automatically across restarts.
+* Candidate cards show a labelled stage badge: Applied in grey, Screened in blue, Interview in purple, Offered in green, and Rejected in red. The stage name is always shown, so you do not need to rely on colour. Badges reflect the current stage after an update.
 * New candidates and older saved records without a stage default to **Applied**. Editing details or remarks preserves the stage.
 * Missing arguments or an invalid index format show usage instructions. An empty or unknown stage shows the allowed values; an index outside the displayed list shows an error. Failed commands do not change the candidate's stage.
 

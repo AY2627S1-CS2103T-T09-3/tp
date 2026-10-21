@@ -82,6 +82,10 @@ The `UI` component,
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
 
+Candidate cards display the hiring stage as a labelled badge. `PersonCard` derives a stage-specific CSS class from the `HiringStage` enum name using `Locale.ROOT`. `PersonListCard.fxml` keeps the badge at its content width, while `DarkTheme.css` defines its colours. The stage name remains visible so that users do not need to distinguish stages by colour alone. When a candidate is updated, `PersonListPanel` rebuilds the affected card with its current stage.
+
+`PersonCardTest` loads the application theme and checks that all five stage backgrounds are distinct, with text contrast of at least 4.5:1 in both normal and selected cards.
+
 ### Logic component
 
 **API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
