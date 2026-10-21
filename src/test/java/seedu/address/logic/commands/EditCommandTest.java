@@ -135,7 +135,8 @@ public class EditCommandTest {
 
     @Test
     public void execute_skillOnlyEditFiltered_success() {
-        showPersonAtIndex(model, INDEX_FIRST_PERSON);
+        Person untouchedPerson = model.getAddressBook().getPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
         Person personToEdit = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
         Person editedPerson = new PersonBuilder(personToEdit).withSkills("Python").build();
         EditCommand editCommand = new EditCommand(INDEX_FIRST_PERSON,
@@ -147,6 +148,8 @@ public class EditCommandTest {
         expectedModel.setPerson(personToEdit, editedPerson);
 
         assertCommandSuccess(editCommand, model, expectedMessage, expectedModel);
+        assertEquals(untouchedPerson, model.getAddressBook().getPersonList().get(INDEX_FIRST_PERSON.getZeroBased()));
+        assertEquals(editedPerson, model.getAddressBook().getPersonList().get(INDEX_SECOND_PERSON.getZeroBased()));
     }
 
     @Test

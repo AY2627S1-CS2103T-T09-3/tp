@@ -91,6 +91,15 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_editMixedValidAndInvalidSkills_doesNotModifyModel() {
+        model.addPerson(AMY);
+        Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
+
+        assertCommandFailure("edit 1 n/Updated s/Java s/", ParseException.class,
+                Skill.MESSAGE_CONSTRAINTS, expectedModel);
+    }
+
+    @Test
     public void execute_editSkills_persists() throws Exception {
         model.addPerson(new PersonBuilder(AMY).withSkills("Java", "SQL").build());
 
@@ -166,6 +175,23 @@ public class LogicManagerTest {
         logic.execute("list");
 
         assertEquals(List.of(AMY, BOB), storage.readAddressBook().orElseThrow().getPersonList());
+    }
+
+    @Test
+    public void execute_failedSaveAfterSkillEdit_restoresDataFilterAndFile() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        logic.execute("find Amy");
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+        byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+        storage.failNextSave(DUMMY_IO_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute("edit 1 s/Java"));
+
+        assertEquals(originalData, model.getAddressBook());
+        assertEquals(List.of(AMY), model.getFilteredPersonList());
+        assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
     }
 
     @Test
