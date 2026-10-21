@@ -190,6 +190,27 @@ Examples:
 * `find John` returns `john` and `John Doe`
 * `find alex david` returns `Alex Yeoh` and `David Li` if those candidates are in your pipeline.
 
+### Finding candidates by skill: `findskill`
+
+Finds candidates by their skills.
+
+Formats: `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or
+`findskill all s/SKILL [s/SKILL]...`
+
+* A single-skill search is case-insensitive and matches the complete skill name; for example, `findskill java`
+  matches `Java`, but `findskill SQL` does not match `NoSQL`.
+* `any` returns candidates with at least one of the specified skills.
+* `all` returns candidates with every specified skill.
+* The skill must contain 1–30 alphanumeric characters with no spaces.
+* Skills supplied with `any` or `all` are deduplicated case-insensitively, preserving the first spelling.
+* If no candidates match, Scoutly displays `No candidates found matching skill search: SKILL(S).`
+* The displayed indexes are renumbered after filtering and can be used by subsequent commands.
+
+Examples:
+* `findskill Java` returns candidates with the `Java` skill.
+* `findskill any s/Java s/Python` returns candidates with Java or Python.
+* `findskill all s/Java s/SQL` returns candidates with both Java and SQL.
+
 ### Adding or removing a remark: `remark`
 
 Adds or replaces the remark for a candidate in the currently displayed list.
@@ -313,6 +334,7 @@ Action     | Format, Examples
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
 **List**   | `list`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`

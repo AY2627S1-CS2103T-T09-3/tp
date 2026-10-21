@@ -19,6 +19,7 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.FindSkillCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.StageCommand;
@@ -28,6 +29,7 @@ import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
@@ -100,6 +102,18 @@ public class AddressBookParserTest {
         FindCommand command = (FindCommand) parser.parseCommand(
                 FindCommand.COMMAND_WORD + " " + keywords.stream().collect(Collectors.joining(" ")));
         assertEquals(new FindCommand(new NameContainsKeywordsPredicate(keywords)), command);
+    }
+
+    @Test
+    public void parseCommand_findSkill() throws Exception {
+        assertEquals(new FindSkillCommand(new Skill("Java")),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " Java"));
+        assertEquals(new FindSkillCommand(FindSkillCommand.SearchMode.ANY,
+                        List.of(new Skill("Java"), new Skill("Python"))),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " any s/Java s/Python"));
+        assertEquals(new FindSkillCommand(FindSkillCommand.SearchMode.ALL,
+                        List.of(new Skill("Java"), new Skill("SQL"))),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " all s/Java s/SQL"));
     }
 
     @Test
