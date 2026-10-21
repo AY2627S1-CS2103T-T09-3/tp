@@ -20,14 +20,20 @@ public class FindSkillCommandParserTest {
     public void parse_emptyArg_throwsParseException() {
         String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindSkillCommand.MESSAGE_USAGE);
         assertParseFailure(parser, "     ", expectedMessage);
-        assertParseFailure(parser, "any", expectedMessage);
-        assertParseFailure(parser, "all", expectedMessage);
     }
 
     @Test
     public void parse_singleSkill_returnsFindSkillCommand() {
         assertParseSuccess(parser, "Java", new FindSkillCommand(new Skill("Java")));
         assertParseSuccess(parser, "  java  ", new FindSkillCommand(new Skill("java")));
+    }
+
+    @Test
+    public void parse_reservedModeWordsAsLiteralSkills_returnsFindSkillCommand() {
+        assertParseSuccess(parser, "Any", new FindSkillCommand(new Skill("Any")));
+        assertParseSuccess(parser, "aNy", new FindSkillCommand(new Skill("aNy")));
+        assertParseSuccess(parser, "All", new FindSkillCommand(new Skill("All")));
+        assertParseSuccess(parser, "aLL", new FindSkillCommand(new Skill("aLL")));
     }
 
     @Test

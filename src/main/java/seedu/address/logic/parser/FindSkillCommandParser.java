@@ -37,11 +37,14 @@ public class FindSkillCommandParser implements Parser<FindSkillCommand> {
         }
 
         if (modeAndSkills.length == 1) {
-            throw new ParseException(
-                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindSkillCommand.MESSAGE_USAGE));
+            return new FindSkillCommand(ParserUtil.parseSkill(modeText));
         }
 
         SearchMode searchMode = modeText.equalsIgnoreCase("all") ? SearchMode.ALL : SearchMode.ANY;
+        if (!modeAndSkills[1].trim().startsWith(PREFIX_SKILL.getPrefix())) {
+            throw new ParseException(
+                    String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindSkillCommand.MESSAGE_USAGE));
+        }
         ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(" " + modeAndSkills[1], PREFIX_SKILL);
         if (!argMultimap.getPreamble().isEmpty()) {
             throw new ParseException(
