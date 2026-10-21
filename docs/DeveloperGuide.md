@@ -94,6 +94,12 @@ The sequence diagram below illustrates the interactions within the `Logic` compo
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
+The following sequence diagram shows a successful `edit 1 s/Java s/SQL` command. It also highlights the validation path for an invalid skill and the rollback path when saving the updated address book fails.
+
+<puml src="diagrams/EditCandidateSkillsSequenceDiagram.puml" alt="Interactions Inside the Logic Component for editing candidate skills" />
+
+For a skill edit, `EditCommandParser` tokenizes and validates every `s/` value before constructing an `EditCommand`; parsing does not modify the model. `EditCommand` uses the index from the currently displayed list, replaces the complete skill set, and constructs the updated candidate while preserving the other candidate fields. After the model is updated, `LogicManager` saves the address book. If saving fails, it restores both the original data and the original filter before reporting the error.
+
 <box type="info" seamless>
 
 **Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, the lifeline continues till the end of diagram.
