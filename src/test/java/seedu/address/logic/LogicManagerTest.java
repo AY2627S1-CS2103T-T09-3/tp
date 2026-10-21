@@ -144,6 +144,24 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_failedDelete_preservesSortedOrderForRetry() throws Exception {
+        model.addPerson(BOB);
+        model.addPerson(AMY);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+
+        logic.execute("list sort/name");
+        assertEquals(List.of(AMY, BOB), model.getFilteredPersonList());
+        storage.failNextSave(DUMMY_IO_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute("delete 1"));
+        assertEquals(List.of(AMY, BOB), model.getFilteredPersonList());
+
+        logic.execute("delete 1");
+        assertEquals(List.of(BOB), model.getFilteredPersonList());
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+    }
+
+    @Test
     public void execute_failedSave_restoresDataAndSearchPredicate() throws Exception {
         for (String command : List.of("edit 1 n/Changed", "clear", "remark 1 r/Changed",
                 "stage 1 s/Offered", "add n/Carol p/99999999 s/Java", "list", "find Bob")) {

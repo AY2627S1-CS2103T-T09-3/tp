@@ -115,6 +115,11 @@ public class ModelManager implements Model {
     }
 
     @Override
+    public Comparator<? super Person> getFilteredPersonListComparator() {
+        return sortedPersons.getComparator();
+    }
+
+    @Override
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
@@ -122,7 +127,7 @@ public class ModelManager implements Model {
     }
 
     @Override
-    public void sortFilteredPersonList(Comparator<Person> comparator) {
+    public void sortFilteredPersonList(Comparator<? super Person> comparator) {
         requireNonNull(comparator);
         sortedPersons.setComparator(comparator);
     }
