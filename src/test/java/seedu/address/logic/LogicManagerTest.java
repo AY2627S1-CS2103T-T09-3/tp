@@ -9,6 +9,7 @@ import static seedu.address.logic.commands.CommandTestUtil.PHONE_DESC_AMY;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.AMY;
 import static seedu.address.testutil.TypicalPersons.BOB;
+import static seedu.address.testutil.TypicalPersons.CARL;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -32,6 +33,7 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Person;
 import seedu.address.model.person.Skill;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -175,6 +177,70 @@ public class LogicManagerTest {
         logic.execute("list");
 
         assertEquals(List.of(AMY, BOB), storage.readAddressBook().orElseThrow().getPersonList());
+    }
+
+    @Test
+    public void execute_batchDeleteAfterSkillSearch_persistsOnlySelectedDeletions() throws Exception {
+        logic.execute("add n/Amy p/11111111 s/Java");
+        logic.execute("add n/Bob p/22222222 s/Python");
+        logic.execute("add n/Carl p/33333333 s/Java");
+        logic.execute("add n/Daniel p/44444444 s/Java");
+        List<Person> original = List.copyOf(model.getAddressBook().getPersonList());
+        logic.execute("findskill Java");
+
+        logic.execute("delete 3, 1");
+
+        assertEquals(List.of(original.get(2)), model.getFilteredPersonList());
+        assertEquals(List.of(original.get(1), original.get(2)), model.getAddressBook().getPersonList());
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+        Model reloaded = new ModelManager(storage.readAddressBook().orElseThrow(), new UserPrefs());
+        assertEquals(model.getAddressBook(), reloaded.getAddressBook());
+    }
+
+    @Test
+    public void execute_invalidBatchDelete_preservesDataFilterAndFile() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        model.addPerson(CARL);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        logic.execute("find Amy Carl");
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+        byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+
+        for (String command : List.of("delete 1,1", "delete 1,", "delete 1,2147483648", "delete 1,Amy")) {
+            assertThrows(ParseException.class, () -> logic.execute(command));
+            assertEquals(originalData, model.getAddressBook());
+            assertEquals(List.of(AMY, CARL), model.getFilteredPersonList());
+            assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+        }
+        assertThrows(CommandException.class, () -> logic.execute("delete 1,3"));
+        assertEquals(originalData, model.getAddressBook());
+        assertEquals(List.of(AMY, CARL), model.getFilteredPersonList());
+        assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+    }
+
+    @Test
+    public void execute_failedBatchDelete_restoresWholeBatchAndAllowsRetry() throws Exception {
+        for (IOException failure : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            model = new ModelManager();
+            model.addPerson(AMY);
+            model.addPerson(BOB);
+            model.addPerson(CARL);
+            FailOnceAddressBookStorage storage = useFailOnceStorage();
+            logic.execute("find Amy Carl");
+            byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+            storage.failNextSave(failure);
+
+            assertThrows(CommandException.class, () -> logic.execute("delete 2,1"));
+
+            assertEquals(List.of(AMY, BOB, CARL), model.getAddressBook().getPersonList());
+            assertEquals(List.of(AMY, CARL), model.getFilteredPersonList());
+            assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+
+            logic.execute("delete 2,1");
+            assertEquals(List.of(), model.getFilteredPersonList());
+            assertEquals(List.of(BOB), storage.readAddressBook().orElseThrow().getPersonList());
+        }
     }
 
     @Test
