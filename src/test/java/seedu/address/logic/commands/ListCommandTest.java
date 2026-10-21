@@ -1,5 +1,6 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
@@ -16,6 +17,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 /**
@@ -104,5 +106,28 @@ public class ListCommandTest {
 
         assertTrue(result.getFeedbackToUser().contains("Name: Interview Candidate"));
         assertTrue(result.getFeedbackToUser().contains("Hiring stage: Interview"));
+    }
+
+    @Test
+    public void execute_stageFilterThenStageChange_updatesFilteredResults() throws Exception {
+        Person appliedCandidate = new PersonBuilder()
+                .withName("Applied Candidate")
+                .withPhone("11111111")
+                .withStage(HiringStage.APPLIED)
+                .build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(appliedCandidate);
+        Model stageModel = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(HiringStage.APPLIED).execute(stageModel);
+        assertEquals(1, stageModel.getFilteredPersonList().size());
+
+        new StageCommand(INDEX_FIRST_PERSON, HiringStage.INTERVIEW).execute(stageModel);
+        assertTrue(stageModel.getFilteredPersonList().isEmpty());
+
+        new ListCommand(HiringStage.INTERVIEW).execute(stageModel);
+        assertEquals(1, stageModel.getFilteredPersonList().size());
+        assertEquals("Applied Candidate", stageModel.getFilteredPersonList().get(0).getName().fullName);
+        assertEquals(HiringStage.INTERVIEW, stageModel.getFilteredPersonList().get(0).getStage());
     }
 }
