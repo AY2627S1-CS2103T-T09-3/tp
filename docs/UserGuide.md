@@ -132,6 +132,9 @@ Use `list sort/name` to display candidates in ascending alphabetical order by na
 
 The only supported parameter is `sort/name`; invalid parameters show the command usage instructions.
 
+Only one optional mode may be supplied at a time. The `sort/name` option cannot be combined with a hiring-stage
+filter; use either `list sort/name` or `list s/STAGE`.
+
 Examples:
 * `list` displays all candidates in the current order.
 * `list sort/name` displays all candidates alphabetically by name.

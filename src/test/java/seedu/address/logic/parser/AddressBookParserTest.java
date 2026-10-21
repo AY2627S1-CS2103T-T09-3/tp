@@ -103,6 +103,8 @@ public class AddressBookParserTest {
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list 3"));
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/phone"));
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name extra"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name s/Interview"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list s/Interview sort/name"));
     }
 
     @Test

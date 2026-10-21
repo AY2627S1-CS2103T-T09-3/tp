@@ -17,6 +17,9 @@ import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
+import seedu.address.model.person.NameContainsKeywordsPredicate;
+import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
 
 /**
  * Contains integration tests (interaction with the Model) and unit tests for ListCommand.
@@ -73,6 +76,37 @@ public class ListCommandTest {
 
         assertEquals(List.of(ALICE, BOB), unsortedModel.getFilteredPersonList());
         assertEquals(List.of(BOB, ALICE), unsortedModel.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_sortByName_isCaseInsensitive() {
+        Person lowercaseAlice = new PersonBuilder().withName("alice").withPhone("11111111").build();
+        Person uppercaseBob = new PersonBuilder().withName("Bob").withPhone("22222222").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(uppercaseBob);
+        addressBook.addPerson(lowercaseAlice);
+        Model mixedCaseModel = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(true).execute(mixedCaseModel);
+
+        assertEquals(List.of(lowercaseAlice, uppercaseBob), mixedCaseModel.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_listAfterFind_resetsSortComparator() {
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(BOB);
+        addressBook.addPerson(ALICE);
+        Model modelWithSort = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(true).execute(modelWithSort);
+        assertEquals(List.of(ALICE, BOB), modelWithSort.getFilteredPersonList());
+
+        new FindCommand(new NameContainsKeywordsPredicate(List.of("Alice", "Bob"))).execute(modelWithSort);
+        assertEquals(List.of(BOB, ALICE), modelWithSort.getFilteredPersonList());
+
+        new ListCommand().execute(modelWithSort);
+        assertEquals(List.of(BOB, ALICE), modelWithSort.getFilteredPersonList());
     }
 
     @Test
