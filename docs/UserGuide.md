@@ -77,7 +77,7 @@ use their displayed index or add a candidate with a different name or phone numb
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
 * Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
-  For example, `help 123` is interpreted as `help`. The `list` command rejects extra parameters; use `list` on its own.
+  For example, `help 123` is interpreted as `help`. The `list` and `summary` commands reject extra parameters; use them on their own.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
@@ -129,6 +129,33 @@ Shows all candidates currently stored in Scoutly and reports the number of candi
 Format: `list`
 
 The `list` command does not take any parameters. For example, `list all` is rejected with `The list command does not take any parameters.`
+
+### Summarizing the hiring pipeline: `summary`
+
+Shows the number of candidates at every hiring stage and the total number of stored candidates.
+
+Format: `summary`
+
+* Always counts **all stored candidates**, including candidates hidden by `find` or another filter.
+* Shows Applied, Screened, Interview, Offered, and Rejected in that order, including stages with zero candidates.
+* Leaves candidate data, displayed order, and the current filter unchanged.
+* Recalculates the counts each time, reflecting additions, deletions, and stage changes.
+* Takes no parameters; extra arguments show usage instructions.
+* The summary appears in the command result area. Scroll within that area to read the full result.
+
+For example:
+
+```text
+Hiring-stage summary — all candidates
+Applied: 8
+Screened: 5
+Interview: 3
+Offered: 2
+Rejected: 4
+Total: 22
+```
+
+An empty pipeline shows zero for every stage and the total. Running `summary` after `find Jordan` still summarizes the entire pipeline while keeping Jordan's search results visible.
 
 ### Viewing a candidate profile: `view`
 
@@ -354,6 +381,7 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
 **List**   | `list`
+**Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`

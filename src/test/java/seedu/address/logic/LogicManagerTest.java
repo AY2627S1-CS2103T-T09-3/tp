@@ -84,6 +84,20 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_summaryAfterFind_countsEntirePipelineAndPreservesResults() throws Exception {
+        Person first = new PersonBuilder(AMY).withStage(HiringStage.SCREENED).build();
+        Person second = new PersonBuilder().withName("Other Candidate").withStage(HiringStage.INTERVIEW).build();
+        model.addPerson(first);
+        model.addPerson(second);
+        logic.execute("find Amy");
+
+        CommandResult result = logic.execute("summary");
+
+        assertEquals("Hiring-stage summary — all candidates\n"
+                + "Applied: 0\nScreened: 1\nInterview: 1\nOffered: 0\nRejected: 0\nTotal: 2",
+                result.getFeedbackToUser());
+        assertEquals(List.of(first), model.getFilteredPersonList());
+        assertEquals(List.of(first, second), model.getAddressBook().getPersonList());
     public void execute_editEmptySkill_doesNotModifyModel() {
         model.addPerson(AMY);
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
