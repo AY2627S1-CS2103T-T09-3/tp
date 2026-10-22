@@ -19,6 +19,9 @@ Class Address
 Class Email
 Class Name
 Class Phone
+Class Remark
+Class HiringStage
+Class Skill
 Class Tag
 
 enum HiringStage {
@@ -52,6 +55,9 @@ Person *--> Name
 Person *--> Phone
 Person *--> Email
 Person *--> Address
+Person *--> Remark
+Person --> "1" HiringStage
+Person *--> "*" Skill
 Person *--> "*" Tag
 Person --> "1" HiringStage : stage
 
