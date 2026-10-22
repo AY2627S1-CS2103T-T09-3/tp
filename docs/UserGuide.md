@@ -143,7 +143,7 @@ Examples:
 
 Displays a candidate's name, phone, email, address, tags, remark, hiring stage, and skills in the command result area.
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
-skills are shown in deterministic alphabetical order. Missing tags, skills, or an empty remark are shown as `None`.
+skills are shown in deterministic alphabetical order. Missing email, address, tags, skills, or an empty remark are shown as `None`.
 
 Format: `view INDEX` or `view FULL_NAME`
 
@@ -156,7 +156,7 @@ Format: `view INDEX` or `view FULL_NAME`
 * All-digit input is treated as an index. Use the displayed index to view a candidate whose full name is numeric.
 * A missing or malformed argument shows the command usage. An index outside the displayed list shows an error.
 * If no displayed candidate matches the name, Scoutly suggests using `list` to show all candidates.
-* If multiple displayed candidates match the name, use `view INDEX` to choose the intended candidate.
+* If multiple displayed candidates match the name, the error lists their displayed indices, names, and phone numbers. Use `view INDEX` with one of those indices to choose the intended candidate.
 
 Examples:
 * `list` followed by `view 2` displays the second candidate's profile.
@@ -167,12 +167,15 @@ Examples:
 
 Edits an existing candidate in your pipeline.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`
 
 * Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage; `edit` does not support changing skills.
+* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
+* If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
+* Successful edits use candidate-oriented feedback; when skills are changed, the resulting skills are listed in deterministic alphabetical order.
+* Every `s/` prefix must be followed by a valid skill. A bare `s/` is rejected.
 * When editing tags, all of the candidate's existing tags are removed; adding tags is not cumulative.
 * To remove all of a candidate's tags, enter `t/` without a tag after it.
 
@@ -195,6 +198,27 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 Examples:
 * `find John` returns `john` and `John Doe`
 * `find alex david` returns `Alex Yeoh` and `David Li` if those candidates are in your pipeline.
+
+### Finding candidates by skill: `findskill`
+
+Finds candidates by their skills.
+
+Formats: `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or
+`findskill all s/SKILL [s/SKILL]...`
+
+* A single-skill search is case-insensitive and matches the complete skill name; for example, `findskill java`
+  matches `Java`, but `findskill SQL` does not match `NoSQL`.
+* `any` returns candidates with at least one of the specified skills.
+* `all` returns candidates with every specified skill.
+* The skill must contain 1–30 alphanumeric characters with no spaces.
+* Skills supplied with `any` or `all` are deduplicated case-insensitively, preserving the first spelling.
+* If no candidates match, Scoutly displays `No candidates found matching skill search: SKILL(S).`
+* The displayed indexes are renumbered after filtering and can be used by subsequent commands.
+
+Examples:
+* `findskill Java` returns candidates with the `Java` skill.
+* `findskill any s/Java s/Python` returns candidates with Java or Python.
+* `findskill all s/Java s/SQL` returns candidates with both Java and SQL.
 
 ### Adding or removing a remark: `remark`
 
@@ -317,8 +341,9 @@ Action     | Format, Examples
 **Clear**  | `clear`
 **Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
-**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
 **List**   | `list`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`

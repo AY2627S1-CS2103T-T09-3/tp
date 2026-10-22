@@ -1,5 +1,6 @@
 package seedu.address.testutil;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -10,6 +11,7 @@ import seedu.address.model.person.Email;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.Skill;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -37,6 +39,9 @@ public class EditPersonDescriptorBuilder {
         descriptor.setEmail(person.getEmail());
         descriptor.setAddress(person.getAddress());
         descriptor.setTags(person.getTags());
+        if (!person.getSkills().isEmpty()) {
+            descriptor.setSkills(person.getSkills());
+        }
     }
 
     /**
@@ -78,6 +83,15 @@ public class EditPersonDescriptorBuilder {
     public EditPersonDescriptorBuilder withTags(String... tags) {
         Set<Tag> tagSet = Stream.of(tags).map(Tag::new).collect(Collectors.toSet());
         descriptor.setTags(tagSet);
+        return this;
+    }
+
+    /**
+     * Parses the {@code skills} into a {@code Set<Skill>} and sets it to the descriptor being built.
+     */
+    public EditPersonDescriptorBuilder withSkills(String... skills) {
+        Set<Skill> skillSet = Stream.of(skills).map(Skill::new).collect(Collectors.toCollection(LinkedHashSet::new));
+        descriptor.setSkills(skillSet);
         return this;
     }
 

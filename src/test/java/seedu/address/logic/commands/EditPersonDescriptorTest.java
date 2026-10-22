@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_AMY;
 import static seedu.address.logic.commands.CommandTestUtil.DESC_BOB;
@@ -11,9 +12,12 @@ import static seedu.address.logic.commands.CommandTestUtil.VALID_NAME_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
 import static seedu.address.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 
 public class EditPersonDescriptorTest {
@@ -55,6 +59,22 @@ public class EditPersonDescriptorTest {
         // different tags -> returns false
         editedAmy = new EditPersonDescriptorBuilder(DESC_AMY).withTags(VALID_TAG_HUSBAND).build();
         assertFalse(DESC_AMY.equals(editedAmy));
+
+        // different skills -> returns false
+        editedAmy = new EditPersonDescriptorBuilder(DESC_AMY).withSkills("Java").build();
+        assertFalse(DESC_AMY.equals(editedAmy));
+    }
+
+    @Test
+    public void skills_areDefensivelyCopiedAndUnmodifiable() {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder().withSkills("Java").build();
+        Set<Skill> skills = descriptor.getSkills().orElseThrow();
+        EditPersonDescriptor copy = new EditPersonDescriptor(descriptor);
+
+        descriptor.setSkills(Set.of(new Skill("SQL")));
+
+        assertThrows(UnsupportedOperationException.class, () -> skills.add(new Skill("SQL")));
+        assertEquals(Set.of(new Skill("Java")), copy.getSkills().orElseThrow());
     }
 
     @Test
@@ -65,7 +85,8 @@ public class EditPersonDescriptorTest {
                 + editPersonDescriptor.getPhone().orElse(null) + ", email="
                 + editPersonDescriptor.getEmail().orElse(null) + ", address="
                 + editPersonDescriptor.getAddress().orElse(null) + ", tags="
-                + editPersonDescriptor.getTags().orElse(null) + "}";
+                + editPersonDescriptor.getTags().orElse(null) + ", skills="
+                + editPersonDescriptor.getSkills().orElse(null) + "}";
         assertEquals(expected, editPersonDescriptor.toString());
     }
 }
