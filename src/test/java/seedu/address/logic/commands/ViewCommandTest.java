@@ -11,6 +11,8 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import seedu.address.commons.core.index.Index;
@@ -155,7 +157,10 @@ public class ViewCommandTest {
         addressBook.addPerson(first);
         addressBook.addPerson(second);
         model = new ModelManager(addressBook, new UserPrefs());
-        assertCommandFailure(new ViewCommand(new Name("amy bee")), model, ViewCommand.MESSAGE_AMBIGUOUS_NAME);
+        String expectedError = "Multiple candidates match \"amy bee\":\n"
+                + "1. Amy Bee — Phone: 85355255\n2. AMY BEE — Phone: 91234567\n"
+                + "Use view INDEX to choose a candidate.";
+        assertCommandFailure(new ViewCommand(new Name("amy bee")), model, expectedError);
         assertTrue(new ViewCommand(INDEX_SECOND_PERSON).execute(model).getFeedbackToUser()
                 .contains("Email: other@example.com"));
 
@@ -164,6 +169,50 @@ public class ViewCommandTest {
         expectedModel.updateFilteredPersonList(person -> person.getEmail().equals(first.getEmail()));
         CommandResult expected = new ViewCommand(INDEX_FIRST_PERSON).execute(model);
         assertCommandSuccess(new ViewCommand(new Name("amy bee")), model, expected, expectedModel);
+    }
+
+    @Test
+    public void execute_ambiguousName_showsUnfilteredDisplayedIndicesAndPreservesModel() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        Model workflowModel = new ModelManager();
+        parser.parseCommand("add n/Amy Bee p/85355255 s/Java").execute(workflowModel);
+        parser.parseCommand("add n/Other Candidate p/82345678 s/SQL").execute(workflowModel);
+        parser.parseCommand("add n/AMY BEE p/91234567 s/Python").execute(workflowModel);
+        Model expectedModel = new ModelManager(workflowModel.getAddressBook(), new UserPrefs());
+        String expectedError = "Multiple candidates match \"amy bee\":\n"
+                + "1. Amy Bee — Phone: 85355255\n3. AMY BEE — Phone: 91234567\n"
+                + "Use view INDEX to choose a candidate.";
+
+        assertCommandFailure(parser.parseCommand("view amy bee"), workflowModel, expectedError);
+        assertEquals(expectedModel, workflowModel);
+        CommandResult result = parser.parseCommand("view 3").execute(workflowModel);
+        assertTrue(result.getFeedbackToUser().contains("Name: AMY BEE\nPhone: 91234567\n"));
+        assertEquals(expectedModel, workflowModel);
+    }
+
+    @Test
+    public void execute_ambiguousName_showsFilteredIndicesAndPreservesFilter() throws Exception {
+        AddressBookParser parser = new AddressBookParser();
+        Model workflowModel = new ModelManager();
+        parser.parseCommand("add n/Hidden Candidate p/81111111 s/SQL").execute(workflowModel);
+        parser.parseCommand("add n/Amy Bee p/85355255 s/Java").execute(workflowModel);
+        parser.parseCommand("add n/Amy Tan p/82345678 s/SQL").execute(workflowModel);
+        parser.parseCommand("add n/AMY BEE p/91234567 s/Python").execute(workflowModel);
+        parser.parseCommand("find Amy").execute(workflowModel);
+        Model expectedModel = new ModelManager(workflowModel.getAddressBook(), new UserPrefs());
+        parser.parseCommand("find Amy").execute(expectedModel);
+        List<Person> displayedBefore = List.copyOf(workflowModel.getFilteredPersonList());
+        String expectedError = "Multiple candidates match \"AMY BEE\":\n"
+                + "1. Amy Bee — Phone: 85355255\n3. AMY BEE — Phone: 91234567\n"
+                + "Use view INDEX to choose a candidate.";
+
+        assertCommandFailure(parser.parseCommand("view AMY BEE"), workflowModel, expectedError);
+        assertEquals(expectedModel, workflowModel);
+        assertEquals(displayedBefore, workflowModel.getFilteredPersonList());
+        CommandResult result = parser.parseCommand("view 3").execute(workflowModel);
+        assertTrue(result.getFeedbackToUser().contains("Name: AMY BEE\nPhone: 91234567\n"));
+        assertEquals(expectedModel, workflowModel);
+        assertEquals(displayedBefore, workflowModel.getFilteredPersonList());
     }
 
     @Test
@@ -222,7 +271,10 @@ public class ViewCommandTest {
         assertCommandSuccess(new AddressBookParser().parseCommand("view  aMy \t Bee  "),
                 model, expected, expectedModel);
         model.addPerson(new PersonBuilder().withName("AMY BEE").withPhone("91234567").build());
-        assertCommandFailure(new ViewCommand(new Name("Amy Bee")), model, ViewCommand.MESSAGE_AMBIGUOUS_NAME);
+        String expectedError = "Multiple candidates match \"Amy Bee\":\n"
+                + "1. Amy   Bee — Phone: 85355255\n2. AMY BEE — Phone: 91234567\n"
+                + "Use view INDEX to choose a candidate.";
+        assertCommandFailure(new ViewCommand(new Name("Amy Bee")), model, expectedError);
     }
 
     @Test
