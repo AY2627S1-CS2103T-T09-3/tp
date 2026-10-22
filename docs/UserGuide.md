@@ -243,14 +243,28 @@ Examples:
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
 
-### Deleting a candidate: `delete`
+### Deleting candidates: `delete`
 
-Permanently deletes the specified candidate's record.
+Permanently deletes one candidate by index or full name, or several candidates by their displayed indexes.
 
-Format: `delete INDEX` or `delete FULL_NAME`
+Format: `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`
 
-* Both formats select candidates from the **currently displayed list**. After a `find` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
+* All formats select candidates from the **currently displayed list**. After a `find` or `findskill` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
 * `INDEX` refers to the index number shown in the displayed list and **must be a positive integer** 1, 2, 3, ...
+* For batch deletion, separate indexes with commas, for example `delete 1,3,5`. Spaces around commas are allowed,
+  and indexes may be supplied in any order.
+* All indexes refer to the list **before the command runs**. For example, `delete 1,3` deletes the original first
+  and third candidates, even though the displayed indexes change after deletion.
+* Every index is checked before deletion. Duplicate indexes, empty entries, non-integers, non-positive values,
+  values larger than 2147483647, or indexes outside the displayed list cause the entire command to fail:
+  **no candidates are deleted**. For example, `delete 1,1`, `delete 1,`, and `delete 1,999` (when fewer than 999
+  candidates are displayed) all fail.
+* Batch deletion accepts indexes only; do not mix names and indexes or use ranges such as `delete 1-3`.
+  Names containing spaces, including numeric names such as `1 3`, retain full-name lookup behavior; use commas
+  to select multiple indexes.
+* Successful batch deletion reports the number of deleted candidates and their details in the order of the
+  supplied indexes. Candidates hidden by the current filter remain stored, and the remaining displayed
+  candidates retain their order and filter.
 * `FULL_NAME` must match the candidate's entire name, **ignoring case**. Partial names do not match. Do not put quotation marks around the name.
 * Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
@@ -262,6 +276,9 @@ Format: `delete INDEX` or `delete FULL_NAME`
 Examples:
 * `list` followed by `delete 2` deletes the 2nd candidate in the candidate pipeline.
 * `find Betsy` followed by `delete 1` deletes the 1st candidate in the results of the `find` command.
+* `delete 1,3,5` deletes the original 1st, 3rd, and 5th displayed candidates.
+* `findskill Java` followed by `delete 3, 1` deletes the 3rd and 1st displayed Java candidates, provided at least
+  three matches are displayed. Other candidates are preserved.
 * `delete Alice Pauline` deletes the candidate named Alice Pauline if exactly one displayed candidate matches.
 * `delete alice pauline` matches the same full name, ignoring case.
 
@@ -330,7 +347,7 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add n/NAME p/PHONE s/SKILL [s/SKILL]...` <br> e.g., `add n/James Ho p/22224444 s/Java s/SQL`
 **Clear**  | `clear`
-**Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
+**Delete** | `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`<br> e.g., `delete 3`, `delete 1,3,5`, or `delete Alice Pauline`
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`

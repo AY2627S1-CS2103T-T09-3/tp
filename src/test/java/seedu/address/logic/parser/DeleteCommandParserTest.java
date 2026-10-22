@@ -5,8 +5,11 @@ import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailur
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.model.person.Name;
 
@@ -34,6 +37,32 @@ public class DeleteCommandParserTest {
     @Test
     public void parse_nameWithWhitespace_normalizesName() {
         assertParseSuccess(parser, "  Alice \t Pauline  ", new DeleteCommand(new Name("Alice Pauline")));
+    }
+
+    @Test
+    public void parse_multipleIndexes_preservesRequestedOrder() {
+        DeleteCommand expected = new DeleteCommand(List.of(Index.fromOneBased(5), INDEX_FIRST_PERSON,
+                Index.fromOneBased(3)));
+        assertParseSuccess(parser, "5,1,3", expected);
+        assertParseSuccess(parser, " 5 , 1,\t3 ", expected);
+        assertParseSuccess(parser, "1,2147483647",
+                new DeleteCommand(List.of(INDEX_FIRST_PERSON, Index.fromOneBased(Integer.MAX_VALUE))));
+    }
+
+    @Test
+    public void parse_duplicateIndexes_throwsParseException() {
+        for (String input : List.of("1,1", "1,2,1", "1, 1", "1,01")) {
+            assertParseFailure(parser, input, DeleteCommand.MESSAGE_DUPLICATE_INDEX);
+        }
+    }
+
+    @Test
+    public void parse_malformedIndexList_throwsParseException() {
+        String expectedMessage = String.format(MESSAGE_INVALID_COMMAND_FORMAT, DeleteCommand.MESSAGE_USAGE);
+        for (String input : List.of(",", ",1", "1,", "1,,2", "1, ,2", "1,0", "1,-2", "1,+2", "1,2.5",
+                "1,2147483648", "1,999999999999999999999999", "1,Alice", "Alice,Bob", "1,2 3", "1,2-4")) {
+            assertParseFailure(parser, input, expectedMessage);
+        }
     }
 
     @Test
