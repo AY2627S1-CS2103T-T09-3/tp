@@ -13,6 +13,7 @@ Scoutly is a desktop candidate pipeline and recruitment management application f
 - Add, list, and delete candidates.
 - View a candidate’s profile.
 - Update a candidate’s hiring stage: Applied, Screened, Interview, Offered, or Rejected.
+- Summarize all candidates by hiring stage with `summary`.
 - Receive clear feedback for successful commands and invalid input.
 
 Use `stage INDEX s/STAGE`, for example `stage 1 s/Interview`, to update a candidate's hiring stage. New candidates default to Applied; stages appear on candidate cards and in `view` output and are saved across restarts. The dashboard shown above remains a planned layout.

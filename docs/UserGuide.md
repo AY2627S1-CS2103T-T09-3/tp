@@ -77,7 +77,7 @@ use their displayed index or add a candidate with a different name or phone numb
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
 * Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
-  For example, `help 123` is interpreted as `help`. The `list` command accepts only the optional `s/STAGE` parameter.
+  For example, `help 123` is interpreted as `help`. The `list` command accepts only the optional `s/STAGE` parameter, and the `summary` command rejects extra parameters; use it on its own.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
@@ -134,11 +134,38 @@ Format: `list [s/STAGE]`
 * If no candidates match the selected stage, Scoutly displays `No candidates found at the Interview stage.`
 * Invalid parameters show either the command usage instructions or the allowed stage values.
 
+### Summarizing the hiring pipeline: `summary`
+
+Shows the number of candidates at every hiring stage and the total number of stored candidates.
+
+Format: `summary`
+
+* Always counts **all stored candidates**, including candidates hidden by `find` or another filter.
+* Shows Applied, Screened, Interview, Offered, and Rejected in that order, including stages with zero candidates.
+* Leaves candidate data, displayed order, and the current filter unchanged.
+* Recalculates the counts each time, reflecting additions, deletions, and stage changes.
+* Takes no parameters; extra arguments show usage instructions.
+* The summary appears in the command result area. Scroll within that area to read the full result.
+
+For example:
+
+```text
+Hiring-stage summary — all candidates
+Applied: 8
+Screened: 5
+Interview: 3
+Offered: 2
+Rejected: 4
+Total: 22
+```
+
+An empty pipeline shows zero for every stage and the total. Running `summary` after `find Jordan` still summarizes the entire pipeline while keeping Jordan's search results visible.
+
 ### Viewing a candidate profile: `view`
 
 Displays a candidate's name, phone, email, address, tags, remark, hiring stage, and skills in the command result area.
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
-skills are shown in deterministic alphabetical order. Missing tags, skills, or an empty remark are shown as `None`.
+skills are shown in deterministic alphabetical order. Missing email, address, tags, skills, or an empty remark are shown as `None`.
 
 Format: `view INDEX` or `view FULL_NAME`
 
@@ -151,7 +178,7 @@ Format: `view INDEX` or `view FULL_NAME`
 * All-digit input is treated as an index. Use the displayed index to view a candidate whose full name is numeric.
 * A missing or malformed argument shows the command usage. An index outside the displayed list shows an error.
 * If no displayed candidate matches the name, Scoutly suggests using `list` to show all candidates.
-* If multiple displayed candidates match the name, use `view INDEX` to choose the intended candidate.
+* If multiple displayed candidates match the name, the error lists their displayed indices, names, and phone numbers. Use `view INDEX` with one of those indices to choose the intended candidate.
 
 Examples:
 * `list` followed by `view 2` displays the second candidate's profile.
@@ -162,12 +189,15 @@ Examples:
 
 Edits an existing candidate in your pipeline.
 
-Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
+Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`
 
 * Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
 * Existing values will be updated to the input values.
-* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage; `edit` does not support changing skills.
+* Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
+* If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
+* Successful edits use candidate-oriented feedback; when skills are changed, the resulting skills are listed in deterministic alphabetical order.
+* Every `s/` prefix must be followed by a valid skill. A bare `s/` is rejected.
 * When editing tags, all of the candidate's existing tags are removed; adding tags is not cumulative.
 * To remove all of a candidate's tags, enter `t/` without a tag after it.
 
@@ -190,6 +220,27 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 Examples:
 * `find John` returns `john` and `John Doe`
 * `find alex david` returns `Alex Yeoh` and `David Li` if those candidates are in your pipeline.
+
+### Finding candidates by skill: `findskill`
+
+Finds candidates by their skills.
+
+Formats: `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or
+`findskill all s/SKILL [s/SKILL]...`
+
+* A single-skill search is case-insensitive and matches the complete skill name; for example, `findskill java`
+  matches `Java`, but `findskill SQL` does not match `NoSQL`.
+* `any` returns candidates with at least one of the specified skills.
+* `all` returns candidates with every specified skill.
+* The skill must contain 1–30 alphanumeric characters with no spaces.
+* Skills supplied with `any` or `all` are deduplicated case-insensitively, preserving the first spelling.
+* If no candidates match, Scoutly displays `No candidates found matching skill search: SKILL(S).`
+* The displayed indexes are renumbered after filtering and can be used by subsequent commands.
+
+Examples:
+* `findskill Java` returns candidates with the `Java` skill.
+* `findskill any s/Java s/Python` returns candidates with Java or Python.
+* `findskill all s/Java s/SQL` returns candidates with both Java and SQL.
 
 ### Adding or removing a remark: `remark`
 
@@ -214,6 +265,7 @@ Format: `stage INDEX s/STAGE`
 * Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed and reports `[Name] is already at [Stage].` without changing the candidate.
 * The command preserves the current search filter and all other candidate details.
 * The stage appears on the candidate's card and in `view INDEX`, and is saved automatically across restarts.
+* Candidate cards show a labelled stage badge: Applied in grey, Screened in blue, Interview in purple, Offered in green, and Rejected in red. The stage name is always shown, so you do not need to rely on colour. Badges reflect the current stage after an update.
 * New candidates and older saved records without a stage default to **Applied**. Editing details or remarks preserves the stage.
 * Missing arguments or an invalid index format show usage instructions. An empty or unknown stage shows the allowed values; an index outside the displayed list shows an error. Failed commands do not change the candidate's stage.
 
@@ -223,14 +275,28 @@ Examples:
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
 
-### Deleting a candidate: `delete`
+### Deleting candidates: `delete`
 
-Permanently deletes the specified candidate's record.
+Permanently deletes one candidate by index or full name, or several candidates by their displayed indexes.
 
-Format: `delete INDEX` or `delete FULL_NAME`
+Format: `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`
 
-* Both formats select candidates from the **currently displayed list**. After a `find` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
+* All formats select candidates from the **currently displayed list**. After a `find` or `findskill` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
 * `INDEX` refers to the index number shown in the displayed list and **must be a positive integer** 1, 2, 3, ...
+* For batch deletion, separate indexes with commas, for example `delete 1,3,5`. Spaces around commas are allowed,
+  and indexes may be supplied in any order.
+* All indexes refer to the list **before the command runs**. For example, `delete 1,3` deletes the original first
+  and third candidates, even though the displayed indexes change after deletion.
+* Every index is checked before deletion. Duplicate indexes, empty entries, non-integers, non-positive values,
+  values larger than 2147483647, or indexes outside the displayed list cause the entire command to fail:
+  **no candidates are deleted**. For example, `delete 1,1`, `delete 1,`, and `delete 1,999` (when fewer than 999
+  candidates are displayed) all fail.
+* Batch deletion accepts indexes only; do not mix names and indexes or use ranges such as `delete 1-3`.
+  Names containing spaces, including numeric names such as `1 3`, retain full-name lookup behavior; use commas
+  to select multiple indexes.
+* Successful batch deletion reports the number of deleted candidates and their details in the order of the
+  supplied indexes. Candidates hidden by the current filter remain stored, and the remaining displayed
+  candidates retain their order and filter.
 * `FULL_NAME` must match the candidate's entire name, **ignoring case**. Partial names do not match. Do not put quotation marks around the name.
 * Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
@@ -242,6 +308,9 @@ Format: `delete INDEX` or `delete FULL_NAME`
 Examples:
 * `list` followed by `delete 2` deletes the 2nd candidate in the candidate pipeline.
 * `find Betsy` followed by `delete 1` deletes the 1st candidate in the results of the `find` command.
+* `delete 1,3,5` deletes the original 1st, 3rd, and 5th displayed candidates.
+* `findskill Java` followed by `delete 3, 1` deletes the 3rd and 1st displayed Java candidates, provided at least
+  three matches are displayed. Other candidates are preserved.
 * `delete Alice Pauline` deletes the candidate named Alice Pauline if exactly one displayed candidate matches.
 * `delete alice pauline` matches the same full name, ignoring case.
 
@@ -310,11 +379,13 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add n/NAME p/PHONE s/SKILL [s/SKILL]...` <br> e.g., `add n/James Ho p/22224444 s/Java s/SQL`
 **Clear**  | `clear`
-**Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
+**Delete** | `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`<br> e.g., `delete 3`, `delete 1,3,5`, or `delete Alice Pauline`
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
-**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
 **List**   | `list`
+**Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`

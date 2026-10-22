@@ -1,0 +1,60 @@
+@startuml
+!include style.puml
+skinparam ArrowFontStyle plain
+skinparam ParticipantFontColor #FFFFFF
+
+participant "d:DeleteCommand" as DeleteCommand LOGIC_COLOR
+participant "PersonLookup" as PersonLookup LOGIC_COLOR
+participant "m:Model" as Model MODEL_COLOR
+participant "r:CommandResult" as CommandResult LOGIC_COLOR
+
+[-> DeleteCommand : execute(m)
+activate DeleteCommand
+DeleteCommand -> Model : getFilteredPersonList()
+activate Model
+Model --> DeleteCommand : displayedPersons
+deactivate Model
+
+DeleteCommand -> PersonLookup : findByName(displayedPersons, targetName,\nnotFoundMessage, ambiguityCallback)
+note over PersonLookup
+Match entire normalized names, ignoring case,
+only within displayedPersons.
+end note
+
+alt no matching candidate
+    PersonLookup --> DeleteCommand : throws CommandException (not found)
+    DeleteCommand -->[ : throws CommandException
+else multiple matching candidates
+    PersonLookup -> DeleteCommand : formatAmbiguousName(displayedPersons, matches)\nvia the supplied callback
+    activate DeleteCommand
+    note over DeleteCommand
+    Include each match's displayed index,
+    stored name and email, followed by
+    guidance to use delete INDEX.
+    end note
+    DeleteCommand --> PersonLookup : ambiguityMessage
+    deactivate DeleteCommand
+    PersonLookup --> DeleteCommand : throws CommandException (ambiguityMessage)
+    DeleteCommand -->[ : throws CommandException
+else exactly one matching candidate
+    PersonLookup --> DeleteCommand : personToDelete
+    DeleteCommand -> Model : deletePerson(personToDelete)
+    activate Model
+    Model --> DeleteCommand
+    deactivate Model
+
+    create CommandResult
+    DeleteCommand -> CommandResult : new CommandResult(successMessage)
+    activate CommandResult
+    CommandResult --> DeleteCommand : r
+    deactivate CommandResult
+    DeleteCommand -->[ : r
+end
+deactivate DeleteCommand
+
+note over DeleteCommand, Model
+Missing or ambiguous names leave the model unchanged.
+A unique match removes only that candidate;
+the filter and relative order of survivors are preserved.
+end note
+@enduml
