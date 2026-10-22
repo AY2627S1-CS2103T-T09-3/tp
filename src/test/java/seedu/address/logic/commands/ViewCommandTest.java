@@ -2,6 +2,7 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
@@ -11,11 +12,18 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
@@ -292,6 +300,59 @@ public class ViewCommandTest {
         assertFalse(command.equals(new ViewCommand(INDEX_FIRST_PERSON)));
         assertFalse(new ViewCommand(INDEX_FIRST_PERSON).equals(command));
         assertEquals(ViewCommand.class.getCanonicalName() + "{targetName=" + name + "}", command.toString());
+    }
+
+    @Test
+    public void execute_logsLookupOutcomesWithoutCandidateDetails() throws Exception {
+        ViewCommand successCommand = new ViewCommand(INDEX_FIRST_PERSON);
+        Logger logger = LogsCenter.getLogger(ViewCommand.class);
+        Level originalLevel = logger.getLevel();
+        boolean originalUseParentHandlers = logger.getUseParentHandlers();
+        List<LogRecord> records = new ArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                records.add(record);
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() {}
+        };
+        logger.addHandler(handler);
+        logger.setLevel(Level.ALL);
+        logger.setUseParentHandlers(false);
+        try {
+            Model testModel = new ModelManager();
+            testModel.addPerson(new PersonBuilder().withName("Private Candidate").withPhone("81111111").build());
+            testModel.addPerson(new PersonBuilder().withName("Private Candidate").withPhone("82222222").build());
+            successCommand.execute(testModel);
+            assertThrows(CommandException.class, ()
+                    -> new ViewCommand(new Name("Private Candidate")).execute(testModel));
+            assertThrows(CommandException.class, ()
+                    -> new ViewCommand(new Name("Missing Candidate")).execute(testModel));
+            assertThrows(CommandException.class, ()
+                    -> new ViewCommand(Index.fromOneBased(3)).execute(testModel));
+
+            assertEquals(4, records.size());
+            assertEquals(Level.INFO, records.get(0).getLevel());
+            assertTrue(records.get(1).getMessage().contains("mode=name, displayedCandidates=2"));
+            assertTrue(records.get(3).getMessage().contains("mode=index, displayedCandidates=2"));
+            for (LogRecord record : records) {
+                String message = record.getMessage();
+                assertFalse(message.contains("Private Candidate"));
+                assertFalse(message.contains("Missing Candidate"));
+                assertFalse(message.contains("81111111"));
+                assertFalse(message.contains("82222222"));
+                assertNull(record.getThrown());
+            }
+        } finally {
+            logger.removeHandler(handler);
+            logger.setLevel(originalLevel);
+            logger.setUseParentHandlers(originalUseParentHandlers);
+        }
     }
 
     @Test

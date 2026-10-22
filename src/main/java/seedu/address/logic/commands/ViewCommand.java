@@ -4,8 +4,10 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.logic.commands.exceptions.CommandException;
@@ -39,6 +41,8 @@ public class ViewCommand extends Command {
     public static final String MESSAGE_AMBIGUOUS_NAME =
             "Multiple candidates match \"%1$s\":\n%2$s\nUse view INDEX to choose a candidate.";
 
+    private static final Logger logger = LogsCenter.getLogger(ViewCommand.class);
+
     private final Index targetIndex;
     private final Name targetName;
 
@@ -63,8 +67,16 @@ public class ViewCommand extends Command {
         requireNonNull(model);
         List<Person> lastShownList = model.getFilteredPersonList();
 
-        Person candidate = targetName == null
-                ? getPersonByIndex(lastShownList) : getPersonByName(lastShownList);
+        String lookupMode = targetName == null ? "index" : "name";
+        Person candidate;
+        try {
+            candidate = targetName == null ? getPersonByIndex(lastShownList) : getPersonByName(lastShownList);
+        } catch (CommandException e) {
+            logger.fine("Candidate profile lookup rejected: mode=" + lookupMode
+                    + ", displayedCandidates=" + lastShownList.size());
+            throw e;
+        }
+        logger.info("Prepared candidate profile using " + lookupMode + " lookup.");
         String tags = candidate.getTags().stream()
                 .map(tag -> tag.tagName)
                 .sorted()
