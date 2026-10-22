@@ -19,6 +19,7 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.FindSkillCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.StageCommand;
@@ -29,6 +30,7 @@ import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
@@ -76,6 +78,20 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_editClearsTagsAndUpdatesSkills() throws Exception {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withTags()
+                .withSkills("Java")
+                .build();
+        String commandText = EditCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " "
+                + PersonUtil.getEditPersonDescriptorDetails(descriptor);
+
+        EditCommand command = (EditCommand) parser.parseCommand(commandText);
+
+        assertEquals(new EditCommand(INDEX_FIRST_PERSON, descriptor), command);
+    }
+
+    @Test
     public void parseCommand_exit() throws Exception {
         assertTrue(parser.parseCommand(ExitCommand.COMMAND_WORD) instanceof ExitCommand);
         assertTrue(parser.parseCommand(ExitCommand.COMMAND_WORD + " 3") instanceof ExitCommand);
@@ -87,6 +103,18 @@ public class AddressBookParserTest {
         FindCommand command = (FindCommand) parser.parseCommand(
                 FindCommand.COMMAND_WORD + " " + keywords.stream().collect(Collectors.joining(" ")));
         assertEquals(new FindCommand(new NameContainsKeywordsPredicate(keywords)), command);
+    }
+
+    @Test
+    public void parseCommand_findSkill() throws Exception {
+        assertEquals(new FindSkillCommand(new Skill("Java")),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " Java"));
+        assertEquals(new FindSkillCommand(FindSkillCommand.SearchMode.ANY,
+                        List.of(new Skill("Java"), new Skill("Python"))),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " any s/Java s/Python"));
+        assertEquals(new FindSkillCommand(FindSkillCommand.SearchMode.ALL,
+                        List.of(new Skill("Java"), new Skill("SQL"))),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " all s/Java s/SQL"));
     }
 
     @Test

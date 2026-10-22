@@ -88,24 +88,32 @@ The `UI` component,
 
 Here's a (partial) class diagram of the `Logic` component:
 
-<puml src="diagrams/LogicClassDiagram.puml" width="550"/>
+<puml src="diagrams/LogicClassDiagram.puml" width="700"/>
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+`ViewCommandParser` creates a `ViewCommand`, which extends `Command`. When viewing by full name,
+`ViewCommand` delegates candidate matching to the shared `PersonLookup` helper.
+
+The sequence diagram below illustrates parsing and command execution for `delete 1`, including an invalid
+displayed index. Internal index resolution is summarized. The surrounding `LogicManager` data snapshot,
+storage save, and save-failure recovery are omitted.
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
 
-<box type="info" seamless>
+`DeleteCommand` retrieves the currently displayed list and validates the index before selecting a `Person`.
+It passes that candidate object to `Model#deletePerson`, rather than passing the index. An out-of-range
+index raises a `CommandException` without deleting anything.
 
-**Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, the lifeline continues till the end of diagram.
-</box>
+The following sequence diagram shows a successful `edit 1 s/Java s/SQL` command. It also highlights the validation path for an invalid skill and the rollback path when saving the updated address book fails.
 
+<puml src="diagrams/EditCandidateSkillsSequenceDiagram.puml" alt="Interactions Inside the Logic Component for editing candidate skills" />
+
+For a skill edit, `EditCommandParser` tokenizes and validates every `s/` value before constructing an `EditCommand`; parsing does not modify the model. `EditCommand` uses the index from the currently displayed list, replaces the complete skill set, and constructs the updated candidate while preserving the other candidate fields. After the model is updated, `LogicManager` saves the address book. If saving fails, it restores both the original data and the original filter before reporting the error.
 
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
-   Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
+1. The command can communicate with the `Model` when it is executed (e.g. to retrieve the displayed list and delete a person).
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
@@ -159,6 +167,23 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### Viewing candidates with matching names
+
+`ViewCommand` resolves full names using `PersonLookup.findByName`. For ambiguous names, its callback formats only the matching candidates with their one-based indices in the current displayed list, names, and phone numbers. Phone numbers distinguish candidates even when optional email fields are empty. The command leaves candidate data and the displayed list unchanged, so the user can select a match with `view INDEX` immediately.
+
+### Viewing a candidate profile
+
+`view INDEX` selects a candidate by position in the currently displayed list. `view FULL_NAME` instead
+uses `PersonLookup` to match normalized full names, ignoring case, within that same list.
+The following sequence diagram focuses on `ViewCommand.execute` for the full-name form;
+command parsing and the surrounding `LogicManager` save/error-handling flow are omitted.
+
+<puml src="diagrams/ViewProfileSequenceDiagram.puml" alt="Full-name candidate profile lookup, including missing and ambiguous matches" />
+
+A missing or ambiguous name raises a `CommandException`. A unique match supplies the profile fields,
+which are formatted into a `CommandResult`. The command reads candidate data without changing the
+active filter or displayed order. Consequently, displayed indices remain suitable for a subsequent command.
+
 ### Hiring stages
 
 Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTERVIEW`, `OFFERED`, or `REJECTED`. Constructors without an explicit stage default to `APPLIED`. Stage changes affect full person equality, while identity continues to depend on the normalized name and phone number.
@@ -174,6 +199,27 @@ Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTE
 `SummaryCommandParser` accepts `summary` without arguments; `AddressBookParser` routes it to `SummaryCommand`. Extra parameters are rejected with command usage instructions.
 
 `SummaryCommand` reads `Model#getAddressBook().getPersonList()` so the summary includes all candidates, independently of the active filter. It counts stages in an `EnumMap` in one pass and formats every `HiringStage` in enum order, using zero for absent stages, followed by the total. Counts are recalculated on every invocation. The command does not replace candidates or modify the displayed list, filter, or order.
+### Deleting a candidate by full name
+
+`delete FULL_NAME` searches only the currently displayed candidates. `DeleteCommand` delegates the lookup
+to the shared `PersonLookup` helper, which normalizes whitespace and compares entire names ignoring case.
+A candidate hidden by the current filter cannot be selected by name.
+
+The following sequence diagram focuses on `DeleteCommand.execute` after a full name has been parsed.
+Command parsing and the surrounding `LogicManager` data snapshot, save, and save-failure recovery are omitted.
+
+<puml src="diagrams/DeleteByNameSequenceDiagram.puml" alt="Full-name deletion with unique, missing and ambiguous candidate matches" />
+
+A missing name raises a `CommandException`. For multiple matches, `PersonLookup` invokes the ambiguity-message
+callback supplied by `DeleteCommand`. The message includes each match's actual displayed index, stored name,
+and email, and asks the user to choose with `delete INDEX`. Neither error path deletes a candidate or changes
+the displayed list.
+
+Only a unique match reaches `Model#deletePerson`, passing the resolved `Person`. The command returns a
+`CommandResult` identifying the deleted candidate. Hidden candidates remain stored, and the active filter
+and relative order of the remaining candidates are preserved. After successful command execution,
+`LogicManager` saves the updated data; a failed save restores the original data and filter before reporting
+an error.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -374,7 +420,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 4b. More than one displayed candidate matches the full name, ignoring case.
 
-    * 4b1. Scoutly asks the user to select a candidate using `view INDEX`.
+    * 4b1. Scoutly lists the matching candidates with their displayed indices, names, and phone numbers, then asks the user to select a candidate using `view INDEX`.
     * 4b2. The use case resumes at step 4 without changing candidate data or the displayed list.
 
 **Use case: UC03, Edit a contact**
@@ -563,6 +609,18 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `delete 3`<br>
       Expected: ALICE PAULINE is deleted. Alice Pauline and Alice Tan remain visible. Run `list` to confirm that candidates hidden by the filter remain stored.
+
+### Viewing candidates with matching names
+
+1. Prerequisites: In a test address book, run `add n/Amy Bee p/85355255 s/Java`, `add n/Amy Tan p/82345678 s/SQL`, and `add n/AMY BEE p/91234567 s/Python`. Ensure there are no other candidates whose names contain the word Amy. Run `list` and note each candidate's displayed index.
+1. Test case: `view amy bee`<br>
+   Expected: The error lists only Amy Bee and AMY BEE, with their actual displayed indices and phone numbers 85355255 and 91234567. It asks the user to use `view INDEX`. Candidate data and the displayed list remain unchanged. This also works when both candidates have no email or address.
+1. Test case: Run `view INDEX` using the index shown for AMY BEE.<br>
+   Expected: The profile contains AMY BEE and phone 91234567. Candidate data and the displayed list remain unchanged.
+1. Test case: Run `find Amy`, then `view AMY BEE`.<br>
+   Expected: The error shows Amy Bee at index 1 and AMY BEE at index 3, with their respective phone numbers. Amy Tan is absent from the error. The filter and list order remain unchanged.
+1. Test case: `view 3`<br>
+   Expected: The profile shows AMY BEE and phone 91234567. The filtered list still contains all three Amy candidates in the same order. Run `list` to confirm any candidates hidden by the filter remain stored.
 
 ### Hiring stages
 
