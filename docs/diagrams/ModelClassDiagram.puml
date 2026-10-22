@@ -18,6 +18,9 @@ Class Address
 Class Email
 Class Name
 Class Phone
+Class Remark
+Class HiringStage
+Class Skill
 Class Tag
 
 Class I #FFFFFF
@@ -41,6 +44,9 @@ Person *--> Name
 Person *--> Phone
 Person *--> Email
 Person *--> Address
+Person *--> Remark
+Person --> "1" HiringStage
+Person *--> "*" Skill
 Person *--> "*" Tag
 
 Person -[hidden]up--> I
