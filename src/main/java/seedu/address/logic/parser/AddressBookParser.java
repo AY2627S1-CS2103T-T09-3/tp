@@ -2,6 +2,7 @@ package seedu.address.logic.parser;
 
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_STAGE;
 
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -23,6 +24,7 @@ import seedu.address.logic.commands.StageCommand;
 import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.ViewCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.HiringStage;
 
 /**
  * Parses user input.
@@ -77,7 +79,7 @@ public class AddressBookParser {
         };
     }
 
-    /** Parses the list command and its optional sorting argument. */
+    /** Parses the list command, optionally sorting or filtering by hiring stage. */
     private Command parseListCommand(String arguments) throws ParseException {
         String trimmedArguments = arguments.trim();
         if (trimmedArguments.isEmpty()) {
@@ -86,7 +88,23 @@ public class AddressBookParser {
         if (ListCommand.SORT_BY_NAME_ARGUMENT.equals(trimmedArguments)) {
             return new ListCommand(ListCommand.SortOrder.NAME);
         }
-        throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE));
+        if (trimmedArguments.contains(ListCommand.SORT_BY_NAME_ARGUMENT)) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE));
+        }
+
+        // Preserve the leading separator before s/ so that ArgumentTokenizer recognises the prefix.
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(arguments, PREFIX_STAGE);
+        if (!argMultimap.getPreamble().isEmpty() || argMultimap.getValue(PREFIX_STAGE).isEmpty()) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE));
+        }
+
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_STAGE);
+        try {
+            HiringStage stage = HiringStage.fromString(argMultimap.getValue(PREFIX_STAGE).get());
+            return new ListCommand(stage);
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(HiringStage.MESSAGE_CONSTRAINTS, e);
+        }
     }
 
 }

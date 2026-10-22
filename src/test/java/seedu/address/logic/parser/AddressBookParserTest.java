@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_STAGE;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
@@ -134,6 +136,25 @@ public class AddressBookParserTest {
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name extra"));
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name s/Interview"));
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list s/Interview sort/name"));
+    }
+
+    @Test
+    public void parseCommand_listByStage() throws Exception {
+        assertEquals(new ListCommand(HiringStage.INTERVIEW), parser.parseCommand("list s/Interview"));
+        assertEquals(new ListCommand(HiringStage.INTERVIEW), parser.parseCommand("  list   s/interview  "));
+    }
+
+    @Test
+    public void parseCommand_listRejectsInvalidArguments() {
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
+        String duplicateStage = Messages.getErrorMessageForDuplicatePrefixes(PREFIX_STAGE);
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list interview"));
+        assertThrows(ParseException.class, HiringStage.MESSAGE_CONSTRAINTS, ()
+                -> parser.parseCommand("list s/Interview extra"));
+        assertThrows(ParseException.class, duplicateStage, ()
+                -> parser.parseCommand("list s/Applied s/Interview"));
+        assertThrows(ParseException.class, HiringStage.MESSAGE_CONSTRAINTS, ()
+                -> parser.parseCommand("list s/"));
     }
 
     @Test
