@@ -39,7 +39,7 @@ public class ViewCommand extends Command {
     public static final String MESSAGE_NAME_NOT_FOUND =
             "No candidate with this full name exists in the displayed list. Use list to show all candidates.";
     public static final String MESSAGE_AMBIGUOUS_NAME =
-            "Multiple candidates with this full name exist in the displayed list. Use view INDEX instead.";
+            "Multiple candidates match \"%1$s\":\n%2$s\nUse view INDEX to choose a candidate.";
 
     private static final Logger logger = LogsCenter.getLogger(ViewCommand.class);
 
@@ -81,13 +81,16 @@ public class ViewCommand extends Command {
                 .map(tag -> tag.tagName)
                 .sorted()
                 .collect(Collectors.joining(", "));
+        String email = candidate.getEmail().value;
+        String address = candidate.getAddress().value;
         String remark = candidate.getRemark().value;
         String skills = candidate.getSkills().stream()
                 .sorted(Skill.DISPLAY_ORDER)
                 .map(skill -> skill.value)
                 .collect(Collectors.joining(", "));
         return new CommandResult(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
-                candidate.getName(), candidate.getPhone(), candidate.getEmail(), candidate.getAddress(),
+                candidate.getName(), candidate.getPhone(), email.isEmpty() ? "None" : email,
+                address.isEmpty() ? "None" : address,
                 tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark, candidate.getStage(),
                 skills.isEmpty() ? "None" : skills));
     }
@@ -108,7 +111,19 @@ public class ViewCommand extends Command {
      * @throws CommandException if no candidate or more than one candidate matches
      */
     private Person getPersonByName(List<Person> lastShownList) throws CommandException {
-        return PersonLookup.findByName(lastShownList, targetName, MESSAGE_NAME_NOT_FOUND, MESSAGE_AMBIGUOUS_NAME);
+        return PersonLookup.findByName(lastShownList, targetName, MESSAGE_NAME_NOT_FOUND,
+                matches -> formatAmbiguousName(lastShownList, matches));
+    }
+
+    /**
+     * Formats matching candidates with their indices in the displayed list, names, and phone numbers.
+     */
+    private String formatAmbiguousName(List<Person> lastShownList, List<Person> matches) {
+        String candidates = matches.stream()
+                .map(person -> (lastShownList.indexOf(person) + 1) + ". " + person.getName()
+                        + " — Phone: " + person.getPhone())
+                .collect(Collectors.joining("\n"));
+        return String.format(MESSAGE_AMBIGUOUS_NAME, targetName, candidates);
     }
 
     @Override

@@ -88,11 +88,20 @@ The `UI` component,
 
 Here's a (partial) class diagram of the `Logic` component:
 
-<puml src="diagrams/LogicClassDiagram.puml" width="550"/>
+<puml src="diagrams/LogicClassDiagram.puml" width="700"/>
+
+`ViewCommandParser` creates a `ViewCommand`, which extends `Command`. When viewing by full name,
+`ViewCommand` delegates candidate matching to the shared `PersonLookup` helper.
 
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
+
+The following sequence diagram shows a successful `edit 1 s/Java s/SQL` command. It also highlights the validation path for an invalid skill and the rollback path when saving the updated address book fails.
+
+<puml src="diagrams/EditCandidateSkillsSequenceDiagram.puml" alt="Interactions Inside the Logic Component for editing candidate skills" />
+
+For a skill edit, `EditCommandParser` tokenizes and validates every `s/` value before constructing an `EditCommand`; parsing does not modify the model. `EditCommand` uses the index from the currently displayed list, replaces the complete skill set, and constructs the updated candidate while preserving the other candidate fields. After the model is updated, `LogicManager` saves the address book. If saving fails, it restores both the original data and the original filter before reporting the error.
 
 <box type="info" seamless>
 
@@ -158,6 +167,23 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Viewing candidates with matching names
+
+`ViewCommand` resolves full names using `PersonLookup.findByName`. For ambiguous names, its callback formats only the matching candidates with their one-based indices in the current displayed list, names, and phone numbers. Phone numbers distinguish candidates even when optional email fields are empty. The command leaves candidate data and the displayed list unchanged, so the user can select a match with `view INDEX` immediately.
+
+### Viewing a candidate profile
+
+`view INDEX` selects a candidate by position in the currently displayed list. `view FULL_NAME` instead
+uses `PersonLookup` to match normalized full names, ignoring case, within that same list.
+The following sequence diagram focuses on `ViewCommand.execute` for the full-name form;
+command parsing and the surrounding `LogicManager` save/error-handling flow are omitted.
+
+<puml src="diagrams/ViewProfileSequenceDiagram.puml" alt="Full-name candidate profile lookup, including missing and ambiguous matches" />
+
+A missing or ambiguous name raises a `CommandException`. A unique match supplies the profile fields,
+which are formatted into a `CommandResult`. The command reads candidate data without changing the
+active filter or displayed order. Consequently, displayed indices remain suitable for a subsequent command.
 
 ### Hiring stages
 
@@ -368,7 +394,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 4b. More than one displayed candidate matches the full name, ignoring case.
 
-    * 4b1. Scoutly asks the user to select a candidate using `view INDEX`.
+    * 4b1. Scoutly lists the matching candidates with their displayed indices, names, and phone numbers, then asks the user to select a candidate using `view INDEX`.
     * 4b2. The use case resumes at step 4 without changing candidate data or the displayed list.
 
 **Use case: UC03, Edit a contact**
@@ -557,6 +583,18 @@ testers are expected to do more *exploratory* testing.
 
    1. Test case: `delete 3`<br>
       Expected: ALICE PAULINE is deleted. Alice Pauline and Alice Tan remain visible. Run `list` to confirm that candidates hidden by the filter remain stored.
+
+### Viewing candidates with matching names
+
+1. Prerequisites: In a test address book, run `add n/Amy Bee p/85355255 s/Java`, `add n/Amy Tan p/82345678 s/SQL`, and `add n/AMY BEE p/91234567 s/Python`. Ensure there are no other candidates whose names contain the word Amy. Run `list` and note each candidate's displayed index.
+1. Test case: `view amy bee`<br>
+   Expected: The error lists only Amy Bee and AMY BEE, with their actual displayed indices and phone numbers 85355255 and 91234567. It asks the user to use `view INDEX`. Candidate data and the displayed list remain unchanged. This also works when both candidates have no email or address.
+1. Test case: Run `view INDEX` using the index shown for AMY BEE.<br>
+   Expected: The profile contains AMY BEE and phone 91234567. Candidate data and the displayed list remain unchanged.
+1. Test case: Run `find Amy`, then `view AMY BEE`.<br>
+   Expected: The error shows Amy Bee at index 1 and AMY BEE at index 3, with their respective phone numbers. Amy Tan is absent from the error. The filter and list order remain unchanged.
+1. Test case: `view 3`<br>
+   Expected: The profile shows AMY BEE and phone 91234567. The filtered list still contains all three Amy candidates in the same order. Run `list` to confirm any candidates hidden by the filter remain stored.
 
 ### Hiring stages
 
