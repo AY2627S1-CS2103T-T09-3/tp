@@ -69,13 +69,16 @@ public class ViewCommand extends Command {
                 .map(tag -> tag.tagName)
                 .sorted()
                 .collect(Collectors.joining(", "));
+        String email = candidate.getEmail().value;
+        String address = candidate.getAddress().value;
         String remark = candidate.getRemark().value;
         String skills = candidate.getSkills().stream()
                 .sorted(Skill.DISPLAY_ORDER)
                 .map(skill -> skill.value)
                 .collect(Collectors.joining(", "));
         return new CommandResult(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
-                candidate.getName(), candidate.getPhone(), candidate.getEmail(), candidate.getAddress(),
+                candidate.getName(), candidate.getPhone(), email.isEmpty() ? "None" : email,
+                address.isEmpty() ? "None" : address,
                 tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark, candidate.getStage(),
                 skills.isEmpty() ? "None" : skills));
     }
