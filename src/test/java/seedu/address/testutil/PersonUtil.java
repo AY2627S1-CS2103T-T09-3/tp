@@ -51,11 +51,13 @@ public class PersonUtil {
         if (descriptor.getTags().isPresent()) {
             Set<Tag> tags = descriptor.getTags().get();
             if (tags.isEmpty()) {
-                sb.append(PREFIX_TAG);
+                sb.append(PREFIX_TAG).append(" ");
             } else {
                 tags.forEach(s -> sb.append(PREFIX_TAG).append(s.tagName).append(" "));
             }
         }
+        descriptor.getSkills().ifPresent(skills ->
+                skills.forEach(skill -> sb.append(PREFIX_SKILL).append(skill.value).append(" ")));
         return sb.toString();
     }
 }

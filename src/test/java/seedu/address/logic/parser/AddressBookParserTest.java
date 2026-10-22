@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
+import static seedu.address.logic.parser.CliSyntax.PREFIX_STAGE;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.logic.Messages;
 import seedu.address.logic.commands.AddCommand;
 import seedu.address.logic.commands.ClearCommand;
 import seedu.address.logic.commands.DeleteCommand;
@@ -19,15 +21,18 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.EditCommand.EditPersonDescriptor;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.FindSkillCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.StageCommand;
+import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.ViewCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Skill;
 import seedu.address.testutil.EditPersonDescriptorBuilder;
 import seedu.address.testutil.PersonBuilder;
 import seedu.address.testutil.PersonUtil;
@@ -75,6 +80,20 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_editClearsTagsAndUpdatesSkills() throws Exception {
+        EditPersonDescriptor descriptor = new EditPersonDescriptorBuilder()
+                .withTags()
+                .withSkills("Java")
+                .build();
+        String commandText = EditCommand.COMMAND_WORD + " " + INDEX_FIRST_PERSON.getOneBased() + " "
+                + PersonUtil.getEditPersonDescriptorDetails(descriptor);
+
+        EditCommand command = (EditCommand) parser.parseCommand(commandText);
+
+        assertEquals(new EditCommand(INDEX_FIRST_PERSON, descriptor), command);
+    }
+
+    @Test
     public void parseCommand_exit() throws Exception {
         assertTrue(parser.parseCommand(ExitCommand.COMMAND_WORD) instanceof ExitCommand);
         assertTrue(parser.parseCommand(ExitCommand.COMMAND_WORD + " 3") instanceof ExitCommand);
@@ -89,6 +108,18 @@ public class AddressBookParserTest {
     }
 
     @Test
+    public void parseCommand_findSkill() throws Exception {
+        assertEquals(new FindSkillCommand(new Skill("Java")),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " Java"));
+        assertEquals(new FindSkillCommand(FindSkillCommand.SearchMode.ANY,
+                        List.of(new Skill("Java"), new Skill("Python"))),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " any s/Java s/Python"));
+        assertEquals(new FindSkillCommand(FindSkillCommand.SearchMode.ALL,
+                        List.of(new Skill("Java"), new Skill("SQL"))),
+                parser.parseCommand(FindSkillCommand.COMMAND_WORD + " all s/Java s/SQL"));
+    }
+
+    @Test
     public void parseCommand_help() throws Exception {
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD) instanceof HelpCommand);
         assertTrue(parser.parseCommand(HelpCommand.COMMAND_WORD + " 3") instanceof HelpCommand);
@@ -98,8 +129,41 @@ public class AddressBookParserTest {
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
         assertTrue(parser.parseCommand("  " + ListCommand.COMMAND_WORD + "  ") instanceof ListCommand);
-        assertThrows(ParseException.class, "The list command does not take any parameters.", () ->
-                parser.parseCommand(ListCommand.COMMAND_WORD + " 3"));
+        assertEquals(new ListCommand(ListCommand.SortOrder.NAME), parser.parseCommand("list sort/name"));
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list 3"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/phone"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name extra"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name s/Interview"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list s/Interview sort/name"));
+    }
+
+    @Test
+    public void parseCommand_listByStage() throws Exception {
+        assertEquals(new ListCommand(HiringStage.INTERVIEW), parser.parseCommand("list s/Interview"));
+        assertEquals(new ListCommand(HiringStage.INTERVIEW), parser.parseCommand("  list   s/interview  "));
+    }
+
+    @Test
+    public void parseCommand_listRejectsInvalidArguments() {
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
+        String duplicateStage = Messages.getErrorMessageForDuplicatePrefixes(PREFIX_STAGE);
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list interview"));
+        assertThrows(ParseException.class, HiringStage.MESSAGE_CONSTRAINTS, ()
+                -> parser.parseCommand("list s/Interview extra"));
+        assertThrows(ParseException.class, duplicateStage, ()
+                -> parser.parseCommand("list s/Applied s/Interview"));
+        assertThrows(ParseException.class, HiringStage.MESSAGE_CONSTRAINTS, ()
+                -> parser.parseCommand("list s/"));
+    }
+
+    @Test
+    public void parseCommand_summary() throws Exception {
+        assertTrue(parser.parseCommand("summary") instanceof SummaryCommand);
+        assertTrue(parser.parseCommand("  summary  ") instanceof SummaryCommand);
+        assertThrows(ParseException.class,
+                String.format(MESSAGE_INVALID_COMMAND_FORMAT, SummaryCommand.MESSAGE_USAGE), ()
+                    -> parser.parseCommand("summary s/Interview"));
     }
 
     @Test
