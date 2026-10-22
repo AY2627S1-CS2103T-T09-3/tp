@@ -93,9 +93,15 @@ Here's a (partial) class diagram of the `Logic` component:
 `ViewCommandParser` creates a `ViewCommand`, which extends `Command`. When viewing by full name,
 `ViewCommand` delegates candidate matching to the shared `PersonLookup` helper.
 
-The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
+The sequence diagram below illustrates parsing and command execution for `delete 1`, including an invalid
+displayed index. Internal index resolution is summarized. The surrounding `LogicManager` data snapshot,
+storage save, and save-failure recovery are omitted.
 
 <puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
+
+`DeleteCommand` retrieves the currently displayed list and validates the index before selecting a `Person`.
+It passes that candidate object to `Model#deletePerson`, rather than passing the index. An out-of-range
+index raises a `CommandException` without deleting anything.
 
 The following sequence diagram shows a successful `edit 1 s/Java s/SQL` command. It also highlights the validation path for an invalid skill and the rollback path when saving the updated address book fails.
 
@@ -103,18 +109,11 @@ The following sequence diagram shows a successful `edit 1 s/Java s/SQL` command.
 
 For a skill edit, `EditCommandParser` tokenizes and validates every `s/` value before constructing an `EditCommand`; parsing does not modify the model. `EditCommand` uses the index from the currently displayed list, replaces the complete skill set, and constructs the updated candidate while preserving the other candidate fields. After the model is updated, `LogicManager` saves the address book. If saving fails, it restores both the original data and the original filter before reporting the error.
 
-<box type="info" seamless>
-
-**Note:** The lifeline for `DeleteCommandParser` should end at the destroy marker (X), but due to a limitation of PlantUML, the lifeline continues till the end of diagram.
-</box>
-
-
 How the `Logic` component works:
 
 1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
-   Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
+1. The command can communicate with the `Model` when it is executed (e.g. to retrieve the displayed list and delete a person).
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
@@ -194,6 +193,28 @@ Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTE
 `StageCommand` resolves the candidate using the current filtered list. If the requested stage is already current, it returns `[Name] is already at [Stage].` without replacing the candidate. Otherwise, it replaces that candidate with a new immutable `Person` through `Model#setPerson`. It preserves every other field and the current filter. All transitions, including backwards moves and setting the current stage again, are allowed so recruiters can correct mistakes. `EditCommand` and `RemarkCommand` carry forward the existing stage when replacing a person.
 
 `PersonCard` displays the stage, and `ViewCommand` includes it in profile output. `JsonAdaptedPerson` persists the stage name in the `stage` JSON field. Missing or null stages in older data default to Applied; unrecognized or blank stored stages are rejected with an `IllegalValueException`. Existing fixtures without stages exercise backward compatibility, alongside new valid-stage and invalid-stage fixtures.
+
+### Deleting a candidate by full name
+
+`delete FULL_NAME` searches only the currently displayed candidates. `DeleteCommand` delegates the lookup
+to the shared `PersonLookup` helper, which normalizes whitespace and compares entire names ignoring case.
+A candidate hidden by the current filter cannot be selected by name.
+
+The following sequence diagram focuses on `DeleteCommand.execute` after a full name has been parsed.
+Command parsing and the surrounding `LogicManager` data snapshot, save, and save-failure recovery are omitted.
+
+<puml src="diagrams/DeleteByNameSequenceDiagram.puml" alt="Full-name deletion with unique, missing and ambiguous candidate matches" />
+
+A missing name raises a `CommandException`. For multiple matches, `PersonLookup` invokes the ambiguity-message
+callback supplied by `DeleteCommand`. The message includes each match's actual displayed index, stored name,
+and email, and asks the user to choose with `delete INDEX`. Neither error path deletes a candidate or changes
+the displayed list.
+
+Only a unique match reaches `Model#deletePerson`, passing the resolved `Person`. The command returns a
+`CommandResult` identifying the deleted candidate. Hidden candidates remain stored, and the active filter
+and relative order of the remaining candidates are preserved. After successful command execution,
+`LogicManager` saves the updated data; a failed save restores the original data and filter before reporting
+an error.
 
 ### \[Proposed\] Undo/redo feature
 
