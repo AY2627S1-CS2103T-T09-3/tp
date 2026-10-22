@@ -84,7 +84,7 @@ public class AddressBookParser {
             return new ListCommand();
         }
         if (ListCommand.SORT_BY_NAME_ARGUMENT.equals(trimmedArguments)) {
-            return new ListCommand(true);
+            return new ListCommand(ListCommand.SortOrder.NAME);
         }
         throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE));
     }

@@ -26,16 +26,26 @@ public class ListCommand extends Command {
     private static final Comparator<Person> NAME_COMPARATOR =
             Comparator.comparing(person -> person.getName().fullName, String.CASE_INSENSITIVE_ORDER);
 
-    private final boolean sortByName;
-
-    /** Creates a command that lists candidates in their current order. */
-    public ListCommand() {
-        this(false);
+    /** Specifies how candidates should be ordered when listed. */
+    public enum SortOrder {
+        NONE,
+        NAME
     }
 
-    /** Creates a command that optionally sorts candidates alphabetically by name. */
-    public ListCommand(boolean sortByName) {
-        this.sortByName = sortByName;
+    private final SortOrder sortOrder;
+
+    /**
+     * Creates a command that lists candidates in their current order.
+     */
+    public ListCommand() {
+        this(SortOrder.NONE);
+    }
+
+    /**
+     * Creates a command that lists candidates using the given sort order.
+     */
+    public ListCommand(SortOrder sortOrder) {
+        this.sortOrder = requireNonNull(sortOrder);
     }
 
 
@@ -43,7 +53,7 @@ public class ListCommand extends Command {
     public CommandResult execute(Model model) {
         requireNonNull(model);
         model.updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
-        if (sortByName) {
+        if (sortOrder == SortOrder.NAME) {
             model.sortFilteredPersonList(NAME_COMPARATOR);
         }
         return new CommandResult(getSuccessMessage(model.getFilteredPersonList().size()));
@@ -63,13 +73,13 @@ public class ListCommand extends Command {
     @Override
     public boolean equals(Object other) {
         return other == this || (other instanceof ListCommand otherListCommand
-                && sortByName == otherListCommand.sortByName);
+                && sortOrder == otherListCommand.sortOrder);
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .add("sortByName", sortByName)
+                .add("sortOrder", sortOrder)
                 .toString();
     }
 }

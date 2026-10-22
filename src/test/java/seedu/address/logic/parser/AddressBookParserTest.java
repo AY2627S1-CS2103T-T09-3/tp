@@ -127,7 +127,7 @@ public class AddressBookParserTest {
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
         assertTrue(parser.parseCommand("  " + ListCommand.COMMAND_WORD + "  ") instanceof ListCommand);
-        assertEquals(new ListCommand(true), parser.parseCommand("list sort/name"));
+        assertEquals(new ListCommand(ListCommand.SortOrder.NAME), parser.parseCommand("list sort/name"));
         String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list 3"));
         assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/phone"));

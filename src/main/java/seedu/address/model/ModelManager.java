@@ -114,6 +114,9 @@ public class ModelManager implements Model {
         return predicate == null ? PREDICATE_SHOW_ALL_PERSONS : predicate::test;
     }
 
+    /**
+     * Returns the active comparator, or {@code null} if no sorting is applied.
+     */
     @Override
     public Comparator<? super Person> getFilteredPersonListComparator() {
         return sortedPersons.getComparator();
