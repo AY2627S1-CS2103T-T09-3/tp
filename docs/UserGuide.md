@@ -77,7 +77,7 @@ use their displayed index or add a candidate with a different name or phone numb
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
 * Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
-  For example, `help 123` is interpreted as `help`. The `list` command rejects extra parameters; use `list` on its own.
+  For example, `help 123` is interpreted as `help`. The `list` and `summary` commands reject extra parameters; use them on their own.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
@@ -138,6 +138,33 @@ filter; use either `list sort/name` or `list s/STAGE`.
 Examples:
 * `list` displays all candidates in the current order.
 * `list sort/name` displays all candidates alphabetically by name.
+
+### Summarizing the hiring pipeline: `summary`
+
+Shows the number of candidates at every hiring stage and the total number of stored candidates.
+
+Format: `summary`
+
+* Always counts **all stored candidates**, including candidates hidden by `find` or another filter.
+* Shows Applied, Screened, Interview, Offered, and Rejected in that order, including stages with zero candidates.
+* Leaves candidate data, displayed order, and the current filter unchanged.
+* Recalculates the counts each time, reflecting additions, deletions, and stage changes.
+* Takes no parameters; extra arguments show usage instructions.
+* The summary appears in the command result area. Scroll within that area to read the full result.
+
+For example:
+
+```text
+Hiring-stage summary — all candidates
+Applied: 8
+Screened: 5
+Interview: 3
+Offered: 2
+Rejected: 4
+Total: 22
+```
+
+An empty pipeline shows zero for every stage and the total. Running `summary` after `find Jordan` still summarizes the entire pipeline while keeping Jordan's search results visible.
 
 ### Viewing a candidate profile: `view`
 
@@ -243,6 +270,7 @@ Format: `stage INDEX s/STAGE`
 * Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed and reports `[Name] is already at [Stage].` without changing the candidate.
 * The command preserves the current search filter and all other candidate details.
 * The stage appears on the candidate's card and in `view INDEX`, and is saved automatically across restarts.
+* Candidate cards show a labelled stage badge: Applied in grey, Screened in blue, Interview in purple, Offered in green, and Rejected in red. The stage name is always shown, so you do not need to rely on colour. Badges reflect the current stage after an update.
 * New candidates and older saved records without a stage default to **Applied**. Editing details or remarks preserves the stage.
 * Missing arguments or an invalid index format show usage instructions. An empty or unknown stage shows the allowed values; an index outside the displayed list shows an error. Failed commands do not change the candidate's stage.
 
@@ -252,14 +280,28 @@ Examples:
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
 
-### Deleting a candidate: `delete`
+### Deleting candidates: `delete`
 
-Permanently deletes the specified candidate's record.
+Permanently deletes one candidate by index or full name, or several candidates by their displayed indexes.
 
-Format: `delete INDEX` or `delete FULL_NAME`
+Format: `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`
 
-* Both formats select candidates from the **currently displayed list**. After a `find` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
+* All formats select candidates from the **currently displayed list**. After a `find` or `findskill` command, only candidates in its results can be deleted. Use `list` first to select from all candidates.
 * `INDEX` refers to the index number shown in the displayed list and **must be a positive integer** 1, 2, 3, ...
+* For batch deletion, separate indexes with commas, for example `delete 1,3,5`. Spaces around commas are allowed,
+  and indexes may be supplied in any order.
+* All indexes refer to the list **before the command runs**. For example, `delete 1,3` deletes the original first
+  and third candidates, even though the displayed indexes change after deletion.
+* Every index is checked before deletion. Duplicate indexes, empty entries, non-integers, non-positive values,
+  values larger than 2147483647, or indexes outside the displayed list cause the entire command to fail:
+  **no candidates are deleted**. For example, `delete 1,1`, `delete 1,`, and `delete 1,999` (when fewer than 999
+  candidates are displayed) all fail.
+* Batch deletion accepts indexes only; do not mix names and indexes or use ranges such as `delete 1-3`.
+  Names containing spaces, including numeric names such as `1 3`, retain full-name lookup behavior; use commas
+  to select multiple indexes.
+* Successful batch deletion reports the number of deleted candidates and their details in the order of the
+  supplied indexes. Candidates hidden by the current filter remain stored, and the remaining displayed
+  candidates retain their order and filter.
 * `FULL_NAME` must match the candidate's entire name, **ignoring case**. Partial names do not match. Do not put quotation marks around the name.
 * Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
@@ -271,6 +313,9 @@ Format: `delete INDEX` or `delete FULL_NAME`
 Examples:
 * `list` followed by `delete 2` deletes the 2nd candidate in the candidate pipeline.
 * `find Betsy` followed by `delete 1` deletes the 1st candidate in the results of the `find` command.
+* `delete 1,3,5` deletes the original 1st, 3rd, and 5th displayed candidates.
+* `findskill Java` followed by `delete 3, 1` deletes the 3rd and 1st displayed Java candidates, provided at least
+  three matches are displayed. Other candidates are preserved.
 * `delete Alice Pauline` deletes the candidate named Alice Pauline if exactly one displayed candidate matches.
 * `delete alice pauline` matches the same full name, ignoring case.
 
@@ -339,12 +384,13 @@ Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 **Add**    | `add n/NAME p/PHONE s/SKILL [s/SKILL]...` <br> e.g., `add n/James Ho p/22224444 s/Java s/SQL`
 **Clear**  | `clear`
-**Delete** | `delete INDEX` or `delete FULL_NAME`<br> e.g., `delete 3` or `delete Alice Pauline`
+**Delete** | `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`<br> e.g., `delete 3`, `delete 1,3,5`, or `delete Alice Pauline`
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
 **List**   | `list`
+**Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
 **Help**   | `help`
