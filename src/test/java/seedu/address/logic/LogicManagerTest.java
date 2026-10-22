@@ -98,6 +98,9 @@ public class LogicManagerTest {
                 result.getFeedbackToUser());
         assertEquals(List.of(first), model.getFilteredPersonList());
         assertEquals(List.of(first, second), model.getAddressBook().getPersonList());
+    }
+
+    @Test
     public void execute_editEmptySkill_doesNotModifyModel() {
         model.addPerson(AMY);
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
@@ -255,6 +258,24 @@ public class LogicManagerTest {
             assertEquals(List.of(), model.getFilteredPersonList());
             assertEquals(List.of(BOB), storage.readAddressBook().orElseThrow().getPersonList());
         }
+    }
+
+    @Test
+    public void execute_failedDelete_preservesSortedOrderForRetry() throws Exception {
+        model.addPerson(BOB);
+        model.addPerson(AMY);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+
+        logic.execute("list sort/name");
+        assertEquals(List.of(AMY, BOB), model.getFilteredPersonList());
+        storage.failNextSave(DUMMY_IO_EXCEPTION);
+
+        assertThrows(CommandException.class, () -> logic.execute("delete 1"));
+        assertEquals(List.of(AMY, BOB), model.getFilteredPersonList());
+
+        logic.execute("delete 1");
+        assertEquals(List.of(BOB), model.getFilteredPersonList());
+        assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
     }
 
     @Test

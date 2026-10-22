@@ -1,5 +1,6 @@
 package seedu.address.model;
 
+import java.util.Comparator;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
@@ -66,9 +67,19 @@ public interface Model {
     /** Returns the current person-list filter, for restoring the view after a failed save. */
     Predicate<Person> getFilteredPersonListPredicate();
 
+    /** Returns the current person-list comparator, for restoring the view after a failed save. */
+    Comparator<? super Person> getFilteredPersonListComparator();
+
     /**
      * Updates the filter of the filtered person list to filter by the given {@code predicate}.
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /**
+     * Sorts the currently displayed person list using the given comparator.
+     *
+     * @throws NullPointerException if {@code comparator} is null.
+     */
+    void sortFilteredPersonList(Comparator<? super Person> comparator);
 }

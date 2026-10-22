@@ -127,8 +127,13 @@ public class AddressBookParserTest {
     public void parseCommand_list() throws Exception {
         assertTrue(parser.parseCommand(ListCommand.COMMAND_WORD) instanceof ListCommand);
         assertTrue(parser.parseCommand("  " + ListCommand.COMMAND_WORD + "  ") instanceof ListCommand);
-        assertThrows(ParseException.class, "The list command does not take any parameters.", () ->
-                parser.parseCommand(ListCommand.COMMAND_WORD + " 3"));
+        assertEquals(new ListCommand(ListCommand.SortOrder.NAME), parser.parseCommand("list sort/name"));
+        String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE);
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list 3"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/phone"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name extra"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list sort/name s/Interview"));
+        assertThrows(ParseException.class, expected, () -> parser.parseCommand("list s/Interview sort/name"));
     }
 
     @Test
