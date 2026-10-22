@@ -134,7 +134,7 @@ The `list` command does not take any parameters. For example, `list all` is reje
 
 Displays a candidate's name, phone, email, address, tags, remark, hiring stage, and skills in the command result area.
 Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
-skills are shown in deterministic alphabetical order. Missing tags, skills, or an empty remark are shown as `None`.
+skills are shown in deterministic alphabetical order. Missing email, address, tags, skills, or an empty remark are shown as `None`.
 
 Format: `view INDEX` or `view FULL_NAME`
 
