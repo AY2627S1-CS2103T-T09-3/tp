@@ -88,7 +88,10 @@ The `UI` component,
 
 Here's a (partial) class diagram of the `Logic` component:
 
-<puml src="diagrams/LogicClassDiagram.puml" width="550"/>
+<puml src="diagrams/LogicClassDiagram.puml" width="700"/>
+
+`ViewCommandParser` creates a `ViewCommand`, which extends `Command`. When viewing by full name,
+`ViewCommand` delegates candidate matching to the shared `PersonLookup` helper.
 
 The sequence diagram below illustrates the interactions within the `Logic` component, taking `execute("delete 1")` API call as an example.
 
@@ -164,6 +167,19 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 ## **Implementation**
 
 This section describes some noteworthy details on how certain features are implemented.
+
+### Viewing a candidate profile
+
+`view INDEX` selects a candidate by position in the currently displayed list. `view FULL_NAME` instead
+uses `PersonLookup` to match normalized full names, ignoring case, within that same list.
+The following sequence diagram focuses on `ViewCommand.execute` for the full-name form;
+command parsing and the surrounding `LogicManager` save/error-handling flow are omitted.
+
+<puml src="diagrams/ViewProfileSequenceDiagram.puml" alt="Full-name candidate profile lookup, including missing and ambiguous matches" />
+
+A missing or ambiguous name raises a `CommandException`. A unique match supplies the profile fields,
+which are formatted into a `CommandResult`. The command reads candidate data without changing the
+active filter or displayed order. Consequently, displayed indices remain suitable for a subsequent command.
 
 ### Hiring stages
 
