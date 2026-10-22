@@ -77,7 +77,7 @@ use their displayed index or add a candidate with a different name or phone numb
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
 * Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
-  For example, `help 123` is interpreted as `help`. The `list` command accepts only the optional `s/STAGE` parameter, and the `summary` command rejects extra parameters; use it on its own.
+  For example, `help 123` is interpreted as `help`. The `list` command accepts either the optional `s/STAGE` or `sort/name` parameter, but not both, and the `summary` command rejects extra parameters; use it on its own.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
@@ -133,6 +133,16 @@ Format: `list [s/STAGE]`
 * `list s/Interview` displays only candidates currently at the Interview stage.
 * If no candidates match the selected stage, Scoutly displays `No candidates found at the Interview stage.`
 * Invalid parameters show either the command usage instructions or the allowed stage values.
+
+Use `list sort/name` to display candidates in ascending alphabetical order by name. Name sorting is case-insensitive.
+The plain `list` command preserves the existing candidate order.
+
+The only supported sorting parameter is `sort/name`; sorting cannot be combined with a hiring-stage filter. Use either
+`list sort/name` or `list s/STAGE`.
+
+Examples:
+* `list` displays all candidates in the current order.
+* `list sort/name` displays all candidates alphabetically by name.
 
 ### Summarizing the hiring pipeline: `summary`
 
@@ -384,7 +394,7 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
-**List**   | `list`
+**List**   | `list [s/STAGE]`<br>e.g., `list s/Interview` or `list sort/name`
 **Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`

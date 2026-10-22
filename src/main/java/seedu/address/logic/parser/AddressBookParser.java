@@ -79,11 +79,17 @@ public class AddressBookParser {
         };
     }
 
-    /** Parses the list command, optionally filtering by hiring stage. */
+    /** Parses the list command, optionally sorting or filtering by hiring stage. */
     private Command parseListCommand(String arguments) throws ParseException {
         String trimmedArguments = arguments.trim();
         if (trimmedArguments.isEmpty()) {
             return new ListCommand();
+        }
+        if (ListCommand.SORT_BY_NAME_ARGUMENT.equals(trimmedArguments)) {
+            return new ListCommand(ListCommand.SortOrder.NAME);
+        }
+        if (trimmedArguments.contains(ListCommand.SORT_BY_NAME_ARGUMENT)) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, ListCommand.MESSAGE_USAGE));
         }
 
         // Preserve the leading separator before s/ so that ArgumentTokenizer recognises the prefix.

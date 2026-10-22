@@ -1,6 +1,7 @@
 package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
@@ -8,6 +9,8 @@ import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalPersons.ALICE;
 import static seedu.address.testutil.TypicalPersons.BOB;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.NameContainsKeywordsPredicate;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
@@ -129,5 +133,74 @@ public class ListCommandTest {
         assertEquals(1, stageModel.getFilteredPersonList().size());
         assertEquals("Applied Candidate", stageModel.getFilteredPersonList().get(0).getName().fullName);
         assertEquals(HiringStage.INTERVIEW, stageModel.getFilteredPersonList().get(0).getStage());
+    }
+
+    @Test
+    public void execute_sortByName_listsCandidatesAlphabetically() {
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(BOB);
+        addressBook.addPerson(ALICE);
+        Model unsortedModel = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(ListCommand.SortOrder.NAME).execute(unsortedModel);
+
+        assertEquals(List.of(ALICE, BOB), unsortedModel.getFilteredPersonList());
+        assertEquals(List.of(BOB, ALICE), unsortedModel.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_sortByName_isCaseInsensitive() {
+        Person lowercaseAlice = new PersonBuilder().withName("alice").withPhone("11111111").build();
+        Person uppercaseBob = new PersonBuilder().withName("Bob").withPhone("22222222").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(uppercaseBob);
+        addressBook.addPerson(lowercaseAlice);
+        Model mixedCaseModel = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(ListCommand.SortOrder.NAME).execute(mixedCaseModel);
+
+        assertEquals(List.of(lowercaseAlice, uppercaseBob), mixedCaseModel.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_listAfterFind_resetsSortComparator() {
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(BOB);
+        addressBook.addPerson(ALICE);
+        Model modelWithSort = new ModelManager(addressBook, new UserPrefs());
+
+        new ListCommand(ListCommand.SortOrder.NAME).execute(modelWithSort);
+        assertEquals(List.of(ALICE, BOB), modelWithSort.getFilteredPersonList());
+
+        new FindCommand(new NameContainsKeywordsPredicate(List.of("Alice", "Bob"))).execute(modelWithSort);
+        assertEquals(List.of(BOB, ALICE), modelWithSort.getFilteredPersonList());
+
+        new ListCommand().execute(modelWithSort);
+        assertEquals(List.of(BOB, ALICE), modelWithSort.getFilteredPersonList());
+    }
+
+    @Test
+    public void execute_sortByName_emptyList() throws Exception {
+        Model emptyModel = new ModelManager(new AddressBook(), new UserPrefs());
+
+        assertCommandSuccess(new ListCommand(ListCommand.SortOrder.NAME), emptyModel, ListCommand.MESSAGE_EMPTY_LIST,
+                new ModelManager(new AddressBook(), new UserPrefs()));
+    }
+
+    @Test
+    public void equalsAndToString_coversSortOrders() {
+        ListCommand unsortedCommand = new ListCommand();
+        ListCommand anotherUnsortedCommand = new ListCommand(ListCommand.SortOrder.NONE);
+        ListCommand sortedCommand = new ListCommand(ListCommand.SortOrder.NAME);
+        ListCommand anotherSortedCommand = new ListCommand(ListCommand.SortOrder.NAME);
+
+        assertEquals(unsortedCommand, unsortedCommand);
+        assertEquals(unsortedCommand, anotherUnsortedCommand);
+        assertEquals(sortedCommand, anotherSortedCommand);
+        assertNotEquals(sortedCommand, unsortedCommand);
+        assertEquals("seedu.address.logic.commands.ListCommand{sortOrder=NONE, stageFilter=Optional.empty}",
+                unsortedCommand.toString());
+        assertEquals("seedu.address.logic.commands.ListCommand{sortOrder=NAME, stageFilter=Optional.empty}",
+                sortedCommand.toString());
     }
 }
