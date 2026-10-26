@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
 import seedu.address.storage.JsonAddressBookStorage;
@@ -48,6 +50,38 @@ public class MainAppTest {
         Throwable cause = exception.getCause();
         assertTrue(cause instanceof IllegalStateException);
         assertTrue(cause.getMessage().contains("Startup was aborted to prevent overwriting it"));
+
+        assertArrayEquals(originalData, Files.readAllBytes(addressBookFile));
+    }
+
+    @Test
+    public void initModelManager_nullPersons_abortsWithoutChangingData(@TempDir Path directory) throws Exception {
+        assertMalformedAddressBookAborts("{\n  \"persons\": null\n}\n", directory);
+    }
+
+    @Test
+    public void initModelManager_missingPersons_abortsWithoutChangingData(@TempDir Path directory) throws Exception {
+        assertMalformedAddressBookAborts("{\n}\n", directory);
+    }
+
+    private void assertMalformedAddressBookAborts(String malformedData, Path directory) throws Exception {
+        Path addressBookFile = directory.resolve("addressbook.json");
+        Files.writeString(addressBookFile, malformedData, StandardCharsets.UTF_8);
+        byte[] originalData = Files.readAllBytes(addressBookFile);
+
+        Storage storage = new StorageManager(new JsonAddressBookStorage(addressBookFile),
+                new JsonUserPrefsStorage(directory.resolve("preferences.json")));
+        Method initModelManager = MainApp.class.getDeclaredMethod("initModelManager", Storage.class,
+                ReadOnlyUserPrefs.class);
+        initModelManager.setAccessible(true);
+
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class, () ->
+                initModelManager.invoke(new MainApp(), storage, new UserPrefs()));
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("Startup was aborted to prevent overwriting it"));
+        assertTrue(cause.getCause() instanceof DataLoadingException);
+        assertTrue(cause.getCause().getCause() instanceof IllegalValueException);
 
         assertArrayEquals(originalData, Files.readAllBytes(addressBookFile));
     }
