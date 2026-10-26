@@ -40,6 +40,7 @@ public class ParserUtil {
     /**
      * Parses a displayed index or full name using the supplied command constructors.
      * All-digit input is always an index, including zero and overflowing values.
+     * Legacy names are accepted for lookup commands so older stored candidates remain accessible.
      *
      * @throws ParseException if the input is neither a valid index nor a valid name
      */
@@ -49,7 +50,25 @@ public class ParserUtil {
         if (trimmedArgs.matches("[0-9]+")) {
             return byIndex.apply(parseIndex(trimmedArgs));
         }
-        return byName.apply(parseName(trimmedArgs));
+        return byName.apply(parseNameForLookup(trimmedArgs));
+    }
+
+    /**
+     * Parses a name for lookup, accepting both current names and names valid under the legacy constraints.
+     * New candidate input must use {@link #parseName(String)} instead.
+     *
+     * @throws ParseException if the given name is invalid under both constraint sets.
+     */
+    public static Name parseNameForLookup(String name) throws ParseException {
+        requireNonNull(name);
+        String trimmedName = name.trim();
+        if (Name.isValidName(trimmedName)) {
+            return new Name(trimmedName);
+        }
+        if (Name.isValidLegacyName(trimmedName)) {
+            return Name.fromLegacyValue(trimmedName);
+        }
+        throw new ParseException(Name.MESSAGE_CONSTRAINTS);
     }
 
     /**
