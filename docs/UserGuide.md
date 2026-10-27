@@ -226,6 +226,7 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * The search considers only names.
 * Only full words match; for example, `Han` does not match `Hans`.
 * Candidates matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* A successful search reports the number of matching candidates using candidate terminology.
 
 Examples:
 * `find John` returns `john` and `John Doe`
@@ -263,6 +264,7 @@ Format: `remark INDEX [r/REMARK]`
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
 * Remarks are shown on candidate cards and saved with your candidates. Editing other details preserves the remark.
 * After updating a remark, all candidates are displayed again.
+* Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
 
 ### Updating a candidate's hiring stage: `stage`
 
@@ -314,6 +316,7 @@ Format: `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`
 * If multiple displayed candidates match the name, no record is deleted. The error lists each matching candidate's displayed index, name, and email. Use `delete INDEX` with one of those indexes to choose the intended candidate.
 * Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
 * Deletion removes the record completely; it does not archive the candidate.
+* Deleting one candidate reports `Deleted candidate: ...`; batch deletion reports the number of deleted candidates.
 
 Examples:
 * `list` followed by `delete 2` deletes the 2nd candidate in the candidate pipeline.
@@ -340,6 +343,8 @@ The numbers refer to positions in the currently displayed list, including after 
 Clears all entries from the candidate pipeline.
 
 Format: `clear`
+
+The success message is `Candidate pipeline has been cleared!`.
 
 ### Exiting the program: `exit`
 
