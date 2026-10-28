@@ -9,8 +9,8 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
  */
 public class Name {
 
-    public static final String MESSAGE_CONSTRAINTS = "Invalid name: names may only contain letters, spaces, hyphens, "
-            + "numbers, hyphens, spaces, and apostrophes, and must be 1-100 characters long.";
+    public static final String MESSAGE_CONSTRAINTS = "Invalid name: names may only contain letters, numbers, spaces, "
+            + "hyphens, and apostrophes, and must be 1-100 characters long.";
 
     public static final String VALIDATION_REGEX = "[\\p{L}\\p{N}][\\p{L}\\p{N} '-]{0,99}";
 
