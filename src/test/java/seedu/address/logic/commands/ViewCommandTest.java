@@ -144,6 +144,23 @@ public class ViewCommandTest {
     }
 
     @Test
+    public void execute_legacyLongFullName_showsCandidateProfile() throws Exception {
+        String legacyName = "A".repeat(101);
+        Person baseCandidate = new PersonBuilder().build();
+        Person legacyCandidate = new Person(Name.fromLegacyValue(legacyName), baseCandidate.getPhone(),
+                baseCandidate.getEmail(), baseCandidate.getAddress(), baseCandidate.getRemark(),
+                baseCandidate.getStage(), baseCandidate.getTags(), baseCandidate.getSkills());
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(legacyCandidate);
+        Model legacyModel = new ModelManager(addressBook, new UserPrefs());
+
+        ViewCommand command = (ViewCommand) new AddressBookParser().parseCommand("view " + legacyName);
+        CommandResult result = command.execute(legacyModel);
+
+        assertTrue(result.getFeedbackToUser().contains("Name: " + legacyName));
+    }
+
+    @Test
     public void execute_nameNotFound_throwsCommandException() {
         assertCommandFailure(new ViewCommand(new Name("Unknown Candidate")), model,
                 ViewCommand.MESSAGE_NAME_NOT_FOUND);

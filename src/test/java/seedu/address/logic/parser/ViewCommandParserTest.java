@@ -31,6 +31,12 @@ public class ViewCommandParserTest {
     }
 
     @Test
+    public void parse_legacyLongFullName_returnsNameCommand() throws Exception {
+        String legacyName = "A".repeat(101);
+        assertParseSuccess(parser, legacyName, new ViewCommand(Name.fromLegacyValue(legacyName)));
+    }
+
+    @Test
     public void parse_nameWithWhitespace_normalizesName() {
         assertParseSuccess(parser, "  Alice \t Pauline  ", new ViewCommand(new Name("Alice Pauline")));
     }
