@@ -66,6 +66,26 @@ use their displayed index or add a candidate with a different name or phone numb
 
 --------------------------------------------------------------------------------------------------------------------
 
+## Command index
+
+Click a command to jump to its syntax, examples, and detailed explanation.
+
+Command | Purpose
+--------|--------
+[`add`](#adding-a-candidate-add) | Add a candidate.
+[`list`](#listing-candidates-list) | Show all candidates, filter by stage, or sort by name.
+[`summary`](#summarizing-the-hiring-pipeline-summary) | Count candidates at each hiring stage.
+[`view`](#viewing-a-candidate-profile-view) | View a candidate's complete profile.
+[`edit`](#editing-a-candidate-edit) | Update candidate details and skills.
+[`find`](#finding-candidates-by-name-find) | Search candidates by name.
+[`findskill`](#finding-candidates-by-skill-findskill) | Search candidates by skills.
+[`remark`](#adding-or-removing-a-remark-remark) | Add, replace, or remove a recruitment note.
+[`stage`](#updating-a-candidate-s-hiring-stage-stage) | Update a candidate's hiring stage.
+[`delete`](#deleting-candidates-delete) | Delete candidates by displayed index or full name.
+[`clear`](#clearing-all-entries-clear) | Remove all candidates.
+[`help`](#viewing-help-help) | Find the User Guide link.
+[`exit`](#exiting-the-program-exit) | Close Scoutly.
+
 ## Features
 
 <box type="info" seamless>
@@ -83,6 +103,9 @@ use their displayed index or add a candidate with a different name or phone numb
 
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+
+* Leading and trailing spaces around values after prefixes such as `n/`, `p/`, and `s/` are ignored.<br>
+  For example, `add n/  Alice  p/  91234567  s/  Java` is equivalent to `add n/Alice p/91234567 s/Java`.
 
 * Extraneous parameters for `help`, `exit`, and `clear` are ignored.<br>
   For example, `help 123` is interpreted as `help`. The `list` command accepts either the optional `s/STAGE` or `sort/name` parameter, but not both, and the `summary` command rejects extra parameters; use it on its own.
@@ -271,7 +294,9 @@ Format: `remark INDEX [r/REMARK]`
 * Example: `remark 2 r/Available for interviews next week`.
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
 * Remarks are shown on candidate cards and saved with your candidates. Editing other details preserves the remark.
-* After updating a remark, all candidates are displayed again.
+* After changing or removing an existing remark, all candidates are displayed again.
+* Setting the same remark again reports `Remark unchanged for NAME.` Removing an already-empty remark reports
+  `NAME has no remark to remove.` Both leave candidate data, the displayed list, and its sort order unchanged.
 * Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
 
 ### Updating a candidate's hiring stage: `stage`

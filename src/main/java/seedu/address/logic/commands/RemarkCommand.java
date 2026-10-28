@@ -23,6 +23,8 @@ public class RemarkCommand extends Command {
             + "Example: " + COMMAND_WORD + " 1 r/Likes to swim.";
     public static final String MESSAGE_ADD_CANDIDATE_REMARK_SUCCESS = "Added remark to candidate: %1$s";
     public static final String MESSAGE_DELETE_CANDIDATE_REMARK_SUCCESS = "Removed remark from candidate: %1$s";
+    public static final String MESSAGE_REMARK_UNCHANGED = "Remark unchanged for %1$s.";
+    public static final String MESSAGE_NO_REMARK = "%1$s has no remark to remove.";
 
     private final Index index;
     private final Remark remark;
@@ -44,6 +46,10 @@ public class RemarkCommand extends Command {
             throw new CommandException(Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX);
         }
         Person person = lastShownList.get(index.getZeroBased());
+        if (person.getRemark().equals(remark)) {
+            String message = remark.value.isEmpty() ? MESSAGE_NO_REMARK : MESSAGE_REMARK_UNCHANGED;
+            return new CommandResult(String.format(message, person.getName()));
+        }
         Person editedPerson = new Person(person.getName(), person.getPhone(), person.getEmail(),
                 person.getAddress(), remark, person.getStage(), person.getTags(), person.getSkills());
         model.setPerson(person, editedPerson);

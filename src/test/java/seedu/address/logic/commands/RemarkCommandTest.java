@@ -2,12 +2,16 @@ package seedu.address.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+
+import java.util.Comparator;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,6 +48,34 @@ public class RemarkCommandTest {
         new RemarkCommand(INDEX_FIRST_PERSON, new Remark("Note")).execute(model);
         assertEquals(new PersonBuilder(target).withRemark("Note").build(),
                 model.getAddressBook().getPersonList().get(1));
+    }
+
+    @Test
+    public void execute_sameRemark_reportsUnchangedAndPreservesView() throws Exception {
+        assertUnchangedRemarkPreservesView("Available", "Remark unchanged for Benson Meier.");
+    }
+
+    @Test
+    public void execute_emptyRemark_reportsNothingToRemoveAndPreservesView() throws Exception {
+        assertUnchangedRemarkPreservesView("", "Benson Meier has no remark to remove.");
+    }
+
+    private void assertUnchangedRemarkPreservesView(String remark, String expectedMessage) throws Exception {
+        Person original = model.getFilteredPersonList().get(INDEX_SECOND_PERSON.getZeroBased());
+        Person target = new PersonBuilder(original).withRemark(remark).build();
+        model.setPerson(original, target);
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+        showPersonAtIndex(model, INDEX_SECOND_PERSON);
+        Comparator<Person> comparator = Comparator.comparing(person -> person.getName().fullName);
+        model.sortFilteredPersonList(comparator);
+
+        CommandResult result = new RemarkCommand(INDEX_FIRST_PERSON, new Remark(remark)).execute(model);
+
+        assertEquals(expectedMessage, result.getFeedbackToUser());
+        assertEquals(originalData, model.getAddressBook());
+        assertEquals(List.of(target), model.getFilteredPersonList());
+        assertSame(target, model.getFilteredPersonList().get(0));
+        assertSame(comparator, model.getFilteredPersonListComparator());
     }
 
     @Test

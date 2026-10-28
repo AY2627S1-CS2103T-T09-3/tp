@@ -3,6 +3,7 @@ package seedu.address.logic;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
@@ -111,6 +112,40 @@ public class LogicManagerTest {
         }
         assertThrows(CommandException.class, () -> logic.execute("stage 1 s/Interview"));
         assertEquals(List.of(AMY), model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_sameRemark_preservesSavedFileAndSort() throws Exception {
+        assertUnchangedRemarkIsNotSaved("Available", "remark 1 r/Available", "Remark unchanged for Amy Bee.");
+    }
+
+    @Test
+    public void execute_emptyRemark_preservesSavedFileAndSort() throws Exception {
+        assertUnchangedRemarkIsNotSaved("", "remark 1", "Amy Bee has no remark to remove.");
+    }
+
+    private void assertUnchangedRemarkIsNotSaved(String remark, String command, String expectedMessage)
+            throws Exception {
+        Person target = new PersonBuilder(AMY).withRemark(remark).build();
+        model.addPerson(target);
+        model.addPerson(BOB);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+        logic.execute("list sort/name");
+        var comparator = model.getFilteredPersonListComparator();
+        List<Person> originalView = List.copyOf(model.getFilteredPersonList());
+        storage.failNextSave(DUMMY_AD_EXCEPTION);
+
+        assertEquals(expectedMessage, logic.execute(command).getFeedbackToUser());
+
+        assertEquals(originalView, model.getFilteredPersonList());
+        assertSame(target, model.getFilteredPersonList().get(0));
+        assertSame(comparator, model.getFilteredPersonListComparator());
+        assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+        // A real change must still attempt to save and receive the pending storage error.
+        assertThrows(CommandException.class, () -> logic.execute("remark 1 r/Changed"));
+        assertEquals(List.of(target, BOB), model.getAddressBook().getPersonList());
+        assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
     }
 
     @Test
