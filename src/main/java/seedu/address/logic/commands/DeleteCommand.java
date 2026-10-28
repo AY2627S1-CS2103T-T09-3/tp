@@ -113,12 +113,12 @@ public class DeleteCommand extends Command {
     }
 
     /**
-     * Formats matching candidates with their indexes in the currently displayed list, names, and emails.
+     * Formats matching candidates with their displayed indexes, names, and distinguishing phone numbers.
      */
     private String formatAmbiguousName(List<Person> lastShownList, List<Person> matches) {
         String candidates = matches.stream()
                 .map(person -> (lastShownList.indexOf(person) + 1) + ". " + person.getName()
-                        + " — " + person.getEmail())
+                        + " — Phone: " + person.getPhone())
                 .collect(Collectors.joining("\n"));
         return String.format(MESSAGE_AMBIGUOUS_NAME, targetName, candidates);
     }

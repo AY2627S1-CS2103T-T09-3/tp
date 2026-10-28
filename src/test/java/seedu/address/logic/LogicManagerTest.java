@@ -84,6 +84,21 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_repeatedRemarkPrefixes_preservesExistingNoteAndFile() throws Exception {
+        logic.execute("add n/Alice p/91234567 s/Java");
+        logic.execute("remark 1 r/Keep this note");
+        Path file = temporaryFolder.resolve("addressBook.json");
+        byte[] originalFile = Files.readAllBytes(file);
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+
+        for (String command : List.of("remark 1 r/Contacted r/Interview tomorrow", "remark 1 r/Contacted r/")) {
+            assertThrows(ParseException.class, () -> logic.execute(command));
+            assertEquals(originalData, model.getAddressBook());
+            assertArrayEquals(originalFile, Files.readAllBytes(file));
+        }
+    }
+
+    @Test
     public void execute_summaryAfterFind_countsEntirePipelineAndPreservesResults() throws Exception {
         Person first = new PersonBuilder(AMY).withStage(HiringStage.SCREENED).build();
         Person second = new PersonBuilder().withName("Other Candidate").withStage(HiringStage.INTERVIEW).build();
