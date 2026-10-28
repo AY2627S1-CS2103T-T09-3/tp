@@ -84,6 +84,47 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_duplicateRemarkPrefixes_preservesDataFileAndDisplayedList() throws Exception {
+        model.addPerson(BOB);
+        model.addPerson(new PersonBuilder(AMY).withRemark("Original recruiter note").build());
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+        String expectedError = Messages.MESSAGE_DUPLICATE_FIELDS + "r/";
+
+        for (String displayCommand : List.of("find Amy", "list sort/name")) {
+            logic.execute(displayCommand);
+            List<Person> originalDisplayed = List.copyOf(model.getFilteredPersonList());
+            byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+
+            for (String command : List.of("remark 1 r/First note r/Second note", "remark 1 r/First note r/",
+                    "remark 1 r/ r/", "remark 1 r/Same r/Same")) {
+                assertThrows(ParseException.class, expectedError, () -> logic.execute(command));
+                assertEquals(originalData, model.getAddressBook(), command);
+                assertEquals(originalDisplayed, model.getFilteredPersonList(), command);
+                assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()), command);
+            }
+            assertEquals(originalData, storage.readAddressBook().orElseThrow());
+        }
+    }
+
+    @Test
+    public void execute_validRemarkAndBothClearingForms_persist() throws Exception {
+        model.addPerson(AMY);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+
+        logic.execute("remark 1 r/Recruiter note");
+        assertEquals("Recruiter note",
+                storage.readAddressBook().orElseThrow().getPersonList().get(0).getRemark().value);
+
+        logic.execute("remark 1 r/");
+        assertEquals("", storage.readAddressBook().orElseThrow().getPersonList().get(0).getRemark().value);
+
+        logic.execute("remark 1 r/Another note");
+        logic.execute("remark 1");
+        assertEquals("", storage.readAddressBook().orElseThrow().getPersonList().get(0).getRemark().value);
+    }
+
+    @Test
     public void execute_summaryAfterFind_countsEntirePipelineAndPreservesResults() throws Exception {
         Person first = new PersonBuilder(AMY).withStage(HiringStage.SCREENED).build();
         Person second = new PersonBuilder().withName("Other Candidate").withStage(HiringStage.INTERVIEW).build();

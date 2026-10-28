@@ -19,7 +19,7 @@ public class RemarkCommand extends Command {
     public static final String COMMAND_WORD = "remark";
     public static final String MESSAGE_USAGE = COMMAND_WORD
             + ": Edits the remark of the candidate identified by the displayed index.\n"
-            + "Parameters: INDEX (must be a positive integer) r/[REMARK]\n"
+            + "Parameters: INDEX (must be a positive integer) [r/REMARK] (r/ may appear at most once)\n"
             + "Example: " + COMMAND_WORD + " 1 r/Likes to swim.";
     public static final String MESSAGE_ADD_CANDIDATE_REMARK_SUCCESS = "Added remark to candidate: %1$s";
     public static final String MESSAGE_DELETE_CANDIDATE_REMARK_SUCCESS = "Removed remark from candidate: %1$s";

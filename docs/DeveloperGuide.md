@@ -188,6 +188,12 @@ A missing or ambiguous name raises a `CommandException`. A unique match supplies
 which are formatted into a `CommandResult`. The command reads candidate data without changing the
 active filter or displayed order. Consequently, displayed indices remain suitable for a subsequent command.
 
+### Candidate remarks
+
+`RemarkCommandParser` validates the displayed index, then calls `ArgumentMultimap.verifyNoDuplicatePrefixesFor(PREFIX_REMARK)` before constructing a command. Repeated `r/` prefixes produce the existing duplicate-field error, including when their values are empty or identical. Parsing fails before any command executes or data is saved, preserving the existing remark, other candidate fields, filter, and order.
+
+A missing `r/` or a single empty `r/` still clears the remark. A single non-empty value replaces it. As with other prefixed fields, a space-separated `r/` inside the input is another prefix; slashes within ordinary text or URLs do not start a new field.
+
 ### Hiring stages
 
 Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTERVIEW`, `OFFERED`, or `REJECTED`. Constructors without an explicit stage default to `APPLIED`. Stage changes affect full person equality, while identity continues to depend on the normalized name and phone number.
@@ -625,6 +631,20 @@ testers are expected to do more *exploratory* testing.
    Expected: The error shows Amy Bee at index 1 and AMY BEE at index 3, with their respective phone numbers. Amy Tan is absent from the error. The filter and list order remain unchanged.
 1. Test case: `view 3`<br>
    Expected: The profile shows AMY BEE and phone 91234567. The filtered list still contains all three Amy candidates in the same order. Run `list` to confirm any candidates hidden by the filter remain stored.
+
+### Rejecting repeated remark prefixes
+
+1. In a disposable empty pipeline, run `add n/Remark Tester p/91234560 s/Java`, then `add n/Other Candidate p/81234560 s/SQL`.
+1. Run `remark 1 r/Original note`, then `find Remark`.<br>
+   Expected: Only Remark Tester is displayed, with the original note.
+1. Run `remark 1 r/First note r/Second note`, then `view 1`.<br>
+   Expected: The remark command reports `Multiple values specified for the following single-valued field(s): r/`. The profile still shows `Original note`, and the filtered list remains unchanged.
+1. Repeat with `remark 1 r/First note r/`, `remark 1 r/Same r/Same`, and `remark 1 r/ r/`.<br>
+   Expected: Each command is rejected with the same error; the remark is not removed or overwritten.
+1. Restart Scoutly and run `view 1`.<br>
+   Expected: The stored remark is still `Original note`.
+1. Run `remark 1 r/`, then `view 1`. Add another note with `remark 1 r/New note`, then run `remark 1` and `view 1`.<br>
+   Expected: Both supported clearing forms succeed and show `Remark: None`.
 
 ### Hiring stages
 

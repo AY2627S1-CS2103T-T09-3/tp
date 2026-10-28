@@ -262,6 +262,8 @@ Format: `remark INDEX [r/REMARK]`
 * `INDEX` must be a positive integer referring to the displayed list.
 * Example: `remark 2 r/Available for interviews next week`.
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
+* The `r/` prefix may appear at most once. Repeated prefixes, including empty or identical values, are rejected without changing candidate data, saved remarks, or the displayed list.
+* A space followed by `r/` starts another field, even inside remark text. Ordinary slashes within text or URLs, such as `folder/r/notes`, are accepted.
 * Remarks are shown on candidate cards and saved with your candidates. Editing other details preserves the remark.
 * After updating a remark, all candidates are displayed again.
 * Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
