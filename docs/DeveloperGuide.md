@@ -161,6 +161,12 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+`MainApp.init` acquires a `DataFolderLock` before reading or writing candidate data or preferences. The lock uses `FileChannel.tryLock()` on `data/scoutly.lock` and remains held until shutdown. A competing instance skips initialization, displays a message, and exits without touching either JSON file. Initialization failure releases the lock immediately; shutdown releases it even if saving preferences fails. Process termination also releases the operating system lock. The lock file is retained, so its existence alone does not indicate that the folder is in use.
+
+`DataFolderLock` resolves the real data-folder path and tracks active locks within the JVM. This prevents aliases from opening a second channel for an owned lock file: on some systems, closing any channel for that file can release the process's locks. The operating system lock additionally protects against separate JVMs.
+
+`LogicManager` compares its pre-command `AddressBook` snapshot with the resulting data. It saves only when they differ. Read-only commands, changes to the displayed filter or sorting, and unchanged candidate updates therefore do not rewrite the file. Failed saves of changed data still restore the original candidate data, filter, and comparator.
+
 ### Common classes
 
 Classes used by multiple components are in the `seedu.address.commons` package.
@@ -512,7 +518,7 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 3. Scoutly must save contact changes automatically after every successful command that changes data.
 4. Scoutly must store contact data in a local JSON text file that a technically proficient user can read and edit.
 5. Scoutly must preserve all valid contacts when saving and loading the local data file, and must report invalid data instead of silently treating it as valid.
-6. Scoutly must support one local user at a time and must not require a network connection for normal contact management.
+6. Scoutly must support one local user at a time and must not require a network connection for normal contact management. At most one instance may use a given data folder at a time; separate home folders may be used independently.
 7. A user who is comfortable typing regular English text must be able to complete the common add, edit, find, list, and delete tasks using commands without relying on mouse navigation.
 8. Invalid commands, invalid contact fields, duplicate contacts, and invalid indexes must produce a clear user visible error without changing the existing valid contact data.
 9. Scoutly must be distributable and launchable as a JAR without requiring a project specific installer.
@@ -561,7 +567,21 @@ testers are expected to do more *exploratory* testing.
    1. Relaunch the app by double-clicking the JAR file.<br>
        Expected: The most recent window size and location are retained.
 
-1. _{ more test cases … }_
+1. Preventing concurrent instances
+
+   1. Launch Scoutly in a disposable home folder. Add `Maya Rao` using `add n/Maya Rao p/91234567 s/Java`.
+
+   1. Launch the same JAR again from the same folder.<br>
+      Expected: The second instance displays `Scoutly is already running with this data folder. Please use the existing window.` Dismissing the message closes that instance. The candidate file and preferences remain unchanged.
+
+   1. In the original window, add `Leo Tan` using `add n/Leo Tan p/81234567 s/SQL`, then run `exit` and relaunch.<br>
+      Expected: Both Maya Rao and Leo Tan remain stored, and the application opens normally.
+
+   1. Repeat after forcibly terminating the original process, without deleting `data/scoutly.lock`.<br>
+      Expected: The application reopens normally and preserves the previously saved candidates.
+
+   1. Launch another copy from a different home folder.<br>
+      Expected: Both instances can operate independently.
 
 ### Deleting a candidate
 

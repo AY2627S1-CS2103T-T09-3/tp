@@ -22,7 +22,7 @@ Scoutly is a **desktop application for managing recruitment candidates through t
    Choose `addressbook-mac-arm64.jar` for an Apple Silicon Mac (M-series chip), or `addressbook.jar` for
    an Intel Mac, Windows, or Linux. On Mac, check **Apple menu → About This Mac** to identify your chip.
 
-1. Copy the file to the folder you want to use as the _home folder_ for Scoutly.
+1. Copy the file to a writable folder you want to use as the _home folder_ for Scoutly.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    **Apple Silicon Mac:** Run `java -jar addressbook-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
@@ -43,6 +43,14 @@ Scoutly is a **desktop application for managing recruitment candidates through t
    * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
+
+### Opening Scoutly more than once
+
+Only one Scoutly instance can use a home folder at a time. If you launch another instance from the same folder, it shows `Scoutly is already running with this data folder. Please use the existing window.` and closes after you dismiss the message. Use the window that is already open.
+
+Before upgrading, close any windows opened by older versions of Scoutly.
+
+Closing Scoutly releases the folder for the next launch. If Scoutly is forcibly terminated, the operating system releases the lock automatically; no manual cleanup is needed. Instances using separate home folders can run independently.
 
 ### Try a recruitment workflow
 
@@ -354,7 +362,7 @@ Format: `exit`
 
 ### Saving the data
 
-Scoutly automatically saves data after each successfully executed command. You do not need to save manually.
+Scoutly automatically saves candidate data after each successful command that changes it. You do not need to save manually. Commands that only display information, change the displayed list, or exit do not rewrite the candidate file. Setting an existing value again also leaves the file unchanged.
 
 ### Editing the data file
 

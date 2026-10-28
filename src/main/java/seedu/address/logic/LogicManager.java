@@ -54,6 +54,10 @@ public class LogicManager implements Logic {
         Comparator<? super Person> originalComparator = model.getFilteredPersonListComparator();
         commandResult = command.execute(model);
 
+        if (originalData.equals(model.getAddressBook())) {
+            return commandResult;
+        }
+
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
