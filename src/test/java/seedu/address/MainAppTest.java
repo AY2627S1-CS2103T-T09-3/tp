@@ -25,6 +25,11 @@ import seedu.address.storage.StorageManager;
 public class MainAppTest {
 
     @Test
+    public void version_matchesCurrentRelease() {
+        assertTrue("V1.5".equals(MainApp.VERSION));
+    }
+
+    @Test
     public void initModelManager_legacyIdentityCollision_abortsWithoutChangingData(@TempDir Path directory)
             throws Exception {
         Path addressBookFile = directory.resolve("addressbook.json");
