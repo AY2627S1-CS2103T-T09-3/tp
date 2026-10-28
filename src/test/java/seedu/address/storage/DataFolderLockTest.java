@@ -5,17 +5,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import seedu.address.testutil.TestProcess;
 
 public class DataFolderLockTest {
 
@@ -110,15 +114,20 @@ public class DataFolderLockTest {
         assertEquals("existing data", Files.readString(file));
     }
 
-    private Process startProcess(Path dataFolder, boolean holdLock) throws Exception {
-        String executable = System.getProperty("os.name").startsWith("Windows") ? "java.exe" : "java";
-        Path java = Path.of(System.getProperty("java.home"), "bin", executable);
-        Path mainClasses = Path.of(DataFolderLock.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        Path testClasses = Path.of(DataFolderLockTestProcess.class.getProtectionDomain()
-                .getCodeSource().getLocation().toURI());
-        return new ProcessBuilder(java.toString(), "-cp", mainClasses + File.pathSeparator + testClasses,
-                DataFolderLockTestProcess.class.getName(), dataFolder.toString(), holdLock ? "hold" : "")
-                .redirectErrorStream(true).start();
+    @Test
+    public void tryAcquire_lockHeldOutsideRegistry_returnsEmpty() throws Exception {
+        try (FileChannel channel = FileChannel.open(directory.resolve("scoutly.lock"),
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                FileLock external = channel.lock()) {
+            assertTrue(DataFolderLock.tryAcquire(directory).isEmpty());
+        }
+        try (DataFolderLock reopened = DataFolderLock.tryAcquire(directory).orElseThrow()) {
+            assertTrue(DataFolderLock.tryAcquire(directory).isEmpty());
+        }
+    }
+
+    private Process startProcess(Path dataFolder, boolean holdLock) throws IOException {
+        return TestProcess.start(DataFolderLockTestProcess.class, dataFolder.toString(), holdLock ? "hold" : "");
     }
 
     private String readStatus(Process process) throws Exception {

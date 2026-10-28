@@ -6,12 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,12 +30,59 @@ import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.Storage;
 import seedu.address.storage.StorageManager;
+import seedu.address.testutil.TestProcess;
 
 public class MainAppTest {
 
     @Test
     public void version_matchesCurrentRelease() {
         assertTrue("V1.5".equals(MainApp.VERSION));
+    }
+
+    @Test
+    public void start_ownedFolder_startsUi(@TempDir Path directory) throws Exception {
+        MainApp app = new MainApp(directory.resolve("data/addressbook.json"), directory.resolve("preferences.json"));
+        try {
+            app.init();
+            AtomicBoolean started = new AtomicBoolean();
+            app.ui = stage -> started.set(true);
+            app.start(null);
+            assertTrue(started.get());
+        } finally {
+            app.stop();
+        }
+    }
+
+    @Test
+    public void start_competingProcess_warnsAndExitsWithoutChangingFiles(@TempDir Path directory) throws Exception {
+        Path dataFolder = directory.resolve("data");
+        Files.createDirectories(dataFolder);
+        Path dataFile = dataFolder.resolve("addressbook.json");
+        Path prefsFile = directory.resolve("preferences.json");
+        Files.writeString(dataFile, "{\"persons\":[]}");
+        Files.writeString(prefsFile, "{}");
+        byte[] originalData = Files.readAllBytes(dataFile);
+        byte[] originalPrefs = Files.readAllBytes(prefsFile);
+        try (DataFolderLock owner = DataFolderLock.tryAcquire(dataFolder).orElseThrow()) {
+            Process contender = TestProcess.start(MainAppTestProcess.class, dataFile.toString(), prefsFile.toString());
+            try {
+                String message = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return contender.inputReader(StandardCharsets.UTF_8).readLine();
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }).get(20, TimeUnit.SECONDS);
+                assertEquals(MainApp.MESSAGE_DATA_FOLDER_IN_USE, message);
+                assertTrue(contender.waitFor(10, TimeUnit.SECONDS));
+                assertEquals(0, contender.exitValue());
+                assertArrayEquals(originalData, Files.readAllBytes(dataFile));
+                assertArrayEquals(originalPrefs, Files.readAllBytes(prefsFile));
+            } finally {
+                contender.destroyForcibly();
+                assertTrue(contender.waitFor(10, TimeUnit.SECONDS));
+            }
+        }
     }
 
     @Test

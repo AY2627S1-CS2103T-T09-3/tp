@@ -82,7 +82,7 @@ public class MainApp extends Application {
         try {
             initializeComponents();
         } catch (RuntimeException | Error e) {
-            releaseDataFolderLock();
+            closeResources();
             throw e;
         }
     }
@@ -185,23 +185,16 @@ public class MainApp extends Application {
         if (dataFolderLock == null) {
             return;
         }
-        try {
-            storage.saveUserPrefs(model.getUserPrefs());
-        } catch (IOException e) {
-            logger.severe("Failed to save preferences " + StringUtil.getDetails(e));
-        } finally {
-            releaseDataFolderLock();
-        }
+        closeResources();
     }
 
-    private void releaseDataFolderLock() {
-        if (dataFolderLock == null) {
-            return;
-        }
-        try {
-            dataFolderLock.close();
+    private void closeResources() {
+        try (DataFolderLock lock = dataFolderLock) {
+            if (model != null) {
+                storage.saveUserPrefs(model.getUserPrefs());
+            }
         } catch (IOException e) {
-            logger.severe("Failed to release the data folder lock " + StringUtil.getDetails(e));
+            logger.severe("Failed to save preferences or release the data folder lock " + StringUtil.getDetails(e));
         } finally {
             dataFolderLock = null;
         }
