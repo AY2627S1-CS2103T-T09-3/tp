@@ -31,8 +31,8 @@ public class RemarkCommandTest {
             CommandResult result = new RemarkCommand(INDEX_FIRST_PERSON, new Remark(text)).execute(model);
             Person expected = new PersonBuilder(original).withRemark(text).build();
             assertEquals(expected, model.getFilteredPersonList().get(0));
-            String message = text.isEmpty() ? RemarkCommand.MESSAGE_DELETE_REMARK_SUCCESS
-                    : RemarkCommand.MESSAGE_ADD_REMARK_SUCCESS;
+            String message = text.isEmpty() ? RemarkCommand.MESSAGE_DELETE_CANDIDATE_REMARK_SUCCESS
+                    : RemarkCommand.MESSAGE_ADD_CANDIDATE_REMARK_SUCCESS;
             assertEquals(String.format(message, Messages.format(expected)), result.getFeedbackToUser());
         }
     }

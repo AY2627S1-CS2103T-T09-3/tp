@@ -38,7 +38,7 @@ public class DeleteCommandTest {
         expectedModel.deletePerson(personToDelete);
 
         assertCommandSuccess(deleteCommand, model,
-                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
     }
 
@@ -50,7 +50,7 @@ public class DeleteCommandTest {
         expectedModel.deletePerson(personToDelete);
 
         assertCommandSuccess(deleteCommand, model,
-                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
     }
 
@@ -66,7 +66,8 @@ public class DeleteCommandTest {
         expectedModel.deletePerson(candidate);
 
         assertCommandSuccess(new DeleteCommand(new Name("aMy \t Bee")), model,
-                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(candidate)), expectedModel);
+                String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(candidate)),
+                expectedModel);
     }
 
     @Test
@@ -93,7 +94,7 @@ public class DeleteCommandTest {
         showNoPerson(expectedModel);
 
         assertCommandSuccess(new DeleteCommand(personToDelete.getName()), model,
-                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
     }
 
@@ -151,7 +152,7 @@ public class DeleteCommandTest {
         expectedModel.updateFilteredPersonList(person -> person.getName().fullName.equals("Benson Meier")
                 || person.getName().fullName.equalsIgnoreCase("Alice Pauline"));
         assertCommandSuccess(new DeleteCommand(Index.fromOneBased(3)), model,
-                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
     }
 
@@ -165,7 +166,7 @@ public class DeleteCommandTest {
         showNoPerson(expectedModel);
 
         assertCommandSuccess(new DeleteCommand(personToDelete.getName()), model,
-                String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS, Messages.format(personToDelete)),
+                String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
     }
 
@@ -174,7 +175,7 @@ public class DeleteCommandTest {
         Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
         DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS,
                 Messages.format(personToDelete));
 
         ModelManager expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
@@ -198,7 +199,7 @@ public class DeleteCommandTest {
         Person personToDelete = model.getFilteredPersonList().get(INDEX_FIRST_PERSON.getZeroBased());
         DeleteCommand deleteCommand = new DeleteCommand(INDEX_FIRST_PERSON);
 
-        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_PERSON_SUCCESS,
+        String expectedMessage = String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS,
                 Messages.format(personToDelete));
 
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());

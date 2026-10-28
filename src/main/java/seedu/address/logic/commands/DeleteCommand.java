@@ -31,7 +31,7 @@ public class DeleteCommand extends Command {
             + "All-digit input is treated as an index.\n"
             + "Examples: " + COMMAND_WORD + " 1; " + COMMAND_WORD + " 1,3,5; " + COMMAND_WORD + " Alice Pauline";
 
-    public static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted person: %1$s";
+    public static final String MESSAGE_DELETE_CANDIDATE_SUCCESS = "Deleted candidate: %1$s";
     public static final String MESSAGE_DELETE_PERSONS_SUCCESS = "Deleted %1$d candidates:\n%2$s";
     public static final String MESSAGE_DUPLICATE_INDEX =
             "Duplicate indexes are not allowed. Specify each displayed index only once. No candidates were deleted.";
@@ -81,7 +81,7 @@ public class DeleteCommand extends Command {
                 ? getPersonsByIndexes(lastShownList) : List.of(getPersonByName(lastShownList));
         personsToDelete.forEach(model::deletePerson);
         if (personsToDelete.size() == 1) {
-            return new CommandResult(String.format(MESSAGE_DELETE_PERSON_SUCCESS,
+            return new CommandResult(String.format(MESSAGE_DELETE_CANDIDATE_SUCCESS,
                     Messages.format(personsToDelete.get(0))));
         }
         String deletedPersons = personsToDelete.stream().map(Messages::format).collect(Collectors.joining("\n"));
