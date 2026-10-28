@@ -55,6 +55,32 @@ public class MainAppTest {
     }
 
     @Test
+    public void initModelManager_nullCandidate_abortsWithoutChangingData(@TempDir Path directory) throws Exception {
+        Path addressBookFile = directory.resolve("addressbook.json");
+        String malformedData = "{\n"
+                + "  \"persons\": [null]\n"
+                + "}\n";
+        Files.writeString(addressBookFile, malformedData, StandardCharsets.UTF_8);
+        byte[] originalData = Files.readAllBytes(addressBookFile);
+
+        Storage storage = new StorageManager(new JsonAddressBookStorage(addressBookFile),
+                new JsonUserPrefsStorage(directory.resolve("preferences.json")));
+        Method initModelManager = MainApp.class.getDeclaredMethod("initModelManager", Storage.class,
+                ReadOnlyUserPrefs.class);
+        initModelManager.setAccessible(true);
+
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class, () ->
+                initModelManager.invoke(new MainApp(), storage, new UserPrefs()));
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("Startup was aborted to prevent overwriting it"));
+        assertTrue(cause.getCause() instanceof DataLoadingException);
+        assertTrue(cause.getCause().getCause() instanceof IllegalValueException);
+
+        assertArrayEquals(originalData, Files.readAllBytes(addressBookFile));
+    }
+
+    @Test
     public void initModelManager_nullPersons_abortsWithoutChangingData(@TempDir Path directory) throws Exception {
         assertMalformedAddressBookAborts("{\n  \"persons\": null\n}\n", directory);
     }
@@ -66,6 +92,38 @@ public class MainAppTest {
 
     private void assertMalformedAddressBookAborts(String malformedData, Path directory) throws Exception {
         Path addressBookFile = directory.resolve("addressbook.json");
+        Files.writeString(addressBookFile, malformedData, StandardCharsets.UTF_8);
+        byte[] originalData = Files.readAllBytes(addressBookFile);
+
+        Storage storage = new StorageManager(new JsonAddressBookStorage(addressBookFile),
+                new JsonUserPrefsStorage(directory.resolve("preferences.json")));
+        Method initModelManager = MainApp.class.getDeclaredMethod("initModelManager", Storage.class,
+                ReadOnlyUserPrefs.class);
+        initModelManager.setAccessible(true);
+
+        InvocationTargetException exception = assertThrows(InvocationTargetException.class, () ->
+                initModelManager.invoke(new MainApp(), storage, new UserPrefs()));
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalStateException);
+        assertTrue(cause.getMessage().contains("Startup was aborted to prevent overwriting it"));
+        assertTrue(cause.getCause() instanceof DataLoadingException);
+        assertTrue(cause.getCause().getCause() instanceof IllegalValueException);
+
+        assertArrayEquals(originalData, Files.readAllBytes(addressBookFile));
+    }
+
+    @Test
+    public void initModelManager_nullTag_abortsWithoutChangingData(@TempDir Path directory) throws Exception {
+        Path addressBookFile = directory.resolve("addressbook.json");
+        String malformedData = "{\n"
+                + "  \"persons\": [ {\n"
+                + "    \"name\": \"Null Tag Candidate\",\n"
+                + "    \"phone\": \"1234567\",\n"
+                + "    \"email\": \"\",\n"
+                + "    \"address\": \"\",\n"
+                + "    \"tags\": [null]\n"
+                + "  } ]\n"
+                + "}\n";
         Files.writeString(addressBookFile, malformedData, StandardCharsets.UTF_8);
         byte[] originalData = Files.readAllBytes(addressBookFile);
 
