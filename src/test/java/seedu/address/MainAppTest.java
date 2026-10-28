@@ -1,6 +1,8 @@
 package seedu.address;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,6 +11,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -17,6 +20,7 @@ import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
+import seedu.address.storage.DataFolderLock;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.Storage;
@@ -27,6 +31,108 @@ public class MainAppTest {
     @Test
     public void version_matchesCurrentRelease() {
         assertTrue("V1.5".equals(MainApp.VERSION));
+    }
+
+    @Test
+    public void init_secondInstance_doesNotReadOrWriteFiles(@TempDir Path directory) throws Exception {
+        Path dataFolder = directory.resolve("data");
+        Files.createDirectories(dataFolder);
+        Path dataFile = dataFolder.resolve("addressbook.json");
+        Path prefsFile = directory.resolve("preferences.json");
+        Files.writeString(dataFile, "invalid candidate data that must not be read or changed");
+        Files.writeString(prefsFile, "invalid preferences that must not be read or changed");
+        byte[] originalData = Files.readAllBytes(dataFile);
+        byte[] originalPrefs = Files.readAllBytes(prefsFile);
+
+        try (DataFolderLock owner = DataFolderLock.tryAcquire(dataFolder).orElseThrow()) {
+            MainApp blocked = new MainApp(dataFile, prefsFile);
+            blocked.init();
+            blocked.stop();
+
+            assertNull(blocked.model);
+            assertNull(blocked.storage);
+            assertNull(blocked.ui);
+            assertArrayEquals(originalData, Files.readAllBytes(dataFile));
+            assertArrayEquals(originalPrefs, Files.readAllBytes(prefsFile));
+            assertTrue(DataFolderLock.tryAcquire(dataFolder).isEmpty());
+        }
+    }
+
+    @Test
+    public void init_rejectedSecondInstance_preservesBothCandidatesAfterRestart(@TempDir Path directory)
+            throws Exception {
+        Path dataFile = directory.resolve("data/addressbook.json");
+        Path prefsFile = directory.resolve("preferences.json");
+        MainApp first = new MainApp(dataFile, prefsFile);
+        try {
+            first.init();
+            first.logic.execute("clear");
+            first.logic.execute("add n/Maya Rao p/91234567 s/Java");
+            byte[] originalData = Files.readAllBytes(dataFile);
+            Files.writeString(prefsFile, Files.readString(prefsFile) + "\n");
+            byte[] originalPrefs = Files.readAllBytes(prefsFile);
+
+            MainApp second = new MainApp(dataFile, prefsFile);
+            second.init();
+            second.stop();
+            assertNull(second.model);
+            assertArrayEquals(originalData, Files.readAllBytes(dataFile));
+            assertArrayEquals(originalPrefs, Files.readAllBytes(prefsFile));
+
+            first.logic.execute("add n/Leo Tan p/81234567 s/SQL");
+        } finally {
+            first.stop();
+        }
+
+        MainApp reopened = new MainApp(dataFile, prefsFile);
+        try {
+            reopened.init();
+            assertEquals(List.of("Maya Rao", "Leo Tan"), reopened.model.getAddressBook().getPersonList().stream()
+                    .map(person -> person.getName().fullName).toList());
+        } finally {
+            reopened.stop();
+        }
+    }
+
+    @Test
+    public void init_invalidData_releasesLockForCorrectedStartup(@TempDir Path directory) throws Exception {
+        Path dataFile = directory.resolve("data/addressbook.json");
+        Files.createDirectories(dataFile.getParent());
+        Files.writeString(dataFile, "invalid JSON");
+        Path prefsFile = directory.resolve("preferences.json");
+        MainApp failed = new MainApp(dataFile, prefsFile);
+
+        assertThrows(IllegalStateException.class, failed::init);
+        failed.stop();
+        assertEquals("invalid JSON", Files.readString(dataFile));
+
+        Files.writeString(dataFile, "{\"persons\":[]}");
+        MainApp reopened = new MainApp(dataFile, prefsFile);
+        try {
+            reopened.init();
+            assertTrue(reopened.model.getAddressBook().getPersonList().isEmpty());
+        } finally {
+            reopened.stop();
+        }
+    }
+
+    @Test
+    public void stop_preferencesSaveFails_releasesLock(@TempDir Path directory) throws Exception {
+        Path dataFile = directory.resolve("data/addressbook.json");
+        Path prefsFile = directory.resolve("preferences.json");
+        MainApp app = new MainApp(dataFile, prefsFile);
+        try {
+            app.init();
+            Files.delete(prefsFile);
+            Files.createDirectory(prefsFile);
+        } finally {
+            app.stop();
+        }
+
+        try (DataFolderLock reopened = DataFolderLock.tryAcquire(dataFile.getParent()).orElseThrow()) {
+            app.stop();
+            assertTrue(DataFolderLock.tryAcquire(dataFile.getParent()).isEmpty());
+        }
     }
 
     @Test
