@@ -21,15 +21,16 @@ class JsonSerializableAddressBook {
 
     public static final String MESSAGE_DUPLICATE_PERSON = "Persons list contains duplicate person(s).";
     public static final String MESSAGE_INVALID_PERSON = "Persons list contains an invalid person.";
+    public static final String MESSAGE_INVALID_PERSONS = "Persons list must be present and non-null.";
 
-    private final List<JsonAdaptedPerson> persons = new ArrayList<>();
+    private final List<JsonAdaptedPerson> persons;
 
     /**
      * Constructs a {@code JsonSerializableAddressBook} with the given persons.
      */
     @JsonCreator
     public JsonSerializableAddressBook(@JsonProperty("persons") List<JsonAdaptedPerson> persons) {
-        this.persons.addAll(persons);
+        this.persons = persons == null ? null : new ArrayList<>(persons);
     }
 
     /**
@@ -38,7 +39,7 @@ class JsonSerializableAddressBook {
      * @param source future changes to this will not affect the created {@code JsonSerializableAddressBook}.
      */
     public JsonSerializableAddressBook(ReadOnlyAddressBook source) {
-        persons.addAll(source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList()));
+        persons = source.getPersonList().stream().map(JsonAdaptedPerson::new).collect(Collectors.toList());
     }
 
     /**
@@ -47,6 +48,9 @@ class JsonSerializableAddressBook {
      * @throws IllegalValueException if there were any data constraints violated.
      */
     public AddressBook toModelType() throws IllegalValueException {
+        if (persons == null) {
+            throw new IllegalValueException(MESSAGE_INVALID_PERSONS);
+        }
         AddressBook addressBook = new AddressBook();
         for (JsonAdaptedPerson jsonAdaptedPerson : persons) {
             if (jsonAdaptedPerson == null) {
