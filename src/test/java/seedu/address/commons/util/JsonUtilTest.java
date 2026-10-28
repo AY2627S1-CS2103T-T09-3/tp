@@ -1,12 +1,18 @@
 package seedu.address.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.commons.exceptions.DataLoadingException;
+import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.testutil.SerializableTestClass;
 import seedu.address.testutil.TestUtil;
 
@@ -37,6 +43,19 @@ public class JsonUtilTest {
         assertEquals(serializableTestClass.getName(), SerializableTestClass.getNameTestValue());
         assertEquals(serializableTestClass.getListOfLocalDateTimes(), SerializableTestClass.getListTestValues());
         assertEquals(serializableTestClass.getMapOfIntegerToString(), SerializableTestClass.getHashMapTestValues());
+    }
+
+    @Test
+    public void readJsonFile_nullJson_throwsDataLoadingException(@TempDir Path directory) throws IOException {
+        Path file = directory.resolve("null.json");
+        String contents = " \n null \t ";
+        Files.writeString(file, contents);
+
+        DataLoadingException exception = assertThrows(DataLoadingException.class, () ->
+                JsonUtil.readJsonFile(file, SerializableTestClass.class));
+
+        assertTrue(exception.getCause() instanceof IllegalValueException);
+        assertEquals(contents, Files.readString(file));
     }
 
     //TODO: @Test jsonUtil_readJsonStringToObjectInstance_correctObject()

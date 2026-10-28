@@ -95,6 +95,11 @@ public class MainAppTest {
         assertMalformedAddressBookAborts("{\n}\n", directory);
     }
 
+    @Test
+    public void initModelManager_nullJson_abortsWithoutChangingData(@TempDir Path directory) throws Exception {
+        assertMalformedAddressBookAborts("null\n", directory);
+    }
+
     private void assertMalformedAddressBookAborts(String malformedData, Path directory) throws Exception {
         Path addressBookFile = directory.resolve("addressbook.json");
         Files.writeString(addressBookFile, malformedData, StandardCharsets.UTF_8);
