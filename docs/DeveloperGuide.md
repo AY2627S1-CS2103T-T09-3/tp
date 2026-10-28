@@ -560,6 +560,19 @@ testers are expected to do more *exploratory* testing.
    1. Double-click the JAR file.<br>
       Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
 
+1. Recovering from null preferences
+
+   1. In a disposable home folder with a valid candidate file, close Scoutly and replace the contents of `preferences.json` with the JSON literal `null` (without quotes). Keep a copy of `data/addressbook.json` for comparison.
+
+   1. Launch the JAR from that folder.<br>
+      Expected: Scoutly logs a warning and opens with default window preferences. Existing candidates remain visible, and the candidate file is unchanged. The preferences file is rewritten with valid default values.
+
+   1. Close and relaunch the application.<br>
+      Expected: Scoutly starts normally using the saved preferences.
+
+   1. Close Scoutly, then replace the candidate file contents with `null` and launch again.<br>
+      Expected: Startup aborts with a data-loading error to prevent overwriting invalid candidate data. The candidate file still contains `null`; restore the original file before continuing.
+
 1. Saving window preferences
 
    1. Resize the window to an optimal size. Move the window to a different location. Close the window.
