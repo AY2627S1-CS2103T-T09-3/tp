@@ -29,7 +29,7 @@ else multiple matching candidates
     activate DeleteCommand
     note over DeleteCommand
     Include each match's displayed index,
-    stored name and email, followed by
+    stored name and phone number, followed by
     guidance to use delete INDEX.
     end note
     DeleteCommand --> PersonLookup : ambiguityMessage

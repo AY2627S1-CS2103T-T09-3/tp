@@ -40,7 +40,7 @@
       "src": "DeveloperGuide.md",
       "title": "Developer Guide",
       "headings": {
-        "ab-3-developer-guide": "AB-3 Developer Guide",
+        "scoutly-developer-guide": "Scoutly Developer Guide",
         "acknowledgements": "Acknowledgements",
         "setting-up-getting-started": "Setting up, getting started",
         "design": "Design",
@@ -56,8 +56,10 @@
         "hiring-stages": "Hiring stages",
         "hiring-stage-summary": "Hiring-stage summary",
         "deleting-a-candidate-by-full-name": "Deleting a candidate by full name",
-        "proposed-undo-redo-feature": "[Proposed] Undo/redo feature",
-        "proposed-data-archiving": "[Proposed] Data archiving",
+        "adding-candidates-and-editing-skills": "Adding candidates and editing skills",
+        "filtering-and-sorting": "Filtering and sorting",
+        "recruitment-remarks": "Recruitment remarks",
+        "startup-and-saving-data": "Startup and saving data",
         "documentation-logging-testing-dev-ops": "Documentation, logging, testing, dev-ops",
         "appendix-requirements": "Appendix: Requirements",
         "product-scope": "Product scope",
@@ -71,7 +73,9 @@
         "viewing-candidates-with-matching-names-2": "Viewing candidates with matching names",
         "hiring-stages-2": "Hiring stages",
         "hiring-stage-summary-2": "Hiring-stage summary",
-        "saving-data": "Saving data"
+        "remarks-and-duplicate-fields": "Remarks and duplicate fields",
+        "sorting-and-displayed-indexes": "Sorting and displayed indexes",
+        "saving-and-loading-data": "Saving and loading data"
       },
       "headingKeywords": {}
     },
@@ -146,7 +150,8 @@
       "title": "Home",
       "headings": {
         "scoutly": "Scoutly",
-        "planned-mvp": "Planned MVP",
+        "current-features": "Current features",
+        "get-started": "Get started",
         "documentation": "Documentation",
         "acknowledgements": "Acknowledgements"
       },
