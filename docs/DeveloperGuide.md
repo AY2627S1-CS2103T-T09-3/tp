@@ -512,6 +512,37 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 --------------------------------------------------------------------------------------------------------------------
 
+## Candidate follow-up reminders
+
+`FollowUp` is an immutable value object stored on `Person`. It contains an optional
+calendar date, a note of at most 200 characters and a completion flag. The empty state
+cannot contain a note or be completed. Date validation requires an exact `YYYY-MM-DD`
+format, a real calendar date and a year from 1 to 9999. Past dates are permitted.
+
+`FollowUpCommandParser` parses `followup INDEX d/DATE [r/NOTE]`, `followup INDEX done`
+and `followup INDEX clear`. Duplicate prefixes and mixed operations are rejected.
+`FollowUpCommand` resolves the index against the displayed list, replaces the candidate
+with `Person.withFollowUp`, and then restores the full list. Completing an absent or
+already completed follow-up fails without changing data. Rescheduling replaces the note
+and resets completion. Candidate edits and remark updates preserve the follow-up.
+
+`FollowUpsCommandParser` parses an optional view, defaulting to pending.
+`FollowUpFilter` supplies predicates for pending, overdue, today, upcoming, completed
+and all follow-ups. Each predicate captures the command's local reference date so that
+every candidate is evaluated against the same day. Listing always searches the entire
+address book, retains its order and reports counts for the resulting view.
+
+`JsonAdaptedFollowUp` validates stored fields before constructing the model object.
+`JsonAdaptedPerson` defaults missing or null follow-up data to the empty state so older
+files load successfully. A present follow-up object with missing fields, an invalid
+date, an invalid note or inconsistent state is rejected. `PersonCard` displays the
+date, status and note, and removes the label from layout when no follow-up exists.
+
+Tests cover calendar boundaries, note validation, lifecycle transitions, filtered
+indices, failed commands without mutations, all six views, preservation during other
+edits, JSON round trips, older files, malformed stored objects and the JavaFX card label.
+Run `./gradlew test checkstyleMain checkstyleTest` to verify the feature.
+
 ## **Appendix: Instructions for manual testing**
 
 Given below are instructions to test the app manually.

@@ -3,6 +3,7 @@ package seedu.address.logic;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
@@ -89,7 +90,7 @@ public class LogicManagerTest {
         storage.failNextSave(DUMMY_AD_EXCEPTION);
 
         for (String command : List.of("view 1", "summary", "help", "exit", "list sort/name", "list",
-                "find Amy", "findskill Java", "list s/Applied")) {
+                "find Amy", "findskill Java", "list s/Applied", "followups", "followups overdue")) {
             logic.execute(command);
             assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()), command);
             assertEquals(List.of(AMY, BOB), model.getAddressBook().getPersonList(), command);
@@ -395,6 +396,40 @@ public class LogicManagerTest {
             logic.execute("stage 1 s/Interview");
             assertEquals(1, model.getFilteredPersonList().size(), command);
             assertEquals(HiringStage.INTERVIEW, model.getFilteredPersonList().get(0).getStage(), command);
+        }
+    }
+
+    @Test
+    public void execute_failedFollowUpSave_restoresDataFilterOrderAndFile() throws Exception {
+        for (IOException failure : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            for (String operation : List.of("followup 1 d/2026-11-06 r/Rescheduled",
+                    "followup 1 done", "followup 1 clear")) {
+                model = new ModelManager();
+                model.addPerson(BOB);
+                model.addPerson(AMY);
+                FailOnceAddressBookStorage storage = useFailOnceStorage();
+                logic.execute("followup 2 d/2026-11-05 r/Call");
+                logic.execute("followups pending");
+                model.sortFilteredPersonList(Comparator.comparing(person -> person.getName().fullName));
+                AddressBook original = new AddressBook(model.getAddressBook());
+                List<Person> displayed = List.copyOf(model.getFilteredPersonList());
+                Predicate<Person> filter = model.getFilteredPersonListPredicate();
+                Comparator<? super Person> comparator = model.getFilteredPersonListComparator();
+                byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+                storage.failNextSave(failure);
+
+                assertThrows(CommandException.class, () -> logic.execute(operation));
+
+                assertEquals(original, model.getAddressBook());
+                assertEquals(displayed, model.getFilteredPersonList());
+                for (Person candidate : original.getPersonList()) {
+                    assertEquals(filter.test(candidate), model.getFilteredPersonListPredicate().test(candidate));
+                }
+                assertSame(comparator, model.getFilteredPersonListComparator());
+                assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+                logic.execute(operation);
+                assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+            }
         }
     }
 

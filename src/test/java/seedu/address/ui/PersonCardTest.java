@@ -1,8 +1,10 @@
 package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +24,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -46,6 +49,27 @@ public class PersonCardTest {
     @Test
     public void constructor_personWithEmptyRemark_displaysEmptyRemark() throws Exception {
         assertDisplayedRemark("");
+    }
+
+    @Test
+    public void constructor_followUp_displaysDateStatusAndNoteOrHidesEmptyLabel() throws Exception {
+        FutureTask<Void> assertion = new FutureTask<>(() -> {
+            FollowUp reminder = new FollowUp("2026-11-05", "Call candidate", false);
+            Person person = new PersonBuilder().build().withFollowUp(reminder);
+            PersonCard card = new PersonCard(person, 1);
+            Label label = (Label) card.getRoot().lookup("#followUp");
+            assertEquals(reminder.format(LocalDate.now()), label.getText());
+            assertTrue(label.isVisible());
+            assertTrue(label.isManaged());
+            PersonCard empty = new PersonCard(person.withFollowUp(FollowUp.empty()), 1);
+            Label emptyLabel = (Label) empty.getRoot().lookup("#followUp");
+            assertEquals("", emptyLabel.getText());
+            assertFalse(emptyLabel.isVisible());
+            assertFalse(emptyLabel.isManaged());
+            return null;
+        });
+        Platform.runLater(assertion);
+        assertion.get(10, TimeUnit.SECONDS);
     }
 
     private void assertDisplayedRemark(String remark) throws Exception {
