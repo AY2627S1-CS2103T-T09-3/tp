@@ -58,6 +58,19 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void allPersons_isObservableReadOnlyAndIndependentOfSearch() {
+        var all = logic.getAllPersons();
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        model.updateFilteredPersonList(AMY::equals);
+        assertEquals(List.of(AMY, BOB), all);
+        assertEquals(List.of(AMY), logic.getFilteredPersonList());
+        assertThrows(UnsupportedOperationException.class, () -> all.clear());
+        model.deletePerson(BOB);
+        assertEquals(List.of(AMY), all);
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);

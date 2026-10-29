@@ -74,10 +74,10 @@ public class ViewCommand extends Command {
                 .sorted(Skill.DISPLAY_ORDER)
                 .map(skill -> skill.value)
                 .collect(Collectors.joining(", "));
-        return new CommandResult(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
+        return CommandResult.showProfile(String.format(MESSAGE_VIEW_CANDIDATE_SUCCESS,
                 candidate.getName(), candidate.getPhone(), candidate.getEmail(), candidate.getAddress(),
                 tags.isEmpty() ? "None" : tags, remark.isEmpty() ? "None" : remark, candidate.getStage(),
-                skills.isEmpty() ? "None" : skills));
+                skills.isEmpty() ? "None" : skills), candidate);
     }
 
     /**
