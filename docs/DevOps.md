@@ -77,20 +77,31 @@ Any warnings or errors will be printed out to the console.
 
 ## Making a release
 
-Here are the steps to create a new release.
-
-1. Update the version number in [`MainApp.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/MainApp.java).
-1. Generate both fat JAR files, without running `clean` between the two commands:
-   ```sh
-   ./gradlew clean check shadowJar
-   ./gradlew shadowJar -PjavafxMacPlatform=mac-aarch64
-   ```
-   This creates `build/libs/addressbook.jar` for Windows, Linux, and Intel Mac, and
-   `build/libs/addressbook-mac-arm64.jar` for Apple Silicon Mac. The Mac native libraries have identical
-   filenames across architectures and must not be combined into one fat JAR.
-1. Launch each JAR on its target platform with Java 25. For Apple Silicon, verify
-   `java -jar build/libs/addressbook-mac-arm64.jar` with a plain ARM64 JDK, without separately installed JavaFX.
+1. Update the version number in `src/main/java/seedu/address/MainApp.java`, merge the release changes, and push a version tag such as `v1.5` to the team repository.
+1. In the team repository's **Actions** tab, select **Prepare release**, choose **Run workflow**, and enter the existing tag.
+   The workflow checks out that tag, runs the project checks, builds both Mac variants without cleaning between builds,
+   and creates a **draft** release with both downloads and platform instructions. It verifies that both assets were uploaded.
+   This workflow must be present on the default branch before it can be run. It does not publish the release or replace an existing release.
+1. Open the draft under **Releases** and confirm its **Assets** contain both nonempty files:
+   - `addressbook.jar` for Windows, Linux, and Intel Mac.
+   - `addressbook-mac-arm64.jar` for Apple Silicon Mac.
+1. Download the attached files and launch each on its target platform with Java 25. For Apple Silicon, verify
+   `java -jar addressbook-mac-arm64.jar` with a plain ARM64 JDK, without separately installed JavaFX.
    A JDK with JavaFX bundled can hide missing or incompatible native libraries in the JAR.
-1. Tag the repo with the version number. e.g. `v0.1`
-1. [Create a new release using GitHub](https://help.github.com/articles/creating-releases/). Upload both JAR files
-   and explain which one Apple Silicon users should download.
+1. Publish the draft only after both downloads and the User Guide installation steps have been verified.
+
+The Mac native libraries have identical filenames across architectures and must not be combined into one fat JAR.
+Renaming `addressbook.jar` does not make it an Apple Silicon package.
+
+If the workflow fails, inspect the run and any draft it created before retrying. A partial draft must have both correct
+assets attached and verified, or be deleted before running **Prepare release** again. Never publish an incomplete draft.
+
+For local builds or manual release preparation, use the same two commands without running `clean` between them:
+
+```sh
+./gradlew clean check shadowJar
+./gradlew shadowJar -PjavafxMacPlatform=mac-aarch64
+```
+
+The outputs are `build/libs/addressbook.jar` and `build/libs/addressbook-mac-arm64.jar`.
+Both must be uploaded to the same release and checked before publication, even when preparing a release manually.

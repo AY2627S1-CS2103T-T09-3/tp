@@ -18,7 +18,7 @@ Scoutly is a **desktop application for managing recruitment candidates through t
 1. Ensure that Java `25` or later is installed on your computer.<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
-1. Download the latest `.jar` file from [Scoutly releases](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases).
+1. Open the latest [Scoutly release](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases), expand **Assets**, and download the `.jar` file for your computer.
    Choose `addressbook-mac-arm64.jar` for an Apple Silicon Mac (M-series chip), or `addressbook.jar` for
    an Intel Mac, Windows, or Linux. On Mac, check **Apple menu → About This Mac** to identify your chip.
 
