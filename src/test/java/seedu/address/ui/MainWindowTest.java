@@ -187,6 +187,76 @@ public class MainWindowTest {
     }
 
     @Test
+    public void defaultWorkspace_profileKeepsControlsVisible() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.getPrimaryStage().setWidth(1100);
+                window.getPrimaryStage().setHeight(850);
+                window.show();
+                execute(window, "view 1");
+                layout(window);
+
+                assertVisibleInScene(window, "resultDisplay");
+                assertVisibleInScene(window, "commandTextField");
+                assertVisibleInScene(window, "statusbarPlaceholder");
+                assertWorkspaceSectionsFit(window);
+                assertWorkspaceControlsDoNotOverlap(window);
+                assertTrue(((ListView<?>) lookup(window, "personListView")).getHeight() > 0);
+                assertTrue(lookup(window, "profileContent").getBoundsInParent().getHeight() > 0);
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void minimumWorkspace_suggestionsKeepControlsVisibleWhileWorkspaceScrolls() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.getPrimaryStage().setWidth(760);
+                window.getPrimaryStage().setHeight(700);
+                window.show();
+                execute(window, "view 1");
+                TextField input = (TextField) lookup(window, "commandTextField");
+                input.setText("stage 1 s/");
+                input.positionCaret(input.getLength());
+                layout(window);
+
+                Node root = window.getPrimaryStage().getScene().getRoot();
+                ListView<?> suggestions = (ListView<?>) root.lookup("#suggestions");
+                assertTrue(suggestions.isVisible());
+                assertTrue(suggestions.getItems().size() >= 3);
+                assertVisibleInScene(window, "resultDisplay");
+                assertVisibleInScene(window, "commandTextField");
+                assertVisibleInScene(window, "statusbarPlaceholder");
+                assertWorkspaceControlsDoNotOverlap(window);
+
+                ScrollPane workspace = (ScrollPane) lookup(window, "workspaceScroll");
+                assertTrue(workspace.getContent().getBoundsInLocal().getHeight()
+                        > workspace.getViewportBounds().getHeight());
+                double initialContentMinY = workspace.getContent().localToScene(
+                        workspace.getContent().getBoundsInLocal()).getMinY();
+                workspace.setVvalue(1);
+                workspace.requestLayout();
+                workspace.layout();
+                layout(window);
+
+                double scrolledContentMinY = workspace.getContent().localToScene(
+                        workspace.getContent().getBoundsInLocal()).getMinY();
+                assertTrue(scrolledContentMinY < initialContentMinY);
+                assertVisibleInScene(window, "resultDisplay");
+                assertVisibleInScene(window, "commandTextField");
+                assertVisibleInScene(window, "statusbarPlaceholder");
+                assertWorkspaceControlsDoNotOverlap(window);
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
     public void sortingAndFollowUps_preserveProfileTargetsAndRecoverAfterFailedDeletion() throws Exception {
         FxTestUtil.run(() -> {
             AtomicBoolean failSave = new AtomicBoolean();
@@ -383,6 +453,41 @@ public class MainWindowTest {
 
     private String result(MainWindow window) {
         return ((TextArea) window.getPrimaryStage().getScene().lookup("#resultDisplay")).getText();
+    }
+
+    private Node lookup(MainWindow window, String id) {
+        return window.getPrimaryStage().getScene().lookup("#" + id);
+    }
+
+    private void layout(MainWindow window) {
+        window.getPrimaryStage().getScene().getRoot().applyCss();
+        window.getPrimaryStage().getScene().getRoot().layout();
+    }
+
+    private void assertVisibleInScene(MainWindow window, String id) {
+        Bounds bounds = visualSceneBounds(lookup(window, id));
+        double sceneWidth = window.getPrimaryStage().getScene().getWidth();
+        double sceneHeight = window.getPrimaryStage().getScene().getHeight();
+        double tolerance = 2;
+        assertTrue(bounds.getMinX() >= -tolerance,
+                id + " starts outside the scene: " + bounds);
+        assertTrue(bounds.getMaxX() <= sceneWidth + tolerance,
+                id + " ends outside the scene: " + bounds);
+        assertTrue(bounds.getMinY() >= -tolerance,
+                id + " starts outside the scene: " + bounds);
+        assertTrue(bounds.getMaxY() <= sceneHeight + tolerance,
+                id + " ends outside the scene: " + bounds);
+    }
+
+    private void assertWorkspaceControlsDoNotOverlap(MainWindow window) {
+        Bounds workspace = layoutSceneBounds(lookup(window, "workspaceScroll"));
+        Bounds result = layoutSceneBounds(lookup(window, "resultDisplayPlaceholder"));
+        Bounds command = layoutSceneBounds(lookup(window, "commandBoxPlaceholder"));
+        Bounds statusbar = layoutSceneBounds(lookup(window, "statusbarPlaceholder"));
+        double tolerance = 2;
+        assertTrue(workspace.getMaxY() <= result.getMinY() + tolerance);
+        assertTrue(result.getMaxY() <= command.getMinY() + tolerance);
+        assertTrue(command.getMaxY() <= statusbar.getMinY() + tolerance);
     }
 
     private List<String> candidateNames(ListView<?> candidates) {
