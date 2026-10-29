@@ -36,6 +36,13 @@ public class MainWindow extends UiPart<Stage> {
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+    private CandidateSelectionModel candidateSelection;
+
+    @FXML
+    private StackPane dashboardPlaceholder;
+
+    @FXML
+    private StackPane profilePlaceholder;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -114,7 +121,12 @@ public class MainWindow extends UiPart<Stage> {
      * Fills up all the placeholders of this window.
      */
     void fillInnerParts() {
-        personListPanel = new PersonListPanel(logic.getFilteredPersonList());
+        candidateSelection = new CandidateSelectionModel(logic.getAllPersons(), logic.getFilteredPersonList());
+        dashboardPlaceholder.getChildren().add(
+                new PipelineDashboard(logic.getAllPersons(), logic.getFilteredPersonList()).getRoot());
+        profilePlaceholder.getChildren().add(new CandidateProfilePanel(candidateSelection).getRoot());
+        personListPanel = new PersonListPanel(
+                logic.getAllPersons(), logic.getFilteredPersonList(), candidateSelection);
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
 
         resultDisplay = new ResultDisplay();
@@ -179,6 +191,7 @@ public class MainWindow extends UiPart<Stage> {
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
         try {
             CommandResult commandResult = logic.execute(commandText);
+            commandResult.getProfileTarget().ifPresent(candidateSelection::select);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
 
@@ -195,6 +208,9 @@ public class MainWindow extends UiPart<Stage> {
             logger.info("An error occurred while executing command: " + commandText);
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
+        } finally {
+            candidateSelection.reconcileVisibility();
+            personListPanel.refreshSelection();
         }
     }
 }

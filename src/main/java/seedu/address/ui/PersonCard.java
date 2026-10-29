@@ -1,76 +1,58 @@
 package seedu.address.ui;
 
-import java.util.Comparator;
+import static java.util.Objects.requireNonNull;
+
+import java.util.List;
+import java.util.Locale;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Skill;
 
-/**
- * A UI component that displays information of a {@code Person}.
- */
+/** Compact candidate summary; full contact information belongs in the profile panel. */
 public class PersonCard extends UiPart<Region> {
-
-    private static final String FXML = "PersonListCard.fxml";
-
-    /**
-     * Note: Certain keywords such as "location" and "resources" are reserved keywords in JavaFX.
-     * As a consequence, UI elements' variable names cannot be set to such keywords
-     * or an exception will be thrown by JavaFX during runtime.
-     *
-     * @see <a href="https://github.com/se-edu/addressbook-level4/issues/336">The issue on AddressBook level 4</a>
-     */
+    private static final int MAX_PREVIEW_SKILLS = 3;
 
     public final Person person;
 
-    @FXML
-    private HBox cardPane;
     @FXML
     private Label name;
     @FXML
     private Label id;
     @FXML
-    private Label phone;
-    @FXML
-    private Label address;
-    @FXML
-    private Label email;
-    @FXML
-    private FlowPane tags;
+    private Label hiringStage;
     @FXML
     private FlowPane skills;
-    @FXML
-    private Label remark;
-    @FXML
-    private Label hiringStage;
 
-    /**
-     * Creates a {@code PersonCard} with the given {@code Person} and index to display.
-     */
+    /** Creates a card with an index matching the model's displayed list. */
     public PersonCard(Person person, int displayedIndex) {
-        super(FXML);
-        this.person = person;
+        super("PersonListCard.fxml");
+        this.person = requireNonNull(person);
+        if (displayedIndex < 1) {
+            throw new IllegalArgumentException("Displayed index must be positive");
+        }
         id.setText(displayedIndex + ". ");
         name.setText(person.getName().fullName);
-        phone.setText(person.getPhone().value);
-        address.setText(person.getAddress().value);
-        email.setText(person.getEmail().value);
-        remark.setText(person.getRemark().value);
-        hiringStage.setText("Hiring stage: " + person.getStage());
-        person.getTags().stream()
-                .sorted(Comparator.comparing(tag -> tag.tagName))
-                .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));
-
-        if (person.getSkills().isEmpty()) {
-            skills.getChildren().add(new Label("None"));
-        } else {
-            person.getSkills().stream()
-                    .sorted(Skill.DISPLAY_ORDER)
-                    .forEach(skill -> skills.getChildren().add(new Label(skill.value)));
+        name.setTooltip(new Tooltip(person.getName().fullName));
+        hiringStage.setText(person.getStage().toString());
+        hiringStage.getStyleClass().add("stage-" + person.getStage().name().toLowerCase(Locale.ROOT));
+        List<Skill> orderedSkills = person.getSkills().stream().sorted(Skill.DISPLAY_ORDER).toList();
+        orderedSkills.stream().limit(MAX_PREVIEW_SKILLS).forEach(skill -> addSkill(skill.value));
+        if (orderedSkills.isEmpty()) {
+            addSkill("No skills");
+        } else if (orderedSkills.size() > MAX_PREVIEW_SKILLS) {
+            addSkill("+" + (orderedSkills.size() - MAX_PREVIEW_SKILLS) + " more");
         }
+        getRoot().setAccessibleText(displayedIndex + ". " + person.getName() + ", " + person.getStage());
+    }
+
+    private void addSkill(String value) {
+        Label chip = new Label(value);
+        chip.getStyleClass().add("chip");
+        skills.getChildren().add(chip);
     }
 }

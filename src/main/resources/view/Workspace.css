@@ -1,0 +1,55 @@
+.root {
+    -fx-font-family: "System";
+    -fx-font-size: 13px;
+    -fx-base: #f7f9fb;
+    -fx-background-color: #edf2f7;
+    -fx-accent: #127d86;
+    -fx-focus-color: #127d86;
+    -fx-faint-focus-color: #127d8622;
+    -fx-text-background-color: #25374a;
+}
+.workspace { -fx-background-color: #edf2f7; }
+.workspace-inset { -fx-padding: 0 18; }
+.brand-bar { -fx-background-color: #203849; -fx-padding: 12 22; }
+.brand-title { -fx-text-fill: white; -fx-font-size: 26px; }
+.workspace-title { -fx-font-size: 23px; -fx-text-fill: #25374a; }
+.section-title { -fx-font-size: 18px; -fx-text-fill: #25374a; }
+.muted, .field-title { -fx-text-fill: #5d7085; }
+.field-title { -fx-font-size: 11px; }
+.surface { -fx-background-color: white; -fx-background-radius: 12; -fx-padding: 16; }
+.stage-tile {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-padding: 12 18;
+    -fx-min-width: 125;
+}
+.tile-count { -fx-font-size: 23px; -fx-text-fill: #087d87; }
+.profile-name { -fx-font-size: 25px; -fx-text-fill: #25374a; }
+.profile-body { -fx-padding: 4 12 12 0; }
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
+.split-pane { -fx-background-color: transparent; -fx-padding: 0 18; }
+.split-pane-divider { -fx-background-color: transparent; -fx-padding: 0 6; }
+.list-view { -fx-background-color: white; -fx-padding: 0; -fx-background-insets: 0; }
+.list-cell { -fx-padding: 5 0; -fx-background-color: transparent; }
+#cardPane { -fx-background-color: #f3f6f9; -fx-background-radius: 9; -fx-padding: 12; }
+.list-cell:filled:selected #cardPane { -fx-background-color: #def0f1; }
+.list-cell:filled:focused #cardPane { -fx-border-color: #127d86; -fx-border-radius: 9; }
+.list-cell:filled:selected .label { -fx-text-fill: #25374a; }
+.candidate-name { -fx-font-size: 16px; -fx-font-weight: bold; }
+.stage-badge, .chip { -fx-background-radius: 6; -fx-padding: 4 8; }
+.stage-badge { -fx-background-color: #d9efec; -fx-text-fill: #146b63; }
+.stage-rejected { -fx-background-color: #f9e4e2; -fx-text-fill: #a13d37; }
+.stage-offered { -fx-background-color: #ddf0de; -fx-text-fill: #2f6839; }
+.stage-interview { -fx-background-color: #e5e6fa; -fx-text-fill: #504d89; }
+.chip { -fx-background-color: #e9eef4; -fx-text-fill: #455c71; -fx-font-size: 11px; }
+.button { -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 5 10; }
+.text-field { -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 12; }
+.text-field:focused { -fx-border-color: #127d86; -fx-border-radius: 8; }
+.text-field.error { -fx-border-color: #ad3c32; -fx-border-radius: 8; }
+.result-display { -fx-background-color: #e0f0ec; -fx-background-radius: 8; -fx-padding: 6; }
+.result-display .content { -fx-background-color: transparent; }
+.result-display .text { -fx-fill: #1d6158; }
+.result-display:failure { -fx-background-color: #fbe9e7; }
+.result-display:failure .text { -fx-fill: #993b34; }
+.status-bar { -fx-padding: 3 18 9; }
+.status-bar .label { -fx-text-fill: #5d7085; -fx-font-size: 11px; }
