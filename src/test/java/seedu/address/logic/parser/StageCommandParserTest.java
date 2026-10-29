@@ -6,6 +6,9 @@ import static seedu.address.logic.parser.CommandParserTestUtil.assertParseFailur
 import static seedu.address.logic.parser.CommandParserTestUtil.assertParseSuccess;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
+import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,16 +27,23 @@ public class StageCommandParserTest {
         }
         assertParseSuccess(parser, " \t1 \t s/ iNtErViEw \n",
                 new StageCommand(INDEX_FIRST_PERSON, HiringStage.INTERVIEW));
+        assertParseSuccess(parser, "1,2 s/Interview",
+                new StageCommand(List.of(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON), HiringStage.INTERVIEW));
     }
 
     @Test
     public void parse_missingArgsOrInvalidIndex_showsUsage() {
         String expected = String.format(MESSAGE_INVALID_COMMAND_FORMAT, StageCommand.MESSAGE_USAGE);
         for (String input : new String[]{"", " ", "1", "1 ", " s/Interview", "0 s/Applied", "-1 s/Applied",
-            "+1 s/Applied", "1.5 s/Applied", "2147483648 s/Applied", "one s/Applied",
+            "+1 s/Applied", "1.5 s/Applied", "2147483648 s/Applied", "one s/Applied", "1,,2 s/Applied",
             "1 Interview", "1 S/Interview", "1s/Interview", "1 2 s/Interview"}) {
             assertParseFailure(parser, input, expected);
         }
+    }
+
+    @Test
+    public void parse_duplicateIndexes_rejectsRepeatedValues() {
+        assertParseFailure(parser, "1,2,1 s/Interview", StageCommand.MESSAGE_DUPLICATE_INDEX);
     }
 
     @Test

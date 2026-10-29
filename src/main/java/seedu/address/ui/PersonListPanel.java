@@ -129,11 +129,10 @@ public class PersonListPanel extends UiPart<Region> {
 
     void executeBulkStage(String stage) {
         List<Person> selected = new ArrayList<>(personListView.getSelectionModel().getSelectedItems());
-        List<Integer> indexes = selected.stream().map(this::displayedIndex).toList();
-        for (int index : indexes) {
-            if (!executeCommand("stage " + index + " s/" + stage)) {
-                return;
-            }
+        String indexes = selected.stream().map(this::displayedIndex)
+                .sorted().map(String::valueOf).collect(Collectors.joining(","));
+        if (!executeCommand("stage " + indexes + " s/" + stage)) {
+            return;
         }
         personListView.getSelectionModel().clearSelection();
     }

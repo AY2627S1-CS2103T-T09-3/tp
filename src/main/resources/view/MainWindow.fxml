@@ -20,8 +20,8 @@
           </Menu>
         </MenuBar>
         <HBox styleClass="brand-bar"><Label text="Scoutly" styleClass="brand-title" /></HBox>
-        <StackPane fx:id="dashboardPlaceholder" minHeight="0" maxHeight="118" styleClass="workspace-inset" />
-        <StackPane fx:id="workspaceToolbarPlaceholder" minHeight="0" maxHeight="96"
+        <StackPane fx:id="dashboardPlaceholder" minHeight="119" prefHeight="119" styleClass="workspace-inset" />
+        <StackPane fx:id="workspaceToolbarPlaceholder" minHeight="96" prefHeight="96"
                    styleClass="workspace-inset" />
         <SplitPane dividerPositions="0.42" minHeight="140" VBox.vgrow="ALWAYS" styleClass="workspace-inset">
           <StackPane fx:id="personListPanelPlaceholder" minWidth="280" minHeight="120" />

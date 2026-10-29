@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
@@ -148,6 +149,38 @@ public class MainWindowTest {
     }
 
     @Test
+    public void dashboardAndToolbar_fitWithoutOverlapAtSupportedSizes() throws Exception {
+        FxTestUtil.run(() -> {
+            for (double[] size : List.of(new double[]{1100, 850}, new double[]{760, 700})) {
+                MainWindow window = createWindow(new AtomicBoolean());
+                try {
+                    window.getPrimaryStage().setWidth(size[0]);
+                    window.getPrimaryStage().setHeight(size[1]);
+                    window.show();
+                    Parent root = window.getPrimaryStage().getScene().getRoot();
+                    root.applyCss();
+                    root.layout();
+
+                    Node dashboardPlaceholder = root.lookup("#dashboardPlaceholder");
+                    Node toolbarPlaceholder = root.lookup("#workspaceToolbarPlaceholder");
+                    Bounds dashboardBounds = layoutSceneBounds(dashboardPlaceholder);
+                    Bounds toolbarBounds = layoutSceneBounds(toolbarPlaceholder);
+                    assertTrue(dashboardBounds.getMaxY() <= toolbarBounds.getMinY() + 1,
+                            "Dashboard and toolbar overlap at " + size[0] + "x" + size[1]
+                                    + ": dashboard=" + dashboardBounds + ", toolbar=" + toolbarBounds);
+
+                    Node stageTiles = root.lookup("#stageTiles");
+                    Node toolbarContent = ((Parent) toolbarPlaceholder).getChildrenUnmodifiable().get(0);
+                    assertContained(dashboardPlaceholder, stageTiles);
+                    assertContained(toolbarPlaceholder, toolbarContent);
+                } finally {
+                    window.getPrimaryStage().close();
+                }
+            }
+        });
+    }
+
+    @Test
     public void sortingAndFollowUps_preserveProfileTargetsAndRecoverAfterFailedDeletion() throws Exception {
         FxTestUtil.run(() -> {
             AtomicBoolean failSave = new AtomicBoolean();
@@ -261,6 +294,27 @@ public class MainWindowTest {
 
     private List<String> candidateNames(ListView<?> candidates) {
         return candidates.getItems().stream().map(item -> ((Person) item).getName().fullName).toList();
+    }
+
+    private Bounds layoutSceneBounds(Node node) {
+        return node.localToScene(node.getLayoutBounds());
+    }
+
+    private Bounds visualSceneBounds(Node node) {
+        return node.localToScene(node.getBoundsInLocal());
+    }
+
+    private void assertContained(Node container, Node content) {
+        Bounds containerBounds = layoutSceneBounds(container);
+        Bounds contentBounds = visualSceneBounds(content);
+        assertTrue(contentBounds.getMinX() >= containerBounds.getMinX() - 1,
+                "Content starts left of its container: content=" + contentBounds + ", container=" + containerBounds);
+        assertTrue(contentBounds.getMaxX() <= containerBounds.getMaxX() + 1,
+                "Content ends right of its container: content=" + contentBounds + ", container=" + containerBounds);
+        assertTrue(contentBounds.getMinY() >= containerBounds.getMinY() - 1,
+                "Content starts above its container: content=" + contentBounds + ", container=" + containerBounds);
+        assertTrue(contentBounds.getMaxY() <= containerBounds.getMaxY() + 1,
+                "Content ends below its container: content=" + contentBounds + ", container=" + containerBounds);
     }
 
     private void savePreview(Stage stage, String name) {

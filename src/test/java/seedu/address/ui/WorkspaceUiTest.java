@@ -27,7 +27,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import seedu.address.logic.commands.CommandResult;
-import seedu.address.logic.commands.exceptions.CommandException;
+import seedu.address.logic.parser.AddressBookParser;
+import seedu.address.model.ModelManager;
 import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
@@ -195,16 +196,26 @@ public class WorkspaceUiTest {
     }
 
     @Test
-    public void bulkStage_stopsAfterFirstFailureAndKeepsSelectionForRetry() throws Exception {
+    public void bulkStage_usesOriginalIndexesUnderActiveStageFilter() throws Exception {
         FxTestUtil.run(() -> {
-            Person first = new PersonBuilder().build();
-            Person second = new PersonBuilder().withName("Other").build();
-            ObservableList<Person> all = FXCollections.observableArrayList(first, second);
-            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            Person first = new PersonBuilder().withName("First Candidate")
+                    .withStage(HiringStage.APPLIED).build();
+            Person second = new PersonBuilder().withName("Second Candidate")
+                    .withStage(HiringStage.APPLIED).build();
+            Person existingInterview = new PersonBuilder().withName("Existing Interview")
+                    .withStage(HiringStage.INTERVIEW).build();
+            ModelManager model = new ModelManager();
+            model.addPerson(first);
+            model.addPerson(second);
+            model.addPerson(existingInterview);
+            ObservableList<Person> all = model.getAddressBook().getPersonList();
+            FilteredList<Person> visible = new FilteredList<>(all,
+                    person -> person.getStage() == HiringStage.APPLIED);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, visible);
             List<String> commands = new ArrayList<>();
-            PersonListPanel panel = new PersonListPanel(all, all, selection, command -> {
+            PersonListPanel panel = new PersonListPanel(all, visible, selection, command -> {
                 commands.add(command);
-                throw new CommandException("save failed");
+                return new AddressBookParser().parseCommand(command).execute(model);
             });
             new Scene(panel.getRoot());
             ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
@@ -212,8 +223,10 @@ public class WorkspaceUiTest {
 
             panel.executeBulkStage("Interview");
 
-            assertEquals(List.of("stage 1 s/Interview"), commands);
-            assertEquals(2, list.getSelectionModel().getSelectedItems().size());
+            assertEquals(List.of("stage 1,2 s/Interview"), commands);
+            assertTrue(all.stream().allMatch(person -> person.getStage() == HiringStage.INTERVIEW));
+            assertTrue(list.getItems().isEmpty());
+            assertEquals(0, list.getSelectionModel().getSelectedItems().size());
         });
     }
 
