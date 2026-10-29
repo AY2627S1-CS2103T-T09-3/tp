@@ -22,10 +22,10 @@ The following commands perform common Gradle tasks.
 * **`clean`**: Deletes the files created during the previous build tasks (e.g. files in the `build` folder).<br>
   For example: `./gradlew clean`
 
-* **`shadowJar`**: Uses the Shadow plugin to create the fat JAR file `build/libs/addressbook.jar`.<br>
+* **`shadowJar`**: Uses the Shadow plugin to create the fat JAR file `build/libs/scoutly.jar`.<br>
   For example: `./gradlew shadowJar` (Windows, Linux, and Intel Mac).<br>
   For Apple Silicon Mac, use `./gradlew shadowJar -PjavafxMacPlatform=mac-aarch64` to create
-  `build/libs/addressbook-mac-arm64.jar`. The default value of `javafxMacPlatform` is `mac`;
+  `build/libs/scoutly-mac-arm64.jar`. The default value of `javafxMacPlatform` is `mac`;
   only `mac` and `mac-aarch64` are accepted.
 
 * **`run`**: Builds and runs the application.<br>
@@ -83,15 +83,15 @@ Any warnings or errors will be printed out to the console.
    and creates a **draft** release with both downloads and platform instructions. It verifies that both assets were uploaded.
    This workflow must be present on the default branch before it can be run. It does not publish the release or replace an existing release.
 1. Open the draft under **Releases** and confirm its **Assets** contain both nonempty files:
-   - `addressbook.jar` for Windows, Linux, and Intel Mac.
-   - `addressbook-mac-arm64.jar` for Apple Silicon Mac.
+   - `scoutly.jar` for Windows, Linux, and Intel Mac.
+   - `scoutly-mac-arm64.jar` for Apple Silicon Mac.
 1. Download the attached files and launch each on its target platform with Java 25. For Apple Silicon, verify
-   `java -jar addressbook-mac-arm64.jar` with a plain ARM64 JDK, without separately installed JavaFX.
+   `java -jar scoutly-mac-arm64.jar` with a plain ARM64 JDK, without separately installed JavaFX.
    A JDK with JavaFX bundled can hide missing or incompatible native libraries in the JAR.
 1. Publish the draft only after both downloads and the User Guide installation steps have been verified.
 
 The Mac native libraries have identical filenames across architectures and must not be combined into one fat JAR.
-Renaming `addressbook.jar` does not make it an Apple Silicon package.
+Renaming `scoutly.jar` does not make it an Apple Silicon package.
 
 If the workflow fails, inspect the run and any draft it created before retrying. A partial draft must have both correct
 assets attached and verified, or be deleted before running **Prepare release** again. Never publish an incomplete draft.
@@ -103,5 +103,5 @@ For local builds or manual release preparation, use the same two commands withou
 ./gradlew shadowJar -PjavafxMacPlatform=mac-aarch64
 ```
 
-The outputs are `build/libs/addressbook.jar` and `build/libs/addressbook-mac-arm64.jar`.
+The outputs are `build/libs/scoutly.jar` and `build/libs/scoutly-mac-arm64.jar`.
 Both must be uploaded to the same release and checked before publication, even when preparing a release manually.

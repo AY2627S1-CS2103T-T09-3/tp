@@ -626,7 +626,7 @@ testers are expected to do more *exploratory* testing.
 
    1. Download the JAR file and copy it into an empty folder.
 
-   1. Verify Java 25 with `java -version`, then run `java -jar addressbook.jar` (or `java -jar addressbook-mac-arm64.jar` on Apple Silicon).<br>
+   1. Verify Java 25 with `java -version`, then run `java -jar scoutly.jar` (or `java -jar scoutly-mac-arm64.jar` on Apple Silicon).<br>
       Expected: The GUI opens with a set of sample candidates. The window size may not be optimal.
 
 1. Recovering from null preferences

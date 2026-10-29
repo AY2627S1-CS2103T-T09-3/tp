@@ -83,7 +83,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName = javafxMacPlatform == 'mac-aarch64' ? 'addressbook-mac-arm64.jar' : 'addressbook.jar'
+    archiveFileName = javafxMacPlatform == 'mac-aarch64' ? 'scoutly-mac-arm64.jar' : 'scoutly.jar'
 }
 
 defaultTasks 'clean', 'test'
