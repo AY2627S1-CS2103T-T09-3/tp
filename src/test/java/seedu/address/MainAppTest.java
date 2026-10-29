@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
 import seedu.address.storage.DataFolderLock;
@@ -166,6 +168,72 @@ public class MainAppTest {
         } finally {
             reopened.stop();
         }
+    }
+
+    @Test
+    public void init_trailingJson_abortsAndPreservesData(@TempDir Path directory) throws Exception {
+        Path dataFile = directory.resolve("data/addressbook.json");
+        Path prefsFile = directory.resolve("preferences.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(dataFile);
+        AddressBook original = getTypicalAddressBook();
+        storage.saveAddressBook(original);
+        String validData = Files.readString(dataFile);
+        for (String suffix : List.of("{invalid-json", "{\"persons\":[]}", "null")) {
+            Files.writeString(dataFile, validData + "\n" + suffix);
+            byte[] originalBytes = Files.readAllBytes(dataFile);
+            MainApp app = new MainApp(dataFile, prefsFile);
+            try {
+                IllegalStateException exception = assertThrows(IllegalStateException.class, app::init);
+                assertTrue(exception.getMessage().contains("Startup was aborted to prevent overwriting it"));
+                assertTrue(exception.getCause() instanceof DataLoadingException);
+                assertNull(app.model);
+            } finally {
+                app.stop();
+            }
+            assertArrayEquals(originalBytes, Files.readAllBytes(dataFile));
+            try (DataFolderLock lock = DataFolderLock.tryAcquire(dataFile.getParent()).orElseThrow()) {
+                assertTrue(DataFolderLock.tryAcquire(dataFile.getParent()).isEmpty());
+            }
+        }
+
+        Files.writeString(dataFile, validData);
+        MainApp reopened = new MainApp(dataFile, prefsFile);
+        try {
+            reopened.init();
+            assertEquals(original, reopened.model.getAddressBook());
+        } finally {
+            reopened.stop();
+        }
+    }
+
+    @Test
+    public void init_nullGuiSettings_recoversAndPreservesCandidatesAcrossRestart(@TempDir Path directory)
+            throws Exception {
+        Path dataFile = directory.resolve("data/addressbook.json");
+        Path prefsFile = directory.resolve("preferences.json");
+        AddressBook original = getTypicalAddressBook();
+        new JsonAddressBookStorage(dataFile).saveAddressBook(original);
+        byte[] originalBytes = Files.readAllBytes(dataFile);
+        Files.writeString(prefsFile, "{\"guiSettings\":null}");
+
+        MainApp app = new MainApp(dataFile, prefsFile);
+        try {
+            app.init();
+            assertEquals(new UserPrefs(), app.model.getUserPrefs());
+            assertEquals(original, app.model.getAddressBook());
+        } finally {
+            app.stop();
+        }
+
+        MainApp reopened = new MainApp(dataFile, prefsFile);
+        try {
+            reopened.init();
+            assertEquals(new UserPrefs(), reopened.model.getUserPrefs());
+            assertEquals(original, reopened.model.getAddressBook());
+        } finally {
+            reopened.stop();
+        }
+        assertArrayEquals(originalBytes, Files.readAllBytes(dataFile));
     }
 
     @Test

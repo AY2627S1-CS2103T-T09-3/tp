@@ -54,6 +54,30 @@ public class JsonUserPrefsStorageTest {
         assertEquals("null", Files.readString(file));
     }
 
+    @Test
+    public void readUserPrefs_nullGuiSettings_rejectsWithoutChangingFile() throws IOException {
+        Path file = testFolder.resolve("preferences.json");
+        String contents = "{\"guiSettings\":null}";
+        Files.writeString(file, contents);
+        JsonUserPrefsStorage storage = new JsonUserPrefsStorage(file);
+
+        assertThrows(DataLoadingException.class, storage::readUserPrefs);
+
+        assertEquals(contents, Files.readString(file));
+    }
+
+    @Test
+    public void readUserPrefs_trailingContent_rejectsWithoutChangingFile() throws IOException {
+        Path file = testFolder.resolve("preferences.json");
+        String contents = "{}\n{invalid-json";
+        Files.writeString(file, contents);
+        JsonUserPrefsStorage storage = new JsonUserPrefsStorage(file);
+
+        assertThrows(DataLoadingException.class, storage::readUserPrefs);
+
+        assertEquals(contents, Files.readString(file));
+    }
+
     private Path addToTestDataPathIfNotNull(String userPrefsFileInTestDataFolder) {
         return userPrefsFileInTestDataFolder != null
                 ? TEST_DATA_FOLDER.resolve(userPrefsFileInTestDataFolder)

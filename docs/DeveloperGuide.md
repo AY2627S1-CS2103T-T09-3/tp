@@ -197,6 +197,8 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+JSON loading requires exactly one root value; trailing whitespace is allowed, but additional values or malformed trailing content cause a loading error. Invalid candidate files abort startup and remain unchanged. `JsonUserPrefsStorage` also rejects null GUI settings before model initialization, so invalid preferences produce a warning and are replaced with defaults through the existing recovery path. Missing GUI settings retain their default values.
+
 `MainApp.init` acquires a `DataFolderLock` before reading or writing candidate data or preferences. The lock uses `FileChannel.tryLock()` on `data/scoutly.lock` and remains held until shutdown. A competing instance skips initialization, displays a message, and exits without touching either JSON file. Initialization failure releases the lock immediately; shutdown releases it even if saving preferences fails. Process termination also releases the operating system lock. The lock file is retained, so its existence alone does not indicate that the folder is in use.
 
 `DataFolderLock` resolves the real data-folder path and tracks active locks within the JVM. This prevents aliases from opening a second channel for an owned lock file: on some systems, closing any channel for that file can release the process's locks. The operating system lock additionally protects against separate JVMs.

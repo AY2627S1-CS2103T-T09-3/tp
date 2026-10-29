@@ -25,4 +25,25 @@ public class MainAppPreferencesTest {
         assertEquals(new UserPrefs(), preferences);
         assertEquals(preferences, preferencesStorage.readUserPrefs().orElseThrow());
     }
+
+    @Test
+    public void initPrefs_nullGuiSettings_recoversAndSavesDefaults(@TempDir Path directory) throws Exception {
+        assertInvalidPreferencesRecover("{\"guiSettings\":null}", directory);
+    }
+
+    @Test
+    public void initPrefs_trailingContent_recoversAndSavesDefaults(@TempDir Path directory) throws Exception {
+        assertInvalidPreferencesRecover("{\"guiSettings\":{\"windowWidth\":1000}}\n{}", directory);
+    }
+
+    private void assertInvalidPreferencesRecover(String invalidPreferences, Path directory) throws Exception {
+        Path file = directory.resolve("preferences.json");
+        Files.writeString(file, invalidPreferences);
+        JsonUserPrefsStorage storage = new JsonUserPrefsStorage(file);
+
+        UserPrefs preferences = new MainApp().initPrefs(storage);
+
+        assertEquals(new UserPrefs(), preferences);
+        assertEquals(preferences, storage.readUserPrefs().orElseThrow());
+    }
 }
