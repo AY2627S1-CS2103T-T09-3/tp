@@ -127,7 +127,9 @@ public class MainWindowTest {
                 window.show();
                 execute(window, "view 1");
                 savePreview(window.getPrimaryStage(), "workspace-minimum");
-                assertEquals(760, window.getPrimaryStage().getScene().getWidth(), 2);
+                // Stage dimensions include platform-specific window borders; scene dimensions do not.
+                assertEquals(760, window.getPrimaryStage().getWidth(), 2);
+                assertEquals(700, window.getPrimaryStage().getHeight(), 2);
                 ListView<?> list = (ListView<?>) window.getPrimaryStage().getScene().lookup("#personListView");
                 assertTrue(list.lookupAll(".scroll-bar").stream().noneMatch(node -> node instanceof ScrollBar bar
                         && bar.getOrientation() == Orientation.HORIZONTAL && bar.isVisible()));
