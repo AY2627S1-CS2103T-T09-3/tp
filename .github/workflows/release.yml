@@ -59,19 +59,19 @@ jobs:
 
       - name: Create draft with both downloads
         run: |
-          test -s build/libs/addressbook.jar
-          test -s build/libs/addressbook-mac-arm64.jar
+          test -s build/libs/scoutly.jar
+          test -s build/libs/scoutly-mac-arm64.jar
           printf '%s\n' \
             'Downloads (Java 25 or later):' \
-            '- Windows, Linux, Intel Mac: addressbook.jar' \
-            '- Apple Silicon Mac (ARM64 Java): addressbook-mac-arm64.jar' \
+            '- Windows, Linux, Intel Mac: scoutly.jar' \
+            '- Apple Silicon Mac (ARM64 Java): scoutly-mac-arm64.jar' \
             > "$RUNNER_TEMP/release-notes.md"
           gh release create "$RELEASE_TAG" \
-            build/libs/addressbook.jar build/libs/addressbook-mac-arm64.jar \
+            build/libs/scoutly.jar build/libs/scoutly-mac-arm64.jar \
             --verify-tag --draft --title "$RELEASE_TAG" \
             --notes-file "$RUNNER_TEMP/release-notes.md"
           gh release view "$RELEASE_TAG" --json assets \
             --jq '.assets | map(.name) | sort' > "$RUNNER_TEMP/release-assets.json"
           jq --exit-status \
-            '. == ["addressbook-mac-arm64.jar", "addressbook.jar"]' \
+            '. == ["scoutly-mac-arm64.jar", "scoutly.jar"]' \
             "$RUNNER_TEMP/release-assets.json"
