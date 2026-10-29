@@ -16,8 +16,10 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,6 +126,40 @@ public class LogicManagerTest {
     public void execute_invalidAdd_doesNotModifyModel() {
         assertParseException(AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY,
                 AddCommand.MESSAGE_NO_SKILL);
+    }
+
+    @Test
+    public void execute_repeatedRemarkPrefixes_preservesDataDisplayAndFile() throws Exception {
+        logic.execute("add n/Bob p/81234567 s/Python");
+        logic.execute("add n/Alice p/91234567 s/Java");
+        logic.execute("add n/Carol p/71234567 s/SQL");
+        logic.execute("remark 1 r/Keep this note");
+        logic.execute("remark 2 r/Keep Alice's note");
+        Path file = temporaryFolder.resolve("addressBook.json");
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+        String expectedError = "Multiple values specified for the following single-valued field(s): r/";
+
+        for (String displayCommand : List.of("list", "find Alice", "list sort/name")) {
+            logic.execute(displayCommand);
+            byte[] originalFile = Files.readAllBytes(file);
+            List<Person> originalDisplay = List.copyOf(logic.getFilteredPersonList());
+            Predicate<Person> originalFilter = model.getFilteredPersonListPredicate();
+            Comparator<? super Person> originalSort = model.getFilteredPersonListComparator();
+
+            for (String command : List.of("remark 1 r/Contacted r/Interview tomorrow", "remark 1 r/Contacted r/",
+                    "remark 1 r/Same r/Same", "remark 1 r/ r/")) {
+                String scenario = displayCommand + ": " + command;
+                assertThrows(ParseException.class, expectedError, () -> logic.execute(command));
+                assertEquals(originalData, model.getAddressBook(), scenario);
+                assertEquals(originalDisplay, logic.getFilteredPersonList(), scenario);
+                for (Person person : originalData.getPersonList()) {
+                    assertEquals(originalFilter.test(person),
+                            model.getFilteredPersonListPredicate().test(person), scenario);
+                }
+                assertSame(originalSort, model.getFilteredPersonListComparator(), scenario);
+                assertArrayEquals(originalFile, Files.readAllBytes(file), scenario);
+            }
+        }
     }
 
     @Test

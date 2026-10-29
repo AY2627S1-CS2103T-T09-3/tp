@@ -79,8 +79,8 @@ public class DeleteCommandTest {
         model.addPerson(new PersonBuilder().withName("AMY BEE").withPhone("91234567").build());
 
         String expectedMessage = "Multiple candidates match \"Amy Bee\":\n"
-                + "8. Amy   Bee — " + defaults.getEmail() + "\n"
-                + "9. AMY BEE — " + defaults.getEmail() + "\n"
+                + "8. Amy   Bee — Phone: " + defaults.getPhone() + "\n"
+                + "9. AMY BEE — Phone: 91234567\n"
                 + "Use delete INDEX to choose a candidate.";
         assertCommandFailure(new DeleteCommand(new Name("Amy Bee")), model, expectedMessage);
     }
@@ -126,9 +126,9 @@ public class DeleteCommandTest {
                 .withEmail("alice.other@example.com").build());
 
         String expectedMessage = "Multiple candidates match \"Alice Pauline\":\n"
-                + "1. Alice Pauline — alice@example.com\n"
-                + "8. ALICE PAULINE — alice.work@example.com\n"
-                + "9. alice pauline — alice.other@example.com\n"
+                + "1. Alice Pauline — Phone: 94351253\n"
+                + "8. ALICE PAULINE — Phone: 85355255\n"
+                + "9. alice pauline — Phone: 91234567\n"
                 + "Use delete INDEX to choose a candidate.";
         assertCommandFailure(new DeleteCommand(new Name("Alice Pauline")), model, expectedMessage);
     }
@@ -140,8 +140,8 @@ public class DeleteCommandTest {
                 || person.getName().fullName.equalsIgnoreCase("Alice Pauline"));
 
         String expectedMessage = "Multiple candidates match \"aLiCe PaUlInE\":\n"
-                + "1. Alice Pauline — alice@example.com\n"
-                + "3. ALICE PAULINE — alice.work@example.com\n"
+                + "1. Alice Pauline — Phone: 94351253\n"
+                + "3. ALICE PAULINE — Phone: 85355255\n"
                 + "Use delete INDEX to choose a candidate.";
         assertCommandFailure(new DeleteCommand(new Name("aLiCe PaUlInE")), model, expectedMessage);
 
@@ -154,6 +154,22 @@ public class DeleteCommandTest {
         assertCommandSuccess(new DeleteCommand(Index.fromOneBased(3)), model,
                 String.format(DeleteCommand.MESSAGE_DELETE_CANDIDATE_SUCCESS, Messages.format(personToDelete)),
                 expectedModel);
+    }
+
+    @Test
+    public void execute_ambiguousNameWithoutEmails_showsPhonesAndPreservesCandidates() {
+        Person first = new PersonBuilder().withName("Alice").withPhone("91234567").withEmail("").build();
+        Person second = new PersonBuilder().withName("Alice").withPhone("81234567").withEmail("").build();
+        AddressBook addressBook = new AddressBook();
+        addressBook.addPerson(first);
+        addressBook.addPerson(second);
+        Model blankEmailModel = new ModelManager(addressBook, new UserPrefs());
+
+        String expectedMessage = "Multiple candidates match \"Alice\":\n"
+                + "1. Alice — Phone: 91234567\n"
+                + "2. Alice — Phone: 81234567\n"
+                + "Use delete INDEX to choose a candidate.";
+        assertCommandFailure(new DeleteCommand(new Name("Alice")), blankEmailModel, expectedMessage);
     }
 
     @Test

@@ -23,6 +23,7 @@ public class RemarkCommandParser implements Parser<RemarkCommand> {
         } catch (ParseException pe) {
             throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, RemarkCommand.MESSAGE_USAGE), pe);
         }
+        argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_REMARK);
         return new RemarkCommand(index, new Remark(argMultimap.getValue(PREFIX_REMARK).orElse("")));
     }
 }

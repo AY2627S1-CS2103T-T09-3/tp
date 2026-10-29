@@ -26,6 +26,7 @@ Scoutly is a **desktop application for managing recruitment candidates through t
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    **Apple Silicon Mac:** Run `java -jar addressbook-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
+   Launch Scoutly from a folder where you have permission to create and update files. If double-clicking the JAR does not work, use the terminal command above.
    The application window should appear in a few seconds. On first launch, it contains sample candidates.
    Use the command box to enter commands, the result area to read feedback, and the candidate list to find displayed indexes.
 
@@ -81,6 +82,8 @@ use their displayed index or add a candidate with a different name or phone numb
 * Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/shortlisted` or `t/shortlisted t/referral`.
 
+* Command words are case-sensitive. Separate the command and prefixed fields with ordinary spaces.<br>
+
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
@@ -110,7 +113,7 @@ Format: `add n/NAME p/PHONE s/SKILL [s/SKILL]...`
 
 * `n/NAME` and `p/PHONE` are required exactly once.
 * At least one `s/SKILL` is required. Multiple skills may be provided.
-* Names must contain 1–100 letters, numbers, spaces, hyphens, or apostrophes. Leading/trailing whitespace is
+* Names must contain 1–100 characters and start with a letter or number. Remaining characters may be letters, numbers, spaces, hyphens, or apostrophes. Leading/trailing whitespace is
   removed and repeated spaces are normalized.
 * Phone numbers must contain 7–15 digits and may have one leading `+`.
 * Skills must contain 1–30 alphanumeric characters with no spaces.
@@ -119,7 +122,7 @@ Format: `add n/NAME p/PHONE s/SKILL [s/SKILL]...`
   the same name but different phone numbers, or different names but the same phone number, are allowed.
 
 Successful additions use the message `New candidate added: NAME | PHONE | Skills: SKILL1, SKILL2`.
-* Invalid names report `Invalid name: names may only contain letters, numbers, hyphens, spaces, and apostrophes, and must be 1-100 characters long.`
+* Invalid names report `Invalid name: names must start with a letter or number, may only contain letters, numbers, spaces, hyphens, and apostrophes, and must be 1-100 characters long.`
 * Invalid phone numbers report `Invalid phone number: must be 7-15 digits, optionally starting with +.`
 * Invalid skills report `Invalid skill: skills must be 1-30 alphanumeric characters with no spaces.`
 * Missing skills report `At least one skill (s/) must be provided.`
@@ -134,7 +137,7 @@ Examples:
 
 Shows candidates currently stored in Scoutly and reports the number of candidates listed. You can optionally filter the list by hiring stage. If there are no candidates, Scoutly displays `No candidates in your pipeline yet. Use 'add' to add one.`
 
-Format: `list [s/STAGE]`
+Format: `list`, `list s/STAGE`, or `list sort/name`
 
 * `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
 * `list` displays all candidates.
@@ -143,13 +146,13 @@ Format: `list [s/STAGE]`
 * Invalid parameters show either the command usage instructions or the allowed stage values.
 
 Use `list sort/name` to display candidates in ascending alphabetical order by name. Name sorting is case-insensitive.
-The plain `list` command preserves the existing candidate order.
+The plain `list` command restores the stored candidate order, which follows insertion order; it clears any active search, stage filter, or alphabetical sort. Displayed indexes can change. Recheck the candidate’s index before viewing, editing, or deleting.
 
 The only supported sorting parameter is `sort/name`; sorting cannot be combined with a hiring-stage filter. Use either
 `list sort/name` or `list s/STAGE`.
 
 Examples:
-* `list` displays all candidates in the current order.
+* `list` displays all candidates in stored order.
 * `list sort/name` displays all candidates alphabetically by name.
 
 ### Summarizing the hiring pipeline: `summary`
@@ -211,7 +214,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL
 
 * Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
+* Existing values will be updated to the input values. After a successful edit, all candidates are displayed in stored order; recheck indexes before the next command.
 * Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
 * If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
 * Successful edits use candidate-oriented feedback; when skills are changed, the resulting skills are listed in deterministic alphabetical order.
@@ -271,7 +274,8 @@ Format: `remark INDEX [r/REMARK]`
 * Example: `remark 2 r/Available for interviews next week`.
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
 * Remarks are shown on candidate cards and saved with your candidates. Editing other details preserves the remark.
-* After updating a remark, all candidates are displayed again.
+* After updating a remark, all candidates are displayed again in stored order. Recheck displayed indexes before the next command.
+* Use at most one `r/` prefix. Repeated `r/` prefixes are rejected and leave the existing remark unchanged.
 * Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
 
 ### Updating a candidate's hiring stage: `stage`
@@ -321,9 +325,9 @@ Format: `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`
 * Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
 * If no displayed candidate matches the name, no record is deleted and an error is shown.
-* If multiple displayed candidates match the name, no record is deleted. The error lists each matching candidate's displayed index, name, and email. Use `delete INDEX` with one of those indexes to choose the intended candidate.
+* If multiple displayed candidates match the name, no record is deleted. The error lists each matching candidate's displayed index, name, and phone number. Use `delete INDEX` with one of those indexes to choose the intended candidate.
 * Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
-* Deletion removes the record completely; it does not archive the candidate.
+* Deletion removes the record completely; it does not archive the candidate. There is no undo command. Back up your data before deleting records you may need later.
 * Deleting one candidate reports `Deleted candidate: ...`; batch deletion reports the number of deleted candidates.
 
 Examples:
@@ -339,18 +343,20 @@ For example, if two displayed candidates match `delete Alice Pauline`, the feedb
 
 ```text
 Multiple candidates match "Alice Pauline":
-1. Alice Pauline — alice@example.com
-3. ALICE PAULINE — alice.work@example.com
+1. Alice Pauline — Phone: 91234567
+3. ALICE PAULINE — Phone: 81234567
 Use delete INDEX to choose a candidate.
 ```
 
-The numbers refer to positions in the currently displayed list, including after `find`; they are not a separate numbering of the matches. In this example, `delete 3` deletes the candidate with email `alice.work@example.com`.
+The numbers refer to positions in the currently displayed list, including after `find`; they are not a separate numbering of the matches. In this example, `delete 3` deletes the candidate with phone number `81234567`.
 
 ### Clearing all entries: `clear`
 
 Clears all entries from the candidate pipeline.
 
 Format: `clear`
+
+This removes every candidate, including candidates hidden by the current filter. There is no undo command. Back up your data first if you may need it later.
 
 The success message is `Candidate pipeline has been cleared!`.
 
@@ -407,7 +413,7 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
-**List**   | `list [s/STAGE]`<br>e.g., `list s/Interview` or `list sort/name`
+**List**   | `list`, `list s/STAGE`, or `list sort/name`<br>e.g., `list s/Interview` or `list sort/name`
 **Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
