@@ -3,11 +3,13 @@ package seedu.address.storage;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.AddressBook;
@@ -38,6 +40,19 @@ public class JsonAdaptedFollowUpTest {
                 (com.fasterxml.jackson.databind.node.ObjectNode) mapper.readTree(json);
         node.remove("followUp");
         assertEquals(original, JsonUtil.fromJsonString(node.toString(), JsonAdaptedPerson.class).toModelType());
+    }
+
+    @Test
+    public void read_unicodeLineBreakInSavedNote_rejectedWithoutChangingFile(@TempDir Path directory) throws Exception {
+        Path file = directory.resolve("followups.json");
+        for (String separator : new String[]{"\\u2028", "\\u2029"}) {
+            String json = "{\"persons\":[{\"name\":\"Alice\",\"phone\":\"91234567\",\"email\":\"\","
+                    + "\"address\":\"\",\"tags\":[],\"followUp\":{\"date\":\"2026-11-05\","
+                    + "\"note\":\"Call" + separator + "then email\",\"completed\":false}}]}";
+            Files.writeString(file, json);
+            assertThrows(DataLoadingException.class, () -> new JsonAddressBookStorage(file).readAddressBook());
+            assertEquals(json, Files.readString(file));
+        }
     }
 
     @Test

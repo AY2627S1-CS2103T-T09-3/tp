@@ -128,10 +128,14 @@ public class PersonListPanel extends UiPart<Region> {
     }
 
     void executeBulkStage(String stage) {
+        if (commandExecutor == null || personListView.getSelectionModel().getSelectedItems().isEmpty()) {
+            return;
+        }
+        HiringStage targetStage = HiringStage.fromString(requireNonNull(stage));
         List<Person> selected = new ArrayList<>(personListView.getSelectionModel().getSelectedItems());
         String indexes = selected.stream().map(this::displayedIndex)
                 .sorted().map(String::valueOf).collect(Collectors.joining(","));
-        if (!executeCommand("stage " + indexes + " s/" + stage)) {
+        if (!executeCommand("stage " + indexes + " s/" + targetStage)) {
             return;
         }
         personListView.getSelectionModel().clearSelection();

@@ -22,6 +22,7 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
@@ -29,6 +30,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import seedu.address.logic.LogicManager;
@@ -97,10 +99,12 @@ public class MainWindowTest {
                 window.getPrimaryStage().getScene().getRoot().applyCss();
                 window.getPrimaryStage().getScene().getRoot().layout();
                 savePreview(window.getPrimaryStage(), "workspace");
+                assertWorkspaceSectionsFit(window);
                 TextField input = (TextField) window.getPrimaryStage().getScene().lookup("#commandTextField");
                 input.setText("stage 1 s/");
                 input.positionCaret(input.getLength());
                 savePreview(window.getPrimaryStage(), "command-assistance");
+                assertWorkspaceSectionsFit(window);
                 ListView<?> suggestions = (ListView<?>) window.getPrimaryStage().getScene().lookup("#suggestions");
                 assertTrue(suggestions.getHeight() >= 84);
                 window.handleHelp();
@@ -129,7 +133,8 @@ public class MainWindowTest {
                 window.show();
                 execute(window, "view 1");
                 savePreview(window.getPrimaryStage(), "workspace-minimum");
-                assertEquals(760, window.getPrimaryStage().getScene().getWidth(), 2);
+                assertWorkspaceSectionsFit(window);
+                assertEquals(760, window.getPrimaryStage().getWidth(), 2);
                 ListView<?> list = (ListView<?>) window.getPrimaryStage().getScene().lookup("#personListView");
                 assertTrue(list.lookupAll(".scroll-bar").stream().noneMatch(node -> node instanceof ScrollBar bar
                         && bar.getOrientation() == Orientation.HORIZONTAL && bar.isVisible()));
@@ -143,54 +148,6 @@ public class MainWindowTest {
                 Bounds contentBounds = profileContent.localToScene(profileContent.getBoundsInLocal());
                 assertTrue(contentBounds.getMinY() >= placeholderBounds.getMinY() - 1);
                 assertTrue(contentBounds.getMaxY() <= placeholderBounds.getMaxY() + 1);
-            } finally {
-                window.getPrimaryStage().close();
-            }
-        });
-    }
-
-    @Test
-    public void minimumWorkspace_scrollsSuggestionsWithoutOverlappingControls() throws Exception {
-        FxTestUtil.run(() -> {
-            MainWindow window = createWindow(new AtomicBoolean());
-            window.getPrimaryStage().setWidth(760);
-            window.getPrimaryStage().setHeight(700);
-            try {
-                window.show();
-                execute(window, "view 1");
-                TextField input = (TextField) window.getPrimaryStage().getScene().lookup("#commandTextField");
-                input.setText("stage 1 s/");
-                input.positionCaret(input.getLength());
-                Parent root = window.getPrimaryStage().getScene().getRoot();
-                root.applyCss();
-                root.layout();
-                savePreview(window.getPrimaryStage(), "workspace-minimum-suggestions");
-
-                ListView<?> suggestions = (ListView<?>) root.lookup("#suggestions");
-                ScrollPane workspace = (ScrollPane) root.lookup("#workspaceScrollPane");
-                assertTrue(suggestions.isVisible());
-                assertTrue(suggestions.getItems().size() >= 3);
-                assertTrue(workspace.lookupAll(".scroll-bar").stream().anyMatch(node -> node instanceof ScrollBar bar
-                        && bar.getOrientation() == Orientation.VERTICAL && bar.isVisible()));
-
-                Node profilePlaceholder = root.lookup("#profilePlaceholder");
-                Node profileContent = root.lookup("#profileContent");
-                Node resultPlaceholder = root.lookup("#resultDisplayPlaceholder");
-                Node result = root.lookup("#resultDisplay");
-                Node commandPlaceholder = root.lookup("#commandBoxPlaceholder");
-                Node statusbar = root.lookup("#statusbarPlaceholder");
-                assertContained(profilePlaceholder, profileContent);
-                assertContained(resultPlaceholder, result);
-                assertContained(commandPlaceholder, input);
-
-                assertTrue(layoutSceneBounds(profilePlaceholder).getMaxY()
-                        <= layoutSceneBounds(resultPlaceholder).getMinY() + 1);
-                assertTrue(layoutSceneBounds(resultPlaceholder).getMaxY()
-                        <= layoutSceneBounds(commandPlaceholder).getMinY() + 1);
-                assertTrue(layoutSceneBounds(commandPlaceholder).getMaxY()
-                        <= layoutSceneBounds(statusbar).getMinY() + 1);
-                assertTrue(layoutSceneBounds(statusbar).getMaxY()
-                        <= layoutSceneBounds(workspace.getContent()).getMaxY() + 1);
             } finally {
                 window.getPrimaryStage().close();
             }
@@ -298,6 +255,93 @@ public class MainWindowTest {
                 window.getPrimaryStage().close();
             }
         });
+    }
+
+    @Test
+    public void bulkStage_resolvesSelectedCandidatesAfterStageFilterIndexesShift() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.show();
+                execute(window, "stage 2 s/Applied");
+                execute(window, "stage 3 s/Applied");
+                for (boolean useToolbar : List.of(false, true)) {
+                    execute(window, "list");
+                    execute(window, "stage 1 s/Applied");
+                    execute(window, "stage 2 s/Applied");
+                    if (useToolbar) {
+                        ComboBox<?> stages = (ComboBox<?>) window.getPrimaryStage().getScene()
+                                .lookup("#stageFilter");
+                        stages.getSelectionModel().select(1);
+                    } else {
+                        execute(window, "list s/Applied");
+                    }
+                    ListView<?> candidates = (ListView<?>) window.getPrimaryStage().getScene()
+                            .lookup("#personListView");
+                    candidates.getSelectionModel().selectIndices(0, 1);
+                    window.getPersonListPanel().executeBulkStage("Interview");
+                    // Priya was not selected and must stay Applied as the first two rows disappear.
+                    execute(window, "list");
+                    assertEquals(List.of("Interview", "Interview", "Applied", "Offered"),
+                            candidates.getItems().stream().map(person -> ((Person) person).getStage().toString())
+                                    .toList());
+                }
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void minimumWorkspace_scrollsWithoutOverlapWhileSuggestionsAreOpen() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            window.getPrimaryStage().setWidth(760);
+            window.getPrimaryStage().setHeight(700);
+            try {
+                window.show();
+                execute(window, "view 1");
+                TextField input = (TextField) window.getPrimaryStage().getScene().lookup("#commandTextField");
+                input.setText("stage 1 s/");
+                input.positionCaret(input.getLength());
+                savePreview(window.getPrimaryStage(), "workspace-minimum-assistance");
+                assertWorkspaceSectionsFit(window);
+                ScrollPane workspace = (ScrollPane) window.getPrimaryStage().getScene().lookup("#workspaceScroll");
+                assertTrue(workspace.getContent().getBoundsInLocal().getHeight()
+                        > workspace.getViewportBounds().getHeight());
+                workspace.setVvalue(1);
+                workspace.requestLayout();
+                workspace.layout();
+                assertEquals(1, workspace.getVvalue(), 0.01);
+                savePreview(window.getPrimaryStage(), "workspace-minimum-scrolled");
+                assertEquals(1, workspace.getVvalue(), 0.01);
+                assertTrue(workspace.getContent().localToScene(workspace.getContent().getBoundsInLocal()).getMinY()
+                        < workspace.localToScene(workspace.getBoundsInLocal()).getMinY());
+                assertWorkspaceSectionsFit(window);
+                Bounds inputBounds = input.localToScene(input.getBoundsInLocal());
+                assertTrue(inputBounds.getMinY() >= 0);
+                assertTrue(inputBounds.getMaxY() <= window.getPrimaryStage().getScene().getHeight());
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    private void assertWorkspaceSectionsFit(MainWindow window) {
+        for (String id : List.of("dashboardPlaceholder", "workspaceToolbarPlaceholder", "profilePlaceholder")) {
+            StackPane holder = (StackPane) window.getPrimaryStage().getScene().lookup("#" + id);
+            Bounds content = holder.getChildren().get(0).getBoundsInParent();
+            assertTrue(content.getMinY() >= -1, id + " overflows above its parent: " + content);
+            assertTrue(content.getMaxY() <= holder.getHeight() + 1,
+                    id + " overflows below its parent: " + content);
+        }
+        Node dashboard = window.getPrimaryStage().getScene().lookup("#dashboardPlaceholder");
+        Node toolbar = window.getPrimaryStage().getScene().lookup("#workspaceToolbarPlaceholder");
+        Node profile = window.getPrimaryStage().getScene().lookup("#profilePlaceholder");
+        assertTrue(dashboard.localToScene(dashboard.getBoundsInLocal()).getMaxY()
+                <= toolbar.localToScene(toolbar.getBoundsInLocal()).getMinY());
+        assertTrue(toolbar.localToScene(toolbar.getBoundsInLocal()).getMaxY()
+                <= profile.localToScene(profile.getBoundsInLocal()).getMinY());
     }
 
     private MainWindow createWindow(AtomicBoolean failSave) {

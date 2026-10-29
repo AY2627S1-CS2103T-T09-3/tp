@@ -3,12 +3,12 @@
 <?import javafx.scene.layout.*?>
 <VBox spacing="10" styleClass="surface" xmlns:fx="http://javafx.com/fxml/1">
   <Label text="Candidates" styleClass="section-title" />
-  <HBox spacing="8" alignment="CENTER_LEFT">
-    <Label fx:id="resultCount" styleClass="muted" HBox.hgrow="ALWAYS" />
+  <FlowPane hgap="8" vgap="6">
+    <Label fx:id="resultCount" styleClass="muted" />
     <Label fx:id="bulkSelectionCount" text="0 selected" styleClass="muted" />
     <Button fx:id="bulkStage" text="Stage selected" onAction="#handleBulkStage" />
     <Button fx:id="bulkDelete" text="Delete selected" onAction="#handleBulkDelete" />
     <Button fx:id="clearSelection" text="Clear selection" onAction="#handleClearSelection" />
-  </HBox>
+  </FlowPane>
   <ListView fx:id="personListView" VBox.vgrow="ALWAYS" />
 </VBox>

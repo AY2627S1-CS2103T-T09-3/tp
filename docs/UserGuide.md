@@ -69,11 +69,16 @@ The workspace toolbar provides quick controls for common browsing tasks:
   The export includes contact details, hiring stage, skills, tags, and remarks.
 * Select several candidate cards with Command-click (macOS) or Ctrl-click (Windows/Linux). **Stage selected**
   applies one hiring stage to all selected candidates, while **Delete selected** asks for confirmation before
-  deleting them. **Clear selection** removes the multi-selection.
+  deleting them. Stage updates continue to target the selected candidates when a stage filter removes
+  updated rows. **Clear selection** removes the multi-selection.
 * In a candidate profile, **Edit**, **Update stage**, **Add remark**, and **Delete** open the corresponding
   command or confirmation without requiring you to retype the candidate index.
 * Enable **High contrast** when stronger borders and text contrast are needed. The setting applies to the
   current window and does not alter saved candidate data.
+
+On smaller windows, scroll the central workspace to reach the candidate list and profile. The dashboard
+and toolbar retain their content height, action buttons wrap to fit the available width, and command
+input and feedback remain visible outside the scrolling area.
 
 ### Command assistance and keyboard shortcuts
 
