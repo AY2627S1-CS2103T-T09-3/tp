@@ -205,6 +205,8 @@ JSON loading requires exactly one root value; trailing whitespace is allowed, bu
 
 `LogicManager` compares its pre-command `AddressBook` snapshot with the resulting data. It saves only when they differ. Read-only commands, changes to the displayed filter or sorting, and unchanged candidate updates therefore do not rewrite the file. Failed saves of changed data still restore the original candidate data, filter, and comparator.
 
+JSON saves write the complete UTF-8 content to a temporary file in the destination directory, then atomically replace the saved file. A failed write or replacement preserves the previous file and removes the temporary file. If the filesystem does not support atomic replacement, saving reports an error instead of falling back to an unsafe overwrite. Existing POSIX file permissions are preserved, and read-only destinations are rejected.
+
 ### Common classes
 
 Classes used by multiple components are in the `seedu.address.commons` package.
