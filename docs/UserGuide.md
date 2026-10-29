@@ -60,6 +60,9 @@ The workspace toolbar provides quick controls for common browsing tasks:
 
 * Type in **Find** to search the displayed candidates by name or skill. Select a hiring stage to combine
   the stage filter with the text search, or choose **Clear** to restore the full list.
+* Enable **Due follow-ups** to show pending follow-ups scheduled for today or an earlier date. Enable
+  **Needs contact** to find candidates whose email or phone number is missing; these smart filters can be
+  combined with the text and stage filters.
 * Click a dashboard stage tile to activate that stage filter. Use **Refresh** after an external data change
   to reapply the current workspace filter.
 * Use **Export CSV** or **Export JSON** to save the currently displayed candidates in their visible order.

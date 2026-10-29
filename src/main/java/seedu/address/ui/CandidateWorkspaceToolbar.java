@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -44,6 +45,10 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
     @FXML
     private ToggleButton highContrast;
     @FXML
+    private ToggleButton dueFollowUps;
+    @FXML
+    private ToggleButton missingContact;
+    @FXML
     private Label filterStatus;
 
     /** Creates workspace controls bound to the shared Logic model. */
@@ -58,6 +63,8 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
         stageFilter.getSelectionModel().selectFirst();
         searchField.textProperty().addListener((observable, previous, current) -> applyFilter(true));
         stageFilter.valueProperty().addListener((observable, previous, current) -> applyFilter(true));
+        dueFollowUps.selectedProperty().addListener((observable, previous, current) -> applyFilter(true));
+        missingContact.selectedProperty().addListener((observable, previous, current) -> applyFilter(true));
         updateStatus();
     }
 
@@ -80,6 +87,8 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
     private void handleClearFilters() {
         searchField.clear();
         stageFilter.getSelectionModel().selectFirst();
+        dueFollowUps.setSelected(false);
+        missingContact.setSelected(false);
         applyFilter(true);
     }
 
@@ -117,8 +126,10 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
         String query = searchField.getText().trim().toLowerCase(Locale.ROOT);
         String selectedStage = stageFilter.getValue();
         HiringStage stage = ALL_STAGES.equals(selectedStage) ? null : HiringStage.fromString(selectedStage);
-        toolbarFilterActive = !query.isEmpty() || stage != null;
-        Predicate<Person> predicate = candidate -> matches(candidate, query, stage);
+        toolbarFilterActive = !query.isEmpty() || stage != null || dueFollowUps.isSelected()
+                || missingContact.isSelected();
+        Predicate<Person> predicate = candidate -> matches(candidate, query, stage, dueFollowUps.isSelected(),
+                missingContact.isSelected());
         logic.updateFilteredPersonList(predicate);
         updateStatus();
         if (announce) {
@@ -126,8 +137,15 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
         }
     }
 
-    private boolean matches(Person candidate, String query, HiringStage stage) {
+    private boolean matches(Person candidate, String query, HiringStage stage, boolean dueOnly,
+            boolean missingContactOnly) {
         if (stage != null && candidate.getStage() != stage) {
+            return false;
+        }
+        if (dueOnly && !isDueFollowUp(candidate)) {
+            return false;
+        }
+        if (missingContactOnly && !hasMissingContact(candidate)) {
             return false;
         }
         if (query.isEmpty()) {
@@ -136,6 +154,17 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
         return candidate.getName().fullName.toLowerCase(Locale.ROOT).contains(query)
                 || candidate.getSkills().stream()
                         .anyMatch(skill -> skill.value.toLowerCase(Locale.ROOT).contains(query));
+    }
+
+    private boolean isDueFollowUp(Person candidate) {
+        LocalDate today = LocalDate.now();
+        return !candidate.getFollowUp().isCompleted()
+                && (candidate.getFollowUp().isOverdue(today)
+                || candidate.getFollowUp().getDate().filter(today::equals).isPresent());
+    }
+
+    private boolean hasMissingContact(Person candidate) {
+        return candidate.getEmail().value.isBlank() || candidate.getPhone().value.isBlank();
     }
 
     private void updateStatus() {
