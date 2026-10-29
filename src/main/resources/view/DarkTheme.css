@@ -153,6 +153,37 @@
     -fx-text-fill: white;
 }
 
+.result-display.success {
+    -fx-text-fill: #a8e6bd;
+    -fx-border-color: #3c8055;
+}
+
+.result-display.error {
+    -fx-text-fill: #ff9b8a;
+    -fx-border-color: #b34e42;
+}
+
+.command-guide {
+    -fx-background-color: derive(#1d1d1d, 28%);
+    -fx-border-color: #4d5968;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.command-guide-title {
+    -fx-font-size: 12pt;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-text-fill: #a8d8e8;
+}
+
+.command-guide-text {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 10pt;
+    -fx-text-fill: #e5e7eb;
+}
+
 .result-display .label {
     -fx-text-fill: black !important;
 }

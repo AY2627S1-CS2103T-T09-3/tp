@@ -84,11 +84,24 @@ use their displayed index or add a candidate with a different name or phone numb
 
 ### Viewing help: `help`
 
-Shows a message with a link to Scoutly's User Guide.
+Opens Scoutly's searchable offline command reference. Select a command to view its syntax and examples,
+or select **Insert template** to place a ready-to-edit command in the command box.
 
-You can also open the [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html) directly.
+Press **F1** from any panel to open the help window. The online [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html)
+can still be copied from the help window when an Internet connection is available.
 
 Format: `help`
+
+### Command-box productivity
+
+The command box provides guidance while you type:
+
+* Press **Up** and **Down** to browse successful and failed commands. Your unfinished draft is restored after the newest command.
+* Press **Tab** to accept a command-name or hiring-stage suggestion. **Escape** dismisses suggestions without changing the text.
+* Suggestions preserve arguments already entered, and stage suggestions are offered for `list` and `stage` commands.
+* The contextual guide below the result area shows the syntax and a template for the current command.
+* Press **Ctrl+L** from any panel to return focus to the command box.
+* Successful feedback is shown in green and errors are shown in red; failed commands remain in the command box for correction.
 
 
 ### Adding a candidate: `add`

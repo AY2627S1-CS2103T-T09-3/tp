@@ -7,6 +7,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -36,6 +37,8 @@ public class MainWindow extends UiPart<Stage> {
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+    private CommandBox commandBox;
+    private ContextualCommandGuide contextualCommandGuide;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -48,6 +51,9 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private StackPane resultDisplayPlaceholder;
+
+    @FXML
+    private StackPane contextualGuidePlaceholder;
 
     @FXML
     private StackPane statusbarPlaceholder;
@@ -70,6 +76,7 @@ public class MainWindow extends UiPart<Stage> {
         setAccelerators();
 
         helpWindow = new HelpWindow();
+        helpWindow.setReturnFocusHandler(this::focusCommandBox);
     }
 
     public Stage getPrimaryStage() {
@@ -78,6 +85,17 @@ public class MainWindow extends UiPart<Stage> {
 
     private void setAccelerators() {
         setAccelerator(helpMenuItem, KeyCombination.valueOf("F1"));
+        getRoot().addEventFilter(KeyEvent.KEY_PRESSED, this::handleGlobalShortcut);
+    }
+
+    private void handleGlobalShortcut(KeyEvent event) {
+        if (event.isControlDown() && event.getCode() == KeyCode.L && commandBox != null) {
+            focusCommandBox();
+            event.consume();
+        } else if (event.getCode() == KeyCode.ESCAPE && helpWindow != null && helpWindow.isShowing()) {
+            helpWindow.hide();
+            event.consume();
+        }
     }
 
     /**
@@ -123,8 +141,13 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand);
+        contextualCommandGuide = new ContextualCommandGuide();
+        contextualGuidePlaceholder.getChildren().add(contextualCommandGuide.getRoot());
+
+        commandBox = new CommandBox(this::executeCommand, contextualCommandGuide::showForInput);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+        helpWindow.setTemplateInserter(commandBox::insertTemplate);
+        commandBox.requestFocus();
     }
 
     /**
@@ -180,7 +203,7 @@ public class MainWindow extends UiPart<Stage> {
         try {
             CommandResult commandResult = logic.execute(commandText);
             logger.info("Result: " + commandResult.getFeedbackToUser());
-            resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            resultDisplay.setSuccessFeedback(commandResult.getFeedbackToUser());
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -193,8 +216,14 @@ public class MainWindow extends UiPart<Stage> {
             return commandResult;
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
-            resultDisplay.setFeedbackToUser(e.getMessage());
+            resultDisplay.setErrorFeedback(e.getMessage());
             throw e;
+        }
+    }
+
+    private void focusCommandBox() {
+        if (commandBox != null) {
+            commandBox.requestFocus();
         }
     }
 }

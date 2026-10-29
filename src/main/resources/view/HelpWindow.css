@@ -1,19 +1,44 @@
-#copyButton, #helpMessage {
+.help-title {
+    -fx-font-size: 18pt;
+    -fx-font-family: "Segoe UI Semibold";
     -fx-text-fill: white;
 }
 
-#copyButton {
-    -fx-background-color: dimgray;
+#helpContainer {
+    -fx-background-color: #2c2f33;
 }
 
-#copyButton:hover {
-    -fx-background-color: gray;
+#commandList {
+    -fx-background-color: #1d1d1d;
+    -fx-border-color: #555b66;
 }
 
-#copyButton:armed {
-    -fx-background-color: darkgray;
+#commandList .list-cell {
+    -fx-padding: 9 12 9 12;
+    -fx-font-size: 12pt;
+    -fx-text-fill: white;
 }
 
-#helpMessageContainer {
-    -fx-background-color: derive(#1d1d1d, 20%);
+#commandList .list-cell:filled:selected {
+    -fx-background-color: #3e7b91;
+}
+
+#commandDetails {
+    -fx-control-inner-background: #1d1d1d;
+    -fx-font-family: "Menlo";
+    -fx-font-size: 11pt;
+    -fx-text-fill: white;
+}
+
+#searchField {
+    -fx-font-size: 12pt;
+}
+
+.button {
+    -fx-background-color: #3e7b91;
+    -fx-text-fill: white;
+}
+
+.button:hover {
+    -fx-background-color: #579db6;
 }
