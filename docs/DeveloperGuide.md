@@ -145,21 +145,32 @@ Here's a (partial) class diagram of the `Logic` component:
 `ViewCommandParser` creates a `ViewCommand`, which extends `Command`. When viewing by full name,
 `ViewCommand` delegates candidate matching to the shared `PersonLookup` helper.
 
-The sequence diagram below illustrates parsing and command execution for `delete 1`, including an invalid
-displayed index. Internal index resolution is summarized. The surrounding `LogicManager` data snapshot,
-storage save, and save-failure recovery are omitted.
+The sequence diagram below illustrates successful parsing and command execution for `delete 1`.
+Internal index resolution, validation failures, and result-object construction are omitted.
+The shared data snapshot, save, and save-failure recovery are described under the
+[Storage component](#storage-component).
 
-<puml src="diagrams/DeleteSequenceDiagram.puml" alt="Interactions Inside the Logic Component for the `delete 1` Command" />
+<puml src="diagrams/DeleteSequenceDiagram.puml" alt="Successful parsing and execution of delete 1" />
 
 `DeleteCommand` retrieves the currently displayed list and validates the index before selecting a `Person`.
 It passes that candidate object to `Model#deletePerson`, rather than passing the index. An out-of-range
 index raises a `CommandException` without deleting anything.
 
-The following sequence diagram shows a successful `edit 1 s/Java s/SQL` command. It also highlights the validation path for an invalid skill and the rollback path when saving the updated address book fails.
+The following sequence diagram focuses on `EditCommand.execute` for a successful `edit 1 s/Java s/SQL`
+command. Parsing, validation failures, feedback formatting, and persistence are omitted to keep the
+candidate update clear.
 
-<puml src="diagrams/EditCandidateSkillsSequenceDiagram.puml" alt="Interactions Inside the Logic Component for editing candidate skills" />
+<puml src="diagrams/EditCandidateSkillsSequenceDiagram.puml" alt="Successful skill edit through EditCommand and Model" />
 
-For a skill edit, `EditCommandParser` tokenizes and validates every `s/` value before constructing an `EditCommand`; parsing does not modify the model. `EditCommand` uses the index from the currently displayed list, replaces the complete skill set, and constructs the updated candidate while preserving the other candidate fields. After the model is updated, `LogicManager` saves the address book. If saving fails, it restores both the original data and the original filter before reporting the error.
+Before execution, `EditCommandParser` tokenizes and validates every `s/` value. An empty or invalid skill
+raises a `ParseException` before a command is constructed, without changing the model or saving data.
+
+`EditCommand` validates the displayed index, selects the candidate, and replaces the complete skill set
+while preserving all other fields, including the hiring stage and follow-up. An invalid displayed index
+raises a `CommandException` without changing the model. A successful edit shows all candidates in stored
+order and returns a `CommandResult`. `LogicManager` saves only if candidate data changed; a failed save
+restores the original data, filter, and comparator before reporting an error, as described under the
+[Storage component](#storage-component).
 
 How the `Logic` component works:
 
@@ -237,14 +248,17 @@ This section describes some noteworthy details on how certain features are imple
 
 `view INDEX` selects a candidate by position in the currently displayed list. `view FULL_NAME` instead
 uses `PersonLookup` to match normalized full names, ignoring case, within that same list.
-The following sequence diagram focuses on `ViewCommand.execute` for the full-name form;
-command parsing and the surrounding `LogicManager` save/error-handling flow are omitted.
+The following sequence diagram focuses on `ViewCommand.execute` and the three full-name lookup outcomes.
+Command parsing, individual profile getters, feedback formatting, and result-object creation are omitted.
 
 <puml src="diagrams/ViewProfileSequenceDiagram.puml" alt="Full-name candidate profile lookup, including missing and ambiguous matches" />
 
-A missing or ambiguous name raises a `CommandException`. A unique match supplies the profile fields,
-which are formatted into a `CommandResult`. The command reads candidate data without changing the
-active filter or displayed order. Consequently, displayed indices remain suitable for a subsequent command.
+A missing or ambiguous name raises a `CommandException`. For an ambiguous name, the message lists the
+matching candidates' displayed indices, names, and phone numbers, with guidance to use `view INDEX`.
+A unique match produces a `CommandResult` containing formatted profile feedback and the candidate as
+a structured profile target via `CommandResult.showProfile`. The UI opens that candidate's profile
+without parsing the feedback text. The command leaves candidate data, the active filter, and displayed
+order unchanged, so displayed indices remain suitable for a subsequent command.
 
 ### Hiring stages
 
@@ -268,7 +282,8 @@ to the shared `PersonLookup` helper, which normalizes whitespace and compares en
 A candidate hidden by the current filter cannot be selected by name.
 
 The following sequence diagram focuses on `DeleteCommand.execute` after a full name has been parsed.
-Command parsing and the surrounding `LogicManager` data snapshot, save, and save-failure recovery are omitted.
+It keeps the unique, missing, and ambiguous lookup outcomes. Command parsing, ambiguity-message
+formatting callbacks, result-object construction, and persistence are omitted.
 
 <puml src="diagrams/DeleteByNameSequenceDiagram.puml" alt="Full-name deletion with unique, missing and ambiguous candidate matches" />
 
@@ -280,8 +295,8 @@ the displayed list.
 Only a unique match reaches `Model#deletePerson`, passing the resolved `Person`. The command returns a
 `CommandResult` identifying the deleted candidate. Hidden candidates remain stored, and the active filter
 and relative order of the remaining candidates are preserved. After successful command execution,
-`LogicManager` saves the updated data; a failed save restores the original data and filter before reporting
-an error.
+`LogicManager` saves the updated data; a failed save restores the original data, filter, and comparator
+before reporting an error, as described under the [Storage component](#storage-component).
 
 ### Adding candidates and editing skills
 
