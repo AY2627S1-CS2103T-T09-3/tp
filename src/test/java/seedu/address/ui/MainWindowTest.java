@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -133,7 +134,7 @@ public class MainWindowTest {
                 execute(window, "view 1");
                 savePreview(window.getPrimaryStage(), "workspace-minimum");
                 assertWorkspaceSectionsFit(window);
-                assertEquals(760, window.getPrimaryStage().getScene().getWidth(), 2);
+                assertEquals(760, window.getPrimaryStage().getWidth(), 2);
                 ListView<?> list = (ListView<?>) window.getPrimaryStage().getScene().lookup("#personListView");
                 assertTrue(list.lookupAll(".scroll-bar").stream().noneMatch(node -> node instanceof ScrollBar bar
                         && bar.getOrientation() == Orientation.HORIZONTAL && bar.isVisible()));
@@ -147,6 +148,108 @@ public class MainWindowTest {
                 Bounds contentBounds = profileContent.localToScene(profileContent.getBoundsInLocal());
                 assertTrue(contentBounds.getMinY() >= placeholderBounds.getMinY() - 1);
                 assertTrue(contentBounds.getMaxY() <= placeholderBounds.getMaxY() + 1);
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void dashboardAndToolbar_fitWithoutOverlapAtSupportedSizes() throws Exception {
+        FxTestUtil.run(() -> {
+            for (double[] size : List.of(new double[]{1100, 850}, new double[]{760, 700})) {
+                MainWindow window = createWindow(new AtomicBoolean());
+                try {
+                    window.getPrimaryStage().setWidth(size[0]);
+                    window.getPrimaryStage().setHeight(size[1]);
+                    window.show();
+                    Parent root = window.getPrimaryStage().getScene().getRoot();
+                    root.applyCss();
+                    root.layout();
+
+                    Node dashboardPlaceholder = root.lookup("#dashboardPlaceholder");
+                    Node toolbarPlaceholder = root.lookup("#workspaceToolbarPlaceholder");
+                    Bounds dashboardBounds = layoutSceneBounds(dashboardPlaceholder);
+                    Bounds toolbarBounds = layoutSceneBounds(toolbarPlaceholder);
+                    assertTrue(dashboardBounds.getMaxY() <= toolbarBounds.getMinY() + 1,
+                            "Dashboard and toolbar overlap at " + size[0] + "x" + size[1]
+                                    + ": dashboard=" + dashboardBounds + ", toolbar=" + toolbarBounds);
+
+                    Node stageTiles = root.lookup("#stageTiles");
+                    Node toolbarContent = ((Parent) toolbarPlaceholder).getChildrenUnmodifiable().get(0);
+                    assertContained(dashboardPlaceholder, stageTiles);
+                    assertContained(toolbarPlaceholder, toolbarContent);
+                } finally {
+                    window.getPrimaryStage().close();
+                }
+            }
+        });
+    }
+
+    @Test
+    public void defaultWorkspace_profileKeepsControlsVisible() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.getPrimaryStage().setWidth(1100);
+                window.getPrimaryStage().setHeight(850);
+                window.show();
+                execute(window, "view 1");
+                layout(window);
+
+                assertVisibleInScene(window, "resultDisplay");
+                assertVisibleInScene(window, "commandTextField");
+                assertVisibleInScene(window, "statusbarPlaceholder");
+                assertWorkspaceSectionsFit(window);
+                assertWorkspaceControlsDoNotOverlap(window);
+                assertTrue(((ListView<?>) lookup(window, "personListView")).getHeight() > 0);
+                assertTrue(lookup(window, "profileContent").getBoundsInParent().getHeight() > 0);
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void minimumWorkspace_suggestionsKeepControlsVisibleWhileWorkspaceScrolls() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.getPrimaryStage().setWidth(760);
+                window.getPrimaryStage().setHeight(700);
+                window.show();
+                execute(window, "view 1");
+                TextField input = (TextField) lookup(window, "commandTextField");
+                input.setText("stage 1 s/");
+                input.positionCaret(input.getLength());
+                layout(window);
+
+                Node root = window.getPrimaryStage().getScene().getRoot();
+                ListView<?> suggestions = (ListView<?>) root.lookup("#suggestions");
+                assertTrue(suggestions.isVisible());
+                assertTrue(suggestions.getItems().size() >= 3);
+                assertVisibleInScene(window, "resultDisplay");
+                assertVisibleInScene(window, "commandTextField");
+                assertVisibleInScene(window, "statusbarPlaceholder");
+                assertWorkspaceControlsDoNotOverlap(window);
+
+                ScrollPane workspace = (ScrollPane) lookup(window, "workspaceScroll");
+                assertTrue(workspace.getContent().getBoundsInLocal().getHeight()
+                        > workspace.getViewportBounds().getHeight());
+                double initialContentMinY = workspace.getContent().localToScene(
+                        workspace.getContent().getBoundsInLocal()).getMinY();
+                workspace.setVvalue(1);
+                workspace.requestLayout();
+                workspace.layout();
+                layout(window);
+
+                double scrolledContentMinY = workspace.getContent().localToScene(
+                        workspace.getContent().getBoundsInLocal()).getMinY();
+                assertTrue(scrolledContentMinY < initialContentMinY);
+                assertVisibleInScene(window, "resultDisplay");
+                assertVisibleInScene(window, "commandTextField");
+                assertVisibleInScene(window, "statusbarPlaceholder");
+                assertWorkspaceControlsDoNotOverlap(window);
             } finally {
                 window.getPrimaryStage().close();
             }
@@ -352,8 +455,65 @@ public class MainWindowTest {
         return ((TextArea) window.getPrimaryStage().getScene().lookup("#resultDisplay")).getText();
     }
 
+    private Node lookup(MainWindow window, String id) {
+        return window.getPrimaryStage().getScene().lookup("#" + id);
+    }
+
+    private void layout(MainWindow window) {
+        window.getPrimaryStage().getScene().getRoot().applyCss();
+        window.getPrimaryStage().getScene().getRoot().layout();
+    }
+
+    private void assertVisibleInScene(MainWindow window, String id) {
+        Bounds bounds = visualSceneBounds(lookup(window, id));
+        double sceneWidth = window.getPrimaryStage().getScene().getWidth();
+        double sceneHeight = window.getPrimaryStage().getScene().getHeight();
+        double tolerance = 2;
+        assertTrue(bounds.getMinX() >= -tolerance,
+                id + " starts outside the scene: " + bounds);
+        assertTrue(bounds.getMaxX() <= sceneWidth + tolerance,
+                id + " ends outside the scene: " + bounds);
+        assertTrue(bounds.getMinY() >= -tolerance,
+                id + " starts outside the scene: " + bounds);
+        assertTrue(bounds.getMaxY() <= sceneHeight + tolerance,
+                id + " ends outside the scene: " + bounds);
+    }
+
+    private void assertWorkspaceControlsDoNotOverlap(MainWindow window) {
+        Bounds workspace = layoutSceneBounds(lookup(window, "workspaceScroll"));
+        Bounds result = layoutSceneBounds(lookup(window, "resultDisplayPlaceholder"));
+        Bounds command = layoutSceneBounds(lookup(window, "commandBoxPlaceholder"));
+        Bounds statusbar = layoutSceneBounds(lookup(window, "statusbarPlaceholder"));
+        double tolerance = 2;
+        assertTrue(workspace.getMaxY() <= result.getMinY() + tolerance);
+        assertTrue(result.getMaxY() <= command.getMinY() + tolerance);
+        assertTrue(command.getMaxY() <= statusbar.getMinY() + tolerance);
+    }
+
     private List<String> candidateNames(ListView<?> candidates) {
         return candidates.getItems().stream().map(item -> ((Person) item).getName().fullName).toList();
+    }
+
+    private Bounds layoutSceneBounds(Node node) {
+        return node.localToScene(node.getLayoutBounds());
+    }
+
+    private Bounds visualSceneBounds(Node node) {
+        return node.localToScene(node.getBoundsInLocal());
+    }
+
+    private void assertContained(Node container, Node content) {
+        double tolerance = 2;
+        Bounds containerBounds = layoutSceneBounds(container);
+        Bounds contentBounds = visualSceneBounds(content);
+        assertTrue(contentBounds.getMinX() >= containerBounds.getMinX() - tolerance,
+                "Content starts left of its container: content=" + contentBounds + ", container=" + containerBounds);
+        assertTrue(contentBounds.getMaxX() <= containerBounds.getMaxX() + tolerance,
+                "Content ends right of its container: content=" + contentBounds + ", container=" + containerBounds);
+        assertTrue(contentBounds.getMinY() >= containerBounds.getMinY() - tolerance,
+                "Content starts above its container: content=" + contentBounds + ", container=" + containerBounds);
+        assertTrue(contentBounds.getMaxY() <= containerBounds.getMaxY() + tolerance,
+                "Content ends below its container: content=" + contentBounds + ", container=" + containerBounds);
     }
 
     private void savePreview(Stage stage, String name) {

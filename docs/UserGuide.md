@@ -420,11 +420,14 @@ Examples:
 
 ### Updating a candidate's hiring stage: `stage`
 
-Sets the hiring stage of a candidate in the currently displayed list.
+Sets the hiring stage of one or more candidates in the currently displayed list.
 
-Format: `stage INDEX s/STAGE`
+Format: `stage INDEX[,INDEX]... s/STAGE`
 
 * `INDEX` must be a positive integer from the displayed list. After `find`, it refers to the search results.
+  Separate multiple indexes with commas, for example `stage 1,3,5 s/Interview`. All indexes are resolved
+  against the displayed list before any stage is changed, so the command remains correct even when an
+  active stage filter causes an updated candidate to disappear from the results.
 * The `s/` prefix is required and may appear only once. `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
 * Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed and reports `[Name] is already at [Stage].` without changing the candidate.
 * The command preserves the current search filter and all other candidate details.
@@ -435,6 +438,7 @@ Format: `stage INDEX s/STAGE`
 
 Examples:
 * `stage 1 s/Interview` moves the first displayed candidate to Interview.
+* `stage 1,2 s/Interview` moves the first and second displayed candidates to Interview as one operation.
 * Running it again for Alex Yeoh already at Interview displays `Alex Yeoh is already at Interview.`
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
@@ -557,6 +561,6 @@ Action     | Format, Examples
 **List**   | `list`, `list s/STAGE`, or `list sort/name`<br>e.g., `list s/Interview` or `list sort/name`
 **Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
-**Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
+**Stage**  | `stage INDEX[,INDEX]... s/STAGE`<br> e.g., `stage 2 s/Interview` or `stage 2,4 s/Interview`
 **Help**   | `help`
 **Exit**   | `exit`

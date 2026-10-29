@@ -101,10 +101,10 @@ with `list sort/name`, stage filters and follow-up filters. Follow-up reminders 
 cards and in the full profile, including completion state and notes. Profiles display only stored current stages;
 there is no stage-history or job-role data in the model.
 
-Bulk stage updates snapshot selected `Person` targets and resolve each target's current displayed index
-immediately before invoking the existing stage command. Earlier updates can remove rows from a stage
-filter, so storing indexes for the entire operation would target the wrong candidates. Invalid stages
-are rejected before execution, and command failures still stop the remaining updates.
+Bulk stage updates snapshot the selected `Person` targets and send one `stage INDEX[,INDEX]... s/STAGE`
+command. `StageCommand` resolves every displayed index against a snapshot before modifying any candidate,
+so a stage filter cannot remove an earlier row and retarget a later selection. Invalid stages, empty
+selections, duplicate indexes, and out-of-range indexes are rejected before any candidate is changed.
 
 The central `workspaceScroll` contains the dashboard, toolbar and candidate/profile split pane. Header
 placeholders use their preferred heights, while a minimum split-pane height keeps profiles usable.
