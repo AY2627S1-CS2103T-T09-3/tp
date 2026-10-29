@@ -53,3 +53,9 @@
 .result-display:failure .text { -fx-fill: #993b34; }
 .status-bar { -fx-padding: 3 18 9; }
 .status-bar .label { -fx-text-fill: #5d7085; -fx-font-size: 11px; }
+
+.command-hint { -fx-text-fill: #52687f; -fx-font-size: 11px; }
+.command-suggestions { -fx-background-color: white; -fx-border-color: #c8d9e0; -fx-border-radius: 6; }
+.command-suggestions .list-cell { -fx-padding: 4 10; }
+.command-suggestions .list-cell:filled:selected { -fx-background-color: #def0f1; }
+.help-body { -fx-padding: 20; }
