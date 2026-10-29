@@ -278,6 +278,60 @@ Format: `remark INDEX [r/REMARK]`
 * Use at most one `r/` prefix. Repeated `r/` prefixes are rejected and leave the existing remark unchanged.
 * Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
 
+### Managing candidate follow-ups: `followup`
+
+Schedules one follow-up per candidate, with an optional note. The candidate card shows
+the date, note and whether it is overdue, due today, upcoming or completed.
+
+Format: `followup INDEX d/YYYY-MM-DD [r/NOTE]`
+
+* `INDEX` refers to the currently displayed list and must be a positive integer.
+* Dates must be valid calendar dates from `0001-01-01` to `9999-12-31`, using exactly `YYYY-MM-DD`.
+* Past dates are accepted, allowing recruiters to record an overdue task.
+* Notes are optional, limited to 200 characters, and cannot contain control characters or line breaks.
+* `d/` and `r/` may appear in either order. Repeating either prefix is rejected.
+* Scheduling again replaces the previous date and note, and marks the follow-up as pending.
+  Omitting `r/` clears the previous follow-up note. This note is separate from the candidate's remark.
+* `followup INDEX done` marks the follow-up completed while keeping its date and note.
+  It fails if no follow-up exists or it is already completed.
+* `followup INDEX clear` removes the follow-up, including its note and completion state.
+* A successful update displays all candidates again. Editing candidate details or remarks preserves the follow-up.
+* Follow-ups are saved with candidate data and restored on the next launch. Older data files remain supported.
+
+Examples:
+
+* `followup 1 d/2026-11-05 r/Call about interview availability`
+* `followup 1 done`
+* `followup 1 clear`
+
+### Listing candidate follow-ups: `followups`
+
+Format: `followups [pending|overdue|today|upcoming|completed|all]`
+
+View | Candidates displayed
+-----|---------------------
+`pending` | All unfinished follow-ups; this is the default when the view is omitted.
+`overdue` | Unfinished follow-ups dated before today.
+`today` | Unfinished follow-ups dated today.
+`upcoming` | Unfinished follow-ups dated after today.
+`completed` | Completed follow-ups, regardless of date.
+`all` | All candidates with a follow-up, including completed ones.
+
+* Every view excludes candidates without a follow-up.
+* Views search the entire candidate list, including candidates hidden by a previous `find`.
+* View names are case-insensitive. Only one view may be supplied.
+* Results retain the usual candidate order and display new indices for use with `followup`, `edit` and `delete`.
+* The result message includes the number of matching candidates and counts overdue and due-today tasks within that view.
+* Dates use your computer's local calendar day. Run the command again after midnight to refresh the view.
+* These are in-app reminders; the application does not send notifications while closed.
+* Use `list` to display all candidates again.
+
+Examples:
+
+* `followups` shows all pending follow-ups.
+* `followups overdue` shows unfinished follow-ups whose dates have passed.
+* `followups today` shows the candidates to contact today.
+
 ### Updating a candidate's hiring stage: `stage`
 
 Sets the hiring stage of a candidate in the currently displayed list.
@@ -412,6 +466,8 @@ Action     | Format, Examples
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Follow-up** | `followup INDEX d/YYYY-MM-DD [r/NOTE]`, `followup INDEX done`, `followup INDEX clear`
+**Follow-ups** | `followups [VIEW]`<br> e.g., `followups overdue`
 **Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
 **List**   | `list`, `list s/STAGE`, or `list sort/name`<br>e.g., `list s/Interview` or `list sort/name`
 **Summary** | `summary`

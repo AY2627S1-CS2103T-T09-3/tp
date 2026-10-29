@@ -12,6 +12,7 @@ Scoutly is a desktop candidate pipeline and recruitment management application f
 - Track Applied, Screened, Interview, Offered, and Rejected stages.
 - Summarize the full hiring pipeline, including candidates hidden by a search.
 - Delete individual candidates or a batch of displayed indexes.
+- Schedule, complete and clear candidate follow-ups; filter overdue, today and upcoming tasks.
 - Save candidate data locally and reload it on the next launch.
 
 ## Get started

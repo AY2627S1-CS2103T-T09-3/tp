@@ -6,6 +6,7 @@ import java.util.Set;
 
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
@@ -30,6 +31,7 @@ public class PersonBuilder {
     private Email email;
     private Address address;
     private Remark remark = new Remark("");
+    private FollowUp followUp = FollowUp.empty();
     private HiringStage stage = HiringStage.APPLIED;
     private Set<Tag> tags;
     private Set<Skill> skills;
@@ -55,6 +57,7 @@ public class PersonBuilder {
         email = personToCopy.getEmail();
         address = personToCopy.getAddress();
         remark = personToCopy.getRemark();
+        followUp = personToCopy.getFollowUp();
         stage = personToCopy.getStage();
         tags = new HashSet<>(personToCopy.getTags());
         skills = new LinkedHashSet<>(personToCopy.getSkills());
@@ -120,7 +123,7 @@ public class PersonBuilder {
     }
 
     public Person build() {
-        return new Person(name, phone, email, address, remark, stage, tags, skills);
+        return new Person(name, phone, email, address, remark, stage, tags, skills, followUp);
     }
 
     /**

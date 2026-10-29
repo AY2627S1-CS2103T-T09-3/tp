@@ -1,5 +1,6 @@
 package seedu.address.ui;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.Locale;
 
@@ -47,6 +48,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label remark;
     @FXML
+    private Label followUp;
+    @FXML
     private Label hiringStage;
 
     /**
@@ -61,6 +64,9 @@ public class PersonCard extends UiPart<Region> {
         address.setText(person.getAddress().value);
         email.setText(person.getEmail().value);
         remark.setText(person.getRemark().value);
+        followUp.setText(person.getFollowUp().format(LocalDate.now()));
+        followUp.setVisible(person.getFollowUp().isScheduled());
+        followUp.setManaged(person.getFollowUp().isScheduled());
         hiringStage.setText("Hiring stage: " + person.getStage());
         hiringStage.getStyleClass().add("hiring-stage-" + person.getStage().name().toLowerCase(Locale.ROOT));
         person.getTags().stream()
