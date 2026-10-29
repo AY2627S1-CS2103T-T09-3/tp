@@ -6,16 +6,20 @@ Scoutly is a desktop candidate pipeline and recruitment management application f
 
 ![Planned Scoutly interface showing a candidate list, hiring stages, and candidate profile](docs/images/Ui.png)
 
-*UI mockup of the intended product. Features and layout are under development.*
+*Original design reference. The implemented workspace now includes live stage totals, compact candidate cards, and a dedicated profile panel.*
 
 ## Current features
 
 - Add, list, and delete candidates.
 - View a candidate’s profile.
 - Update a candidate’s hiring stage: Applied, Screened, Interview, Offered, or Rejected.
+- View live hiring-stage totals alongside search result counts.
+- Inspect candidate profiles in a scrollable panel with contact-copy actions.
+- Recall command history and complete command names or hiring stages using the keyboard.
+- Search the offline command reference and insert starter templates.
 - Receive clear feedback for successful commands and invalid input.
 
-Use `stage INDEX s/STAGE`, for example `stage 1 s/Interview`, to update a candidate's hiring stage. New candidates default to Applied; stages appear on candidate cards and in `view` output and are saved across restarts. The dashboard shown above remains a planned layout.
+Use `stage INDEX s/STAGE`, for example `stage 1 s/Interview`, to update a candidate's hiring stage. New candidates default to Applied; stages appear on candidate cards and in `view` output and are saved across restarts. Dashboard tiles count all stored candidates independently of searches.
 
 ## Documentation
 

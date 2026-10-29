@@ -44,6 +44,34 @@ Scoutly is a **desktop application for managing recruitment candidates through t
 
 1. Refer to the [Features](#features) section below for details of each command.
 
+### Using the workspace
+
+The five dashboard tiles count **all stored candidates** by their current hiring stage, even during
+a search. The displayed count shows how many candidates are in the current results. The tiles
+update after additions, edits, stage changes, and deletions. They show current stages, not a history
+of transitions.
+
+Candidate cards show their current command index, stage, and up to three skills. Open the profile
+for the complete skill list and contact information. An empty pipeline and a search with no matches
+have different prompts; use `list` to reset a search.
+
+### Command assistance and keyboard shortcuts
+
+| Key | Action |
+| --- | --- |
+| Up / Down | Recall older/newer commands when suggestions are hidden. Returning past the newest entry restores your unfinished draft. |
+| Up / Down with suggestions open | Select a completion. |
+| Ctrl+Up / Ctrl+Down | Recall history even while suggestions are visible. |
+| Tab | Accept the selected command-name or hiring-stage completion. Existing arguments are preserved. |
+| Escape | Dismiss suggestions until the input changes. |
+| Ctrl+L (Windows/Linux), Command+L (Mac) | Focus the command box while preserving its text and caret. |
+| F1 | Open or restore the offline command reference. |
+
+Syntax help appears below the input for recognized command names. Suggestions do not execute commands;
+press **Enter** to submit. Failed commands remain available for correction. History stores up to
+200 attempted commands for the current session, omits consecutive duplicates, and resets when Scoutly closes.
+Success and failure feedback use both text labels and different colours.
+
 ### Try a recruitment workflow
 
 1. Add a candidate: `add n/Jordan Lee p/91234567 s/Java s/SQL`.
@@ -84,7 +112,11 @@ use their displayed index or add a candidate with a different name or phone numb
 
 ### Viewing help: `help`
 
-Shows a message with a link to Scoutly's User Guide.
+Opens a searchable, offline command reference. Search by command name, description, or syntax,
+then select a command to read its usage and examples. **Insert template** places a starter command
+in the command box for you to complete. It never executes the command automatically.
+You can also open the reference with **F1** or **Help → Command reference**.
+Opening help again restores it if it was minimized.
 
 You can also open the [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html) directly.
 
@@ -132,9 +164,14 @@ The `list` command does not take any parameters. For example, `list all` is reje
 
 ### Viewing a candidate profile: `view`
 
-Displays a candidate's name, phone, email, address, tags, remark, hiring stage, and skills in the command result area.
-Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
-skills are shown in deterministic alphabetical order. Missing tags, skills, or an empty remark are shown as `None`.
+Opens the candidate's name, phone, email, address, tags, remark, current hiring stage, and skills
+in the **Candidate profile** panel. Scroll within the panel to read long profiles. Tags and skills
+are shown in alphabetical order. Missing tags or skills appear as `None`; empty email, address,
+or remark fields appear as `Not provided`. Copy buttons let you copy available contact details.
+
+You can also select a candidate in the list using the mouse or keyboard. The profile refreshes
+after edits. Deleting the candidate or hiding them through a search clears the profile;
+a failed save restores the previous profile and candidate data.
 
 Format: `view INDEX` or `view FULL_NAME`
 
@@ -320,7 +357,6 @@ Launch Scoutly from the new home folder to load your candidates.
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------
 
