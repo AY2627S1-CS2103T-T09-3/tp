@@ -5,10 +5,16 @@
   <Label text="Candidate profile" styleClass="section-title" />
   <Label fx:id="emptyProfile" text="Select a candidate or type view INDEX to inspect their profile."
          wrapText="true" styleClass="muted" />
-  <ScrollPane fx:id="profileContent" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+  <ScrollPane fx:id="profileContent" minHeight="110" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
     <VBox spacing="9" styleClass="profile-body">
       <Label fx:id="profileName" wrapText="true" styleClass="profile-name" />
       <Label fx:id="profileStage" styleClass="stage-badge" />
+      <HBox spacing="6" styleClass="quick-actions">
+        <Button fx:id="editCandidate" text="Edit" onAction="#handleEditCandidate" />
+        <Button fx:id="updateStage" text="Update stage" onAction="#handleUpdateStage" />
+        <Button fx:id="addRemark" text="Add remark" onAction="#handleAddRemark" />
+        <Button fx:id="deleteCandidate" text="Delete" onAction="#handleDeleteCandidate" />
+      </HBox>
       <Label text="EMAIL" styleClass="field-title" />
       <HBox spacing="12" alignment="CENTER_LEFT">
         <Label fx:id="profileEmail" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity" />

@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <VBox spacing="10" styleClass="surface" xmlns:fx="http://javafx.com/fxml/1">
   <Label text="Candidates" styleClass="section-title" />
-  <Label fx:id="resultCount" styleClass="muted" />
+  <HBox spacing="8" alignment="CENTER_LEFT">
+    <Label fx:id="resultCount" styleClass="muted" HBox.hgrow="ALWAYS" />
+    <Label fx:id="bulkSelectionCount" text="0 selected" styleClass="muted" />
+    <Button fx:id="bulkStage" text="Stage selected" onAction="#handleBulkStage" />
+    <Button fx:id="bulkDelete" text="Delete selected" onAction="#handleBulkDelete" />
+    <Button fx:id="clearSelection" text="Clear selection" onAction="#handleClearSelection" />
+  </HBox>
   <ListView fx:id="personListView" VBox.vgrow="ALWAYS" />
 </VBox>

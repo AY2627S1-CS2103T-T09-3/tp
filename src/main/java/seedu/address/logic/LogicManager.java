@@ -91,6 +91,16 @@ public class LogicManager implements Logic {
     }
 
     @Override
+    public void updateFilteredPersonList(Predicate<Person> predicate) {
+        model.updateFilteredPersonList(predicate);
+    }
+
+    @Override
+    public void sortFilteredPersonList(Comparator<? super Person> comparator) {
+        model.sortFilteredPersonList(comparator);
+    }
+
+    @Override
     public GuiSettings getGuiSettings() {
         return model.getGuiSettings();
     }

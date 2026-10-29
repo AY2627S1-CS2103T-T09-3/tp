@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox spacing="8" styleClass="surface" xmlns:fx="http://javafx.com/fxml/1">
+  <HBox spacing="8" alignment="CENTER_LEFT">
+    <Label text="Find" styleClass="field-title" />
+    <TextField fx:id="searchField" promptText="Search by name or skill" HBox.hgrow="ALWAYS" />
+    <ComboBox fx:id="stageFilter" prefWidth="145" accessibleText="Filter by hiring stage" />
+    <Button fx:id="clearFilters" text="Clear" onAction="#handleClearFilters" />
+    <Button fx:id="refreshResults" text="Refresh" onAction="#handleRefresh" />
+  </HBox>
+  <HBox spacing="8" alignment="CENTER_LEFT">
+    <Button fx:id="exportCsv" text="Export CSV" onAction="#handleExportCsv" />
+    <Button fx:id="exportJson" text="Export JSON" onAction="#handleExportJson" />
+    <ToggleButton fx:id="dueFollowUps" text="Due follow-ups" />
+    <ToggleButton fx:id="missingContact" text="Needs contact" />
+    <ToggleButton fx:id="highContrast" text="High contrast" onAction="#handleContrastToggle" />
+    <Label fx:id="filterStatus" styleClass="muted" HBox.hgrow="ALWAYS" />
+  </HBox>
+</VBox>

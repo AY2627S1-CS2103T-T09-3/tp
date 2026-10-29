@@ -9,6 +9,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 
@@ -17,7 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import javafx.event.ActionEvent;
+import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
@@ -30,6 +33,7 @@ import seedu.address.logic.LogicManager;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.HiringStage;
+import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -131,6 +135,12 @@ public class MainWindowTest {
                         .getWidth() > 500);
                 assertTrue(window.getPrimaryStage().getScene().lookup("#profileContent").getBoundsInParent()
                         .getHeight() > 100);
+                Node profilePlaceholder = window.getPrimaryStage().getScene().lookup("#profilePlaceholder");
+                Node profileContent = window.getPrimaryStage().getScene().lookup("#profileContent");
+                Bounds placeholderBounds = profilePlaceholder.localToScene(profilePlaceholder.getBoundsInLocal());
+                Bounds contentBounds = profileContent.localToScene(profileContent.getBoundsInLocal());
+                assertTrue(contentBounds.getMinY() >= placeholderBounds.getMinY() - 1);
+                assertTrue(contentBounds.getMaxY() <= placeholderBounds.getMaxY() + 1);
             } finally {
                 window.getPrimaryStage().close();
             }
@@ -168,6 +178,40 @@ public class MainWindowTest {
                 assertTrue(label(window, "profileFollowUp").contains("completed"));
                 execute(window, "followup 1 clear");
                 assertEquals("No follow-up scheduled", label(window, "profileFollowUp"));
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void toolbarFilters_reconcileProfileAndYieldToExplicitListCommands() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.show();
+                execute(window, "view 1");
+                TextField toolbarSearch = (TextField) window.getPrimaryStage().getScene().lookup("#searchField");
+                ListView<?> candidates = (ListView<?>) window.getPrimaryStage().getScene()
+                        .lookup("#personListView");
+
+                toolbarSearch.setText("Alex");
+                assertEquals(List.of("Alex Morgan"), candidateNames(candidates));
+                assertEquals("Alex Morgan", label(window, "profileName"));
+
+                toolbarSearch.setText("Jamie");
+                assertEquals(List.of("Jamie Tan"), candidateNames(candidates));
+                assertTrue(window.getPrimaryStage().getScene().lookup("#emptyProfile").isVisible());
+
+                execute(window, "find Priya");
+                assertEquals(List.of("Priya Shah"), candidateNames(candidates));
+                assertEquals("", toolbarSearch.getText());
+
+                toolbarSearch.setText("Sam");
+                execute(window, "list sort/name");
+                assertEquals(List.of("Alex Morgan", "Jamie Tan", "Priya Shah", "Sam Lee"),
+                        candidateNames(candidates));
+                assertEquals("", toolbarSearch.getText());
             } finally {
                 window.getPrimaryStage().close();
             }
@@ -213,6 +257,10 @@ public class MainWindowTest {
 
     private String result(MainWindow window) {
         return ((TextArea) window.getPrimaryStage().getScene().lookup("#resultDisplay")).getText();
+    }
+
+    private List<String> candidateNames(ListView<?> candidates) {
+        return candidates.getItems().stream().map(item -> ((Person) item).getName().fullName).toList();
     }
 
     private void savePreview(Stage stage, String name) {
