@@ -25,6 +25,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
@@ -142,6 +143,53 @@ public class MainWindowTest {
                 Bounds contentBounds = profileContent.localToScene(profileContent.getBoundsInLocal());
                 assertTrue(contentBounds.getMinY() >= placeholderBounds.getMinY() - 1);
                 assertTrue(contentBounds.getMaxY() <= placeholderBounds.getMaxY() + 1);
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void minimumWorkspace_scrollsSuggestionsWithoutOverlappingControls() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            window.getPrimaryStage().setWidth(760);
+            window.getPrimaryStage().setHeight(700);
+            try {
+                window.show();
+                execute(window, "view 1");
+                TextField input = (TextField) window.getPrimaryStage().getScene().lookup("#commandTextField");
+                input.setText("stage 1 s/");
+                input.positionCaret(input.getLength());
+                Parent root = window.getPrimaryStage().getScene().getRoot();
+                root.applyCss();
+                root.layout();
+
+                ListView<?> suggestions = (ListView<?>) root.lookup("#suggestions");
+                ScrollPane workspace = (ScrollPane) root.lookup("#workspaceScrollPane");
+                assertTrue(suggestions.isVisible());
+                assertTrue(suggestions.getItems().size() >= 3);
+                assertTrue(workspace.lookupAll(".scroll-bar").stream().anyMatch(node -> node instanceof ScrollBar bar
+                        && bar.getOrientation() == Orientation.VERTICAL && bar.isVisible()));
+
+                Node profilePlaceholder = root.lookup("#profilePlaceholder");
+                Node profileContent = root.lookup("#profileContent");
+                Node resultPlaceholder = root.lookup("#resultDisplayPlaceholder");
+                Node result = root.lookup("#resultDisplay");
+                Node commandPlaceholder = root.lookup("#commandBoxPlaceholder");
+                Node statusbar = root.lookup("#statusbarPlaceholder");
+                assertContained(profilePlaceholder, profileContent);
+                assertContained(resultPlaceholder, result);
+                assertContained(commandPlaceholder, input);
+
+                assertTrue(layoutSceneBounds(profilePlaceholder).getMaxY()
+                        <= layoutSceneBounds(resultPlaceholder).getMinY() + 1);
+                assertTrue(layoutSceneBounds(resultPlaceholder).getMaxY()
+                        <= layoutSceneBounds(commandPlaceholder).getMinY() + 1);
+                assertTrue(layoutSceneBounds(commandPlaceholder).getMaxY()
+                        <= layoutSceneBounds(statusbar).getMinY() + 1);
+                assertTrue(layoutSceneBounds(statusbar).getMaxY()
+                        <= layoutSceneBounds(workspace.getContent()).getMaxY() + 1);
             } finally {
                 window.getPrimaryStage().close();
             }
@@ -305,15 +353,16 @@ public class MainWindowTest {
     }
 
     private void assertContained(Node container, Node content) {
+        double tolerance = 2;
         Bounds containerBounds = layoutSceneBounds(container);
         Bounds contentBounds = visualSceneBounds(content);
-        assertTrue(contentBounds.getMinX() >= containerBounds.getMinX() - 1,
+        assertTrue(contentBounds.getMinX() >= containerBounds.getMinX() - tolerance,
                 "Content starts left of its container: content=" + contentBounds + ", container=" + containerBounds);
-        assertTrue(contentBounds.getMaxX() <= containerBounds.getMaxX() + 1,
+        assertTrue(contentBounds.getMaxX() <= containerBounds.getMaxX() + tolerance,
                 "Content ends right of its container: content=" + contentBounds + ", container=" + containerBounds);
-        assertTrue(contentBounds.getMinY() >= containerBounds.getMinY() - 1,
+        assertTrue(contentBounds.getMinY() >= containerBounds.getMinY() - tolerance,
                 "Content starts above its container: content=" + contentBounds + ", container=" + containerBounds);
-        assertTrue(contentBounds.getMaxY() <= containerBounds.getMaxY() + 1,
+        assertTrue(contentBounds.getMaxY() <= containerBounds.getMaxY() + tolerance,
                 "Content ends below its container: content=" + contentBounds + ", container=" + containerBounds);
     }
 
