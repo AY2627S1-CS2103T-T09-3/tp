@@ -2,10 +2,12 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,8 +19,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
@@ -78,6 +82,23 @@ public class WorkspaceUiTest {
     }
 
     @Test
+    public void dashboard_stageTileActivatesSelectionHandler() throws Exception {
+        FxTestUtil.run(() -> {
+            Person candidate = new PersonBuilder().build();
+            ObservableList<Person> all = FXCollections.observableArrayList(candidate);
+            AtomicReference<HiringStage> selectedStage = new AtomicReference<>();
+            PipelineDashboard dashboard = new PipelineDashboard(all, all, selectedStage::set);
+            new Scene(dashboard.getRoot());
+            HBox tiles = (HBox) dashboard.getRoot().lookup("#stageTiles");
+            VBox interviewTile = (VBox) tiles.getChildren().get(2);
+
+            interviewTile.getOnMouseClicked().handle(null);
+
+            assertEquals(HiringStage.INTERVIEW, selectedStage.get());
+        });
+    }
+
+    @Test
     public void resultList_reindexesAfterDeletionWithoutOpeningAnotherProfile() throws Exception {
         FxTestUtil.run(() -> {
             Person first = new PersonBuilder().build();
@@ -99,6 +120,24 @@ public class WorkspaceUiTest {
             assertNull(list.getSelectionModel().getSelectedItem());
             all.clear();
             assertTrue(((Label) list.getPlaceholder()).getText().contains("pipeline is empty"));
+        });
+    }
+
+    @Test
+    public void resultList_supportsMultiSelectionForBulkActions() throws Exception {
+        FxTestUtil.run(() -> {
+            Person first = new PersonBuilder().build();
+            Person second = new PersonBuilder().withName("Other").build();
+            ObservableList<Person> all = FXCollections.observableArrayList(first, second);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            PersonListPanel panel = new PersonListPanel(all, all, selection);
+            new Scene(panel.getRoot());
+            ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
+            list.getSelectionModel().selectIndices(0, 1);
+
+            assertEquals(SelectionMode.MULTIPLE, list.getSelectionModel().getSelectionMode());
+            assertEquals(2, list.getSelectionModel().getSelectedItems().size());
+            assertNotNull(panel.getRoot().lookup("#bulkStage"));
         });
     }
 

@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BiConsumer;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -48,12 +49,28 @@ public class CandidateProfilePanel extends UiPart<Region> {
     private Button copyPhone;
     @FXML
     private Label copyFeedback;
+    @FXML
+    private Button editCandidate;
+    @FXML
+    private Button updateStage;
+    @FXML
+    private Button addRemark;
+    @FXML
+    private Button deleteCandidate;
 
     private Person candidate;
+    private final BiConsumer<QuickAction, Person> quickActionHandler;
 
     /** Observes selection rather than retaining an obsolete copy of a candidate. */
     public CandidateProfilePanel(CandidateSelectionModel selection) {
+        this(selection, (action, person) -> { });
+    }
+
+    /** Observes selection and exposes focused actions for the selected candidate. */
+    public CandidateProfilePanel(CandidateSelectionModel selection,
+            BiConsumer<QuickAction, Person> quickActionHandler) {
         super("CandidateProfilePanel.fxml");
+        this.quickActionHandler = requireNonNull(quickActionHandler);
         requireNonNull(selection).selectedPersonProperty()
                 .addListener((observable, previous, current) -> show(current));
         show(selection.selectedPersonProperty().get());
@@ -69,6 +86,10 @@ public class CandidateProfilePanel extends UiPart<Region> {
         copyFeedback.setText("");
         copyFeedback.setVisible(false);
         copyFeedback.setManaged(false);
+        editCandidate.setDisable(!hasSelection);
+        updateStage.setDisable(!hasSelection);
+        addRemark.setDisable(!hasSelection);
+        deleteCandidate.setDisable(!hasSelection);
         if (!hasSelection) {
             return;
         }
@@ -128,5 +149,39 @@ public class CandidateProfilePanel extends UiPart<Region> {
         copyFeedback.setText(Clipboard.getSystemClipboard().setContent(content) ? message : "Copy unavailable");
         copyFeedback.setVisible(true);
         copyFeedback.setManaged(true);
+    }
+
+    @FXML
+    private void handleEditCandidate() {
+        runQuickAction(QuickAction.EDIT);
+    }
+
+    @FXML
+    private void handleUpdateStage() {
+        runQuickAction(QuickAction.UPDATE_STAGE);
+    }
+
+    @FXML
+    private void handleAddRemark() {
+        runQuickAction(QuickAction.ADD_REMARK);
+    }
+
+    @FXML
+    private void handleDeleteCandidate() {
+        runQuickAction(QuickAction.DELETE);
+    }
+
+    private void runQuickAction(QuickAction action) {
+        if (candidate != null) {
+            quickActionHandler.accept(action, candidate);
+        }
+    }
+
+    /** Actions available without leaving the selected profile. */
+    public enum QuickAction {
+        EDIT,
+        UPDATE_STAGE,
+        ADD_REMARK,
+        DELETE
     }
 }

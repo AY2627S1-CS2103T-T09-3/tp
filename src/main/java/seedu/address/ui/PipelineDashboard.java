@@ -4,11 +4,13 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -29,9 +31,16 @@ public class PipelineDashboard extends UiPart<Region> {
 
     /** Creates tiles and observes both source data and displayed results. */
     public PipelineDashboard(ObservableList<Person> allPersons, ObservableList<Person> visiblePersons) {
+        this(allPersons, visiblePersons, stage -> { });
+    }
+
+    /** Creates a dashboard whose stage tiles can activate the workspace stage filter. */
+    public PipelineDashboard(ObservableList<Person> allPersons, ObservableList<Person> visiblePersons,
+            Consumer<HiringStage> stageSelectionHandler) {
         super("PipelineDashboard.fxml");
         this.allPersons = requireNonNull(allPersons);
         this.visiblePersons = requireNonNull(visiblePersons);
+        requireNonNull(stageSelectionHandler);
         for (HiringStage stage : HiringStage.values()) {
             Label count = new Label("0");
             count.getStyleClass().add("tile-count");
@@ -40,6 +49,15 @@ public class PipelineDashboard extends UiPart<Region> {
             VBox tile = new VBox(5, title, count);
             tile.getStyleClass().add("stage-tile");
             tile.setMaxWidth(Double.MAX_VALUE);
+            tile.setAccessibleText("Filter candidates by " + stage);
+            tile.setFocusTraversable(true);
+            tile.setOnMouseClicked(event -> stageSelectionHandler.accept(stage));
+            tile.setOnKeyPressed(event -> {
+                if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
+                    stageSelectionHandler.accept(stage);
+                    event.consume();
+                }
+            });
             HBox.setHgrow(tile, Priority.ALWAYS);
             stageTiles.getChildren().add(tile);
             stageCounts.put(stage, count);

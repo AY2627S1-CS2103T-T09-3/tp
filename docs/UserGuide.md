@@ -56,6 +56,22 @@ Candidate cards show their current command index, stage, and up to three skills.
 for the complete skill list, contact information and follow-up details. An empty pipeline and a search with no matches
 have different prompts; use `list` to reset a search.
 
+The workspace toolbar provides quick controls for common browsing tasks:
+
+* Type in **Find** to search the displayed candidates by name or skill. Select a hiring stage to combine
+  the stage filter with the text search, or choose **Clear** to restore the full list.
+* Click a dashboard stage tile to activate that stage filter. Use **Refresh** after an external data change
+  to reapply the current workspace filter.
+* Use **Export CSV** or **Export JSON** to save the currently displayed candidates in their visible order.
+  The export includes contact details, hiring stage, skills, tags, and remarks.
+* Select several candidate cards with Command-click (macOS) or Ctrl-click (Windows/Linux). **Stage selected**
+  applies one hiring stage to all selected candidates, while **Delete selected** asks for confirmation before
+  deleting them. **Clear selection** removes the multi-selection.
+* In a candidate profile, **Edit**, **Update stage**, **Add remark**, and **Delete** open the corresponding
+  command or confirmation without requiring you to retype the candidate index.
+* Enable **High contrast** when stronger borders and text contrast are needed. The setting applies to the
+  current window and does not alter saved candidate data.
+
 ### Command assistance and keyboard shortcuts
 
 | Key | Action |

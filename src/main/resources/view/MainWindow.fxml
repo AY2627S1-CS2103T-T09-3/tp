@@ -21,9 +21,10 @@
         </MenuBar>
         <HBox styleClass="brand-bar"><Label text="Scoutly" styleClass="brand-title" /></HBox>
         <StackPane fx:id="dashboardPlaceholder" styleClass="workspace-inset" />
-        <SplitPane dividerPositions="0.42" VBox.vgrow="ALWAYS" styleClass="workspace-inset">
-          <StackPane fx:id="personListPanelPlaceholder" minWidth="280" />
-          <StackPane fx:id="profilePlaceholder" minWidth="280" />
+        <StackPane fx:id="workspaceToolbarPlaceholder" styleClass="workspace-inset" />
+        <SplitPane dividerPositions="0.42" minHeight="120" VBox.vgrow="ALWAYS" styleClass="workspace-inset">
+          <StackPane fx:id="personListPanelPlaceholder" minWidth="280" minHeight="120" />
+          <StackPane fx:id="profilePlaceholder" minWidth="280" minHeight="120" />
         </SplitPane>
         <StackPane fx:id="resultDisplayPlaceholder" minHeight="54" prefHeight="60" maxHeight="100"
                    styleClass="workspace-inset" />

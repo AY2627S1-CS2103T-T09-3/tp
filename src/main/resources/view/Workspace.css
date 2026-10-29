@@ -43,6 +43,12 @@
 .stage-interview { -fx-background-color: #e5e6fa; -fx-text-fill: #504d89; }
 .chip { -fx-background-color: #e9eef4; -fx-text-fill: #455c71; -fx-font-size: 11px; }
 .button { -fx-cursor: hand; -fx-background-radius: 6; -fx-padding: 5 10; }
+.quick-actions { -fx-padding: 2 0 8; -fx-border-color: #dce5ec; -fx-border-width: 0 0 1 0; }
+.workspace-toolbar { -fx-background-color: white; }
+.high-contrast { -fx-base: #ffffff; -fx-background-color: #ffffff; -fx-text-background-color: #000000; }
+.high-contrast .surface, .high-contrast .stage-tile, .high-contrast .list-view { -fx-border-color: #000000; }
+.high-contrast .label, .high-contrast .muted, .high-contrast .field-title { -fx-text-fill: #000000; }
+.high-contrast .button { -fx-border-color: #000000; -fx-text-fill: #000000; }
 .text-field { -fx-background-color: white; -fx-background-radius: 8; -fx-padding: 12; }
 .text-field:focused { -fx-border-color: #127d86; -fx-border-radius: 8; }
 .text-field.error { -fx-border-color: #ad3c32; -fx-border-radius: 8; }
