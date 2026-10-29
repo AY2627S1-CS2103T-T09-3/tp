@@ -1,49 +1,27 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+skinparam ParticipantFontColor #FFFFFF
 
-participant "v:ViewCommand" as ViewCommand LOGIC_COLOR
+participant "command:ViewCommand" as ViewCommand LOGIC_COLOR
+participant "model:Model" as Model MODEL_COLOR
 participant "PersonLookup" as PersonLookup LOGIC_COLOR
-participant "m:Model" as Model MODEL_COLOR
-participant "p:Person" as Person MODEL_COLOR
-participant "r:CommandResult" as CommandResult LOGIC_COLOR
 
-[-> ViewCommand : execute(m)
+[-> ViewCommand : execute(model)
 activate ViewCommand
 ViewCommand -> Model : getFilteredPersonList()
-activate Model
 Model --> ViewCommand : displayedPersons
-deactivate Model
-
 ViewCommand -> PersonLookup : findByName(displayedPersons, targetName, ...)
-note over PersonLookup
-Only searches the displayed candidates.
-Normalizes whitespace and ignores name case.
-end note
 
-alt No matching candidate
+alt exactly one match
+    PersonLookup --> ViewCommand : candidate
+    ViewCommand -->[ : commandResult
+else no match
     PersonLookup --> ViewCommand : throws CommandException (not found)
     ViewCommand -->[ : throws CommandException
-else Multiple matching candidates
+else multiple matches
     PersonLookup --> ViewCommand : throws CommandException (ambiguous name)
     ViewCommand -->[ : throws CommandException
-else Exactly one matching candidate
-    PersonLookup --> ViewCommand : p
-    ViewCommand -> Person : getName(), getPhone(), getEmail(), getAddress(),\ngetTags(), getRemark(), getStage(), getSkills()
-    activate Person
-    Person --> ViewCommand : profile fields
-    deactivate Person
-    create CommandResult
-    ViewCommand -> CommandResult : new CommandResult(formattedProfile)
-    activate CommandResult
-    CommandResult --> ViewCommand : r
-    deactivate CommandResult
-    ViewCommand -->[ : r
 end
-
 deactivate ViewCommand
-note over ViewCommand, Model
-ViewCommand does not change candidate data,
-the active filter, or displayed order.
-end note
 @enduml
