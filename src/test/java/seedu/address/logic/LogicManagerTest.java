@@ -2,7 +2,7 @@ package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static seedu.address.logic.Messages.MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
 import static seedu.address.logic.Messages.MESSAGE_UNKNOWN_COMMAND;
 import static seedu.address.logic.commands.CommandTestUtil.NAME_DESC_AMY;
@@ -78,6 +78,48 @@ public class LogicManagerTest {
     public void execute_validCommand_success() throws Exception {
         String listCommand = ListCommand.COMMAND_WORD;
         assertCommandSuccess(listCommand, ListCommand.MESSAGE_EMPTY_LIST, model);
+    }
+
+    @Test
+    public void execute_readOnlyCommands_doNotAttemptToSave() throws Exception {
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+        storage.failNextSave(DUMMY_AD_EXCEPTION);
+
+        for (String command : List.of("view 1", "summary", "help", "exit", "list sort/name", "list",
+                "find Amy", "findskill Java", "list s/Applied")) {
+            logic.execute(command);
+            assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()), command);
+            assertEquals(List.of(AMY, BOB), model.getAddressBook().getPersonList(), command);
+        }
+
+        // The pending failure must still be present: no earlier command called the save method.
+        logic.execute("list");
+        assertThrows(CommandException.class, () -> logic.execute("add n/Carol p/99999999 s/Java"));
+    }
+
+    @Test
+    public void execute_unchangedCandidate_doesNotAttemptToSave() throws Exception {
+        model.addPerson(AMY);
+        FailOnceAddressBookStorage storage = useFailOnceStorage();
+        byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+        storage.failNextSave(DUMMY_IO_EXCEPTION);
+
+        for (String command : List.of("stage 1 s/Applied", "edit 1 n/Amy Bee", "remark 1")) {
+            logic.execute(command);
+            assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()), command);
+        }
+        assertThrows(CommandException.class, () -> logic.execute("stage 1 s/Interview"));
+        assertEquals(List.of(AMY), model.getAddressBook().getPersonList());
+    }
+
+    @Test
+    public void execute_readOnlyCommand_doesNotCreateDataFile() throws Exception {
+        logic.execute("list");
+        logic.execute("summary");
+        assertFalse(Files.exists(temporaryFolder.resolve("addressBook.json")));
     }
 
     @Test
@@ -335,7 +377,7 @@ public class LogicManagerTest {
     @Test
     public void execute_failedSave_restoresDataAndSearchPredicate() throws Exception {
         for (String command : List.of("edit 1 n/Changed", "clear", "remark 1 r/Changed",
-                "stage 1 s/Offered", "add n/Carol p/99999999 s/Java", "list", "find Bob")) {
+                "stage 1 s/Offered", "add n/Carol p/99999999 s/Java")) {
             model = new ModelManager();
             model.addPerson(AMY);
             model.addPerson(BOB);

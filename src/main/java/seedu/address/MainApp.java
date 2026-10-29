@@ -1,5 +1,7 @@
 package seedu.address;
 
+import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,6 +9,8 @@ import java.util.Optional;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
@@ -19,6 +23,7 @@ import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.ReadOnlyUserPrefs;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.util.SampleDataUtil;
+import seedu.address.storage.DataFolderLock;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.Storage;
@@ -32,6 +37,8 @@ import seedu.address.ui.UiManager;
 public class MainApp extends Application {
 
     public static final String VERSION = "V1.5";
+    public static final String MESSAGE_DATA_FOLDER_IN_USE =
+            "Scoutly is already running with this data folder. Please use the existing window.";
 
     private static final Logger logger = LogsCenter.getLogger(MainApp.class);
     private static final Path USER_PREFS_FILE_PATH = Paths.get("preferences.json");
@@ -42,14 +49,48 @@ public class MainApp extends Application {
     protected Storage storage;
     protected Model model;
 
+    private final Path addressBookFilePath;
+    private final Path userPrefsFilePath;
+    private DataFolderLock dataFolderLock;
+    private boolean dataFolderInUse;
+
+    /**
+     * Creates an application using the files in the current working folder.
+     */
+    public MainApp() {
+        this(ADDRESS_BOOK_FILE_PATH, USER_PREFS_FILE_PATH);
+    }
+
+    MainApp(Path addressBookFilePath, Path userPrefsFilePath) {
+        requireAllNonNull(addressBookFilePath, userPrefsFilePath);
+        this.addressBookFilePath = addressBookFilePath;
+        this.userPrefsFilePath = userPrefsFilePath;
+    }
+
     @Override
     public void init() throws Exception {
         logger.info("=============================[ Initializing AddressBook ]===========================");
         super.init();
 
-        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(USER_PREFS_FILE_PATH);
+        Optional<DataFolderLock> acquiredLock =
+                DataFolderLock.tryAcquire(addressBookFilePath.toAbsolutePath().getParent());
+        if (acquiredLock.isEmpty()) {
+            dataFolderInUse = true;
+            return;
+        }
+        dataFolderLock = acquiredLock.get();
+        try {
+            initializeComponents();
+        } catch (RuntimeException | Error e) {
+            closeResources();
+            throw e;
+        }
+    }
+
+    private void initializeComponents() {
+        JsonUserPrefsStorage userPrefsStorage = new JsonUserPrefsStorage(userPrefsFilePath);
         UserPrefs userPrefs = initPrefs(userPrefsStorage);
-        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(ADDRESS_BOOK_FILE_PATH);
+        JsonAddressBookStorage addressBookStorage = new JsonAddressBookStorage(addressBookFilePath);
         storage = new StorageManager(addressBookStorage, userPrefsStorage);
 
         model = initModelManager(storage, userPrefs);
@@ -120,17 +161,42 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        if (dataFolderInUse) {
+            showDataFolderInUseMessage();
+            Platform.exit();
+            return;
+        }
         logger.info("Starting AddressBook " + MainApp.VERSION);
         ui.start(primaryStage);
+    }
+
+    private void showDataFolderInUseMessage() {
+        logger.warning(MESSAGE_DATA_FOLDER_IN_USE);
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Scoutly is already running");
+        alert.setHeaderText(null);
+        alert.setContentText(MESSAGE_DATA_FOLDER_IN_USE);
+        alert.showAndWait();
     }
 
     @Override
     public void stop() {
         logger.info("============================ [ Stopping AddressBook ] =============================");
-        try {
-            storage.saveUserPrefs(model.getUserPrefs());
+        if (dataFolderLock == null) {
+            return;
+        }
+        closeResources();
+    }
+
+    private void closeResources() {
+        try (DataFolderLock lock = dataFolderLock) {
+            if (model != null) {
+                storage.saveUserPrefs(model.getUserPrefs());
+            }
         } catch (IOException e) {
-            logger.severe("Failed to save preferences " + StringUtil.getDetails(e));
+            logger.severe("Failed to save preferences or release the data folder lock " + StringUtil.getDetails(e));
+        } finally {
+            dataFolderLock = null;
         }
     }
 }
