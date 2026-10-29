@@ -39,6 +39,19 @@ public class FollowUpTest {
     }
 
     @Test
+    public void constructor_unicodeLineBreaks_rejectedBeforeTrimming() {
+        for (String separator : new String[]{"\u2028", "\u2029"}) {
+            for (String note : new String[]{separator, separator + "Call", "Call" + separator,
+                "Call" + separator + "Later"}) {
+                assertFalse(FollowUp.isValidNote(note));
+                assertThrows(IllegalArgumentException.class, () -> new FollowUp("2026-10-29", note, false));
+            }
+        }
+        String multilingualNote = "Call 日本語 — 确认时间";
+        assertEquals(multilingualNote, new FollowUp("2026-10-29", multilingualNote, false).getNote());
+    }
+
+    @Test
     public void lifecycle_completePreservesDateAndNote() {
         FollowUp pending = new FollowUp("2026-10-28", "Call", false);
         FollowUp completed = pending.complete();

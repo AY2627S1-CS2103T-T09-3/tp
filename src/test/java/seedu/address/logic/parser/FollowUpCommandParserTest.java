@@ -49,6 +49,15 @@ public class FollowUpCommandParserTest {
     }
 
     @Test
+    public void parse_unicodeLineBreakInNote_rejected() {
+        for (String separator : new String[]{"\u2028", "\u2029"}) {
+            String arguments = "1 d/2026-11-05 r/Call" + separator + "then email";
+            assertParseFailure(parser, arguments, FollowUp.MESSAGE_NOTE_CONSTRAINTS);
+            assertThrows(ParseException.class, () -> new AddressBookParser().parseCommand("followup " + arguments));
+        }
+    }
+
+    @Test
     public void parse_views_defaultsToPendingAndRejectsExtraArguments() throws Exception {
         FollowUpsCommandParser views = new FollowUpsCommandParser();
         assertParseSuccess(views, " ", new FollowUpsCommand(FollowUpFilter.PENDING));
