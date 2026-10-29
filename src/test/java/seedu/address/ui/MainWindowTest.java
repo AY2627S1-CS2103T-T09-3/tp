@@ -164,6 +164,7 @@ public class MainWindowTest {
                 Parent root = window.getPrimaryStage().getScene().getRoot();
                 root.applyCss();
                 root.layout();
+                savePreview(window.getPrimaryStage(), "workspace-minimum-suggestions");
 
                 ListView<?> suggestions = (ListView<?>) root.lookup("#suggestions");
                 ScrollPane workspace = (ScrollPane) root.lookup("#workspaceScrollPane");
