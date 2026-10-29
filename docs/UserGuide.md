@@ -63,10 +63,10 @@ The workspace toolbar provides quick controls for common browsing tasks:
 * Enable **Due follow-ups** to show pending follow-ups scheduled for today or an earlier date. Enable
   **Needs contact** to find candidates whose email or phone number is missing; these smart filters can be
   combined with the text and stage filters.
-* Click a dashboard stage tile to activate that stage filter. Use **Refresh** after an external data change
-  to reapply the current workspace filter.
+* Click a dashboard stage tile to activate that stage filter. Use **Refresh** to reapply the current in-memory
+  workspace filters; it does not reload candidate data changed externally in the JSON file.
 * Use **Export CSV** or **Export JSON** to save the currently displayed candidates in their visible order.
-  The export includes contact details, hiring stage, skills, tags, and remarks.
+  The export includes contact details, address, hiring stage, skills, tags, remarks, and follow-up details.
 * Select several candidate cards with Command-click (macOS) or Ctrl-click (Windows/Linux). **Stage selected**
   applies one hiring stage to all selected candidates, while **Delete selected** asks for confirmation before
   deleting them. Stage updates continue to target the selected candidates when a stage filter removes

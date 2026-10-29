@@ -3,8 +3,6 @@ package seedu.address.ui;
 import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -18,6 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
+import seedu.address.commons.util.FileUtil;
 import seedu.address.logic.Logic;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
@@ -216,7 +215,7 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
             return;
         }
         try {
-            Files.writeString(selected.toPath(), content, StandardCharsets.UTF_8);
+            FileUtil.writeToFile(selected.toPath(), content);
             feedback.accept("Exported " + logic.getFilteredPersonList().size() + " candidates to "
                     + selected.getName() + ".");
         } catch (IOException exception) {

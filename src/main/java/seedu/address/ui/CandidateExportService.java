@@ -8,7 +8,8 @@ import seedu.address.model.person.Person;
 
 /** Provides deterministic, dependency-free exports for the candidate workspace. */
 public final class CandidateExportService {
-    private static final String[] CSV_HEADERS = {"Name", "Email", "Phone", "Stage", "Skills", "Tags", "Remark"};
+    private static final String[] CSV_HEADERS = {"Name", "Email", "Phone", "Address", "Stage", "Skills", "Tags",
+        "Remark", "Follow-up Date", "Follow-up Note", "Follow-up Completed"};
 
     private CandidateExportService() {
     }
@@ -21,10 +22,14 @@ public final class CandidateExportService {
                 csv(candidate.getName().fullName),
                 csv(candidate.getEmail().value),
                 csv(candidate.getPhone().value),
+                csv(candidate.getAddress().value),
                 csv(candidate.getStage().toString()),
                 csv(joinSkills(candidate)),
                 csv(candidate.getTags().stream().map(tag -> tag.tagName).sorted().collect(Collectors.joining("; "))),
-                csv(candidate.getRemark().value))).append('\n'));
+                csv(candidate.getRemark().value),
+                csv(candidate.getFollowUp().getDateText()),
+                csv(candidate.getFollowUp().getNote()),
+                csv(Boolean.toString(candidate.getFollowUp().isCompleted())))).append('\n'));
         return output.toString();
     }
 
@@ -38,12 +43,19 @@ public final class CandidateExportService {
                     .append("      \"name\": \"").append(json(candidate.getName().fullName)).append("\",\n")
                     .append("      \"email\": \"").append(json(candidate.getEmail().value)).append("\",\n")
                     .append("      \"phone\": \"").append(json(candidate.getPhone().value)).append("\",\n")
+                    .append("      \"address\": \"").append(json(candidate.getAddress().value)).append("\",\n")
                     .append("      \"stage\": \"").append(json(candidate.getStage().toString())).append("\",\n")
                     .append("      \"skills\": [").append(jsonArray(candidate.getSkills().stream()
                             .map(skill -> skill.value).sorted().collect(Collectors.toList()))).append("],\n")
                     .append("      \"tags\": [").append(jsonArray(candidate.getTags().stream()
                             .map(tag -> tag.tagName).sorted().collect(Collectors.toList()))).append("],\n")
-                    .append("      \"remark\": \"").append(json(candidate.getRemark().value)).append("\"\n")
+                    .append("      \"remark\": \"").append(json(candidate.getRemark().value)).append("\",\n")
+                    .append("      \"followUp\": {\n")
+                    .append("        \"date\": \"").append(json(candidate.getFollowUp().getDateText()))
+                    .append("\",\n")
+                    .append("        \"note\": \"").append(json(candidate.getFollowUp().getNote())).append("\",\n")
+                    .append("        \"completed\": ").append(candidate.getFollowUp().isCompleted()).append("\n")
+                    .append("      }\n")
                     .append("    }").append(i + 1 == ordered.size() ? "\n" : ",\n");
         }
         return output.append("  ]\n}\n").toString();
@@ -54,8 +66,22 @@ public final class CandidateExportService {
     }
 
     private static String csv(String value) {
-        String escaped = value.replace("\"", "\"\"");
+        String safeValue = isFormulaLike(value) ? "'" + value : value;
+        String escaped = safeValue.replace("\"", "\"\"");
         return "\"" + escaped + "\"";
+    }
+
+    /** Prevents spreadsheet applications from interpreting exported text as a formula. */
+    private static boolean isFormulaLike(String value) {
+        for (int index = 0; index < value.length(); index++) {
+            char character = value.charAt(index);
+            if (Character.isWhitespace(character) || Character.isSpaceChar(character)
+                    || Character.isISOControl(character)) {
+                continue;
+            }
+            return "=+-@".indexOf(character) >= 0;
+        }
+        return false;
     }
 
     private static String jsonArray(List<String> values) {
@@ -63,10 +89,25 @@ public final class CandidateExportService {
     }
 
     private static String json(String value) {
-        return value.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\r", "\\r")
-                .replace("\n", "\\n")
-                .replace("\t", "\\t");
+        StringBuilder escaped = new StringBuilder();
+        for (char character : value.toCharArray()) {
+            switch (character) {
+                case '\\' -> escaped.append("\\\\");
+                case '\"' -> escaped.append("\\\"");
+                case '\b' -> escaped.append("\\b");
+                case '\f' -> escaped.append("\\f");
+                case '\n' -> escaped.append("\\n");
+                case '\r' -> escaped.append("\\r");
+                case '\t' -> escaped.append("\\t");
+                default -> {
+                    if (character < 0x20) {
+                        escaped.append(String.format("\\u%04x", (int) character));
+                    } else {
+                        escaped.append(character);
+                    }
+                }
+            }
+        }
+        return escaped.toString();
     }
 }

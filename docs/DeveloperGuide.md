@@ -318,7 +318,7 @@ Candidate identity is the normalized, case-insensitive name together with the ex
 
 `MainApp` reads preferences and `data/addressbook.json` relative to the launch directory. A missing candidate file initializes sample data. Invalid or unreadable candidate data aborts startup with an explanatory error, preserving the original file. These cases must be tested separately. Missing or unreadable preferences use defaults instead.
 
-`LogicManager` parses and executes a command, then saves the candidate data through `StorageManager`. Before execution it snapshots the data, active predicate, and comparator. If saving throws an `IOException`, it restores those values and reports the storage error. Read-only commands currently also save the candidate file. `JsonAdaptedPerson` supports legacy names and phone numbers already stored under the earlier constraints; this compatibility does not relax validation for newly entered names or phone numbers.
+`LogicManager` parses and executes a command, then saves the candidate data through `StorageManager` only when the candidate data changes. Before execution it snapshots the data, active predicate, and comparator. If saving throws an `IOException`, it restores those values and reports the storage error. `JsonAdaptedPerson` supports legacy names and phone numbers already stored under the earlier constraints; this compatibility does not relax validation for newly entered names or phone numbers.
 
 Undo, redo, and data archiving are not implemented. Deletion and clearing are permanent unless the user restores a backup.
 
