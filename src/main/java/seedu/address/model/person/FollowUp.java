@@ -63,7 +63,8 @@ public final class FollowUp {
      */
     public static boolean isValidNote(String value) {
         requireNonNull(value);
-        return value.length() <= 200 && value.codePoints().noneMatch(Character::isISOControl);
+        return value.length() <= 200 && value.codePoints().noneMatch(codePoint -> Character.isISOControl(codePoint)
+                || codePoint == 0x2028 || codePoint == 0x2029);
     }
 
     public Optional<LocalDate> getDate() {
