@@ -101,6 +101,18 @@ with `list sort/name`, stage filters and follow-up filters. Follow-up reminders 
 cards and in the full profile, including completion state and notes. Profiles display only stored current stages;
 there is no stage-history or job-role data in the model.
 
+Bulk stage updates snapshot selected `Person` targets and resolve each target's current displayed index
+immediately before invoking the existing stage command. Earlier updates can remove rows from a stage
+filter, so storing indexes for the entire operation would target the wrong candidates. Invalid stages
+are rejected before execution, and command failures still stop the remaining updates.
+
+The central `workspaceScroll` contains the dashboard, toolbar and candidate/profile split pane. Header
+placeholders use their preferred heights, while a minimum split-pane height keeps profiles usable.
+When the window or command suggestions leave less room, the central viewport scrolls instead of
+shrinking header containers below their content. Bulk and profile action rows use wrapping flow panes.
+Command entry, feedback and the status bar stay outside the scrolling area. Layout regression tests
+check section bounds and scrolling at default and minimum window sizes, with suggestions open.
+
 #### Command workspace state
 
 `CommandHistory` maintains a bounded session history and an independent unfinished draft.
