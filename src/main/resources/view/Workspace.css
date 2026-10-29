@@ -59,3 +59,35 @@
 .command-suggestions .list-cell { -fx-padding: 4 10; }
 .command-suggestions .list-cell:filled:selected { -fx-background-color: #def0f1; }
 .help-body { -fx-padding: 20; }
+
+.stage-badge.stage-applied, .list-cell:filled:selected .stage-badge.stage-applied {
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #1e293b;
+    -fx-opacity: 1;
+}
+
+.stage-badge.stage-screened, .list-cell:filled:selected .stage-badge.stage-screened {
+    -fx-background-color: #dbeafe;
+    -fx-text-fill: #1e40af;
+    -fx-opacity: 1;
+}
+
+.stage-badge.stage-interview, .list-cell:filled:selected .stage-badge.stage-interview {
+    -fx-background-color: #ede9fe;
+    -fx-text-fill: #5b21b6;
+    -fx-opacity: 1;
+}
+
+.stage-badge.stage-offered, .list-cell:filled:selected .stage-badge.stage-offered {
+    -fx-background-color: #dcfce7;
+    -fx-text-fill: #166534;
+    -fx-opacity: 1;
+}
+
+.stage-badge.stage-rejected, .list-cell:filled:selected .stage-badge.stage-rejected {
+    -fx-background-color: #fee2e2;
+    -fx-text-fill: #991b1b;
+    -fx-opacity: 1;
+}
+
+.follow-up { -fx-font-size: 11px; -fx-text-fill: #52687f; }

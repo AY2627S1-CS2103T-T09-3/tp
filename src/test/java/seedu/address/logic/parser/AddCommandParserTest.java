@@ -99,6 +99,8 @@ public class AddCommandParserTest {
     public void parse_invalidValue_failure() {
         assertParseFailure(parser, " n/James&" + PHONE_DESC_BOB + " " + PREFIX_SKILL + "Java",
                 Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, " n/" + "A".repeat(101) + PHONE_DESC_BOB + " " + PREFIX_SKILL + "Java",
+                Name.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, NAME_DESC_BOB + " p/123456" + " " + PREFIX_SKILL + "Java",
                 Phone.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, NAME_DESC_BOB + PHONE_DESC_BOB + " " + PREFIX_SKILL + "Java Script",

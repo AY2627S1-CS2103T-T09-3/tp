@@ -3,6 +3,7 @@
 skinparam arrowThickness 1.1
 skinparam arrowColor MODEL_COLOR
 skinparam classBackgroundColor MODEL_COLOR
+skinparam classAttributeFontColor #FFFFFF
 
 Package Model as ModelPackage <<Rectangle>>{
 Class "<<interface>>\nReadOnlyAddressBook" as ReadOnlyAddressBook
@@ -19,12 +20,21 @@ Class Email
 Class Name
 Class Phone
 Class Remark
-Class HiringStage
 Class Skill
 Class Tag
 
+enum HiringStage {
+    APPLIED
+    SCREENED
+    INTERVIEW
+    OFFERED
+    REJECTED
+}
+
 Class I #FFFFFF
 }
+
+show HiringStage members
 
 Class HiddenOutside #FFFFFF
 HiddenOutside ..> Model
@@ -45,9 +55,9 @@ Person *--> Phone
 Person *--> Email
 Person *--> Address
 Person *--> Remark
-Person --> "1" HiringStage
 Person *--> "*" Skill
 Person *--> "*" Tag
+Person --> "1" HiringStage : stage
 
 Person -[hidden]up--> I
 UniquePersonList -[hidden]right-> I

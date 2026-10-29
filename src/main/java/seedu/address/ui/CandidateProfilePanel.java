@@ -2,8 +2,10 @@ package seedu.address.ui;
 
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -34,6 +36,8 @@ public class CandidateProfilePanel extends UiPart<Region> {
     private Label profileAddress;
     @FXML
     private Label profileRemark;
+    @FXML
+    private Label profileFollowUp;
     @FXML
     private FlowPane profileTags;
     @FXML
@@ -71,6 +75,10 @@ public class CandidateProfilePanel extends UiPart<Region> {
         profileContent.setVvalue(0);
         profileName.setText(person.getName().fullName);
         profileStage.setText(person.getStage().toString());
+        profileStage.getStyleClass().removeIf(style -> style.startsWith("stage-") && !style.equals("stage-badge"));
+        profileStage.getStyleClass().add("stage-" + person.getStage().name().toLowerCase(Locale.ROOT));
+        profileFollowUp.setText(person.getFollowUp().isScheduled()
+                ? person.getFollowUp().format(LocalDate.now()) : "No follow-up scheduled");
         profileEmail.setText(displayOptional(person.getEmail().value));
         profilePhone.setText(person.getPhone().value);
         profileAddress.setText(displayOptional(person.getAddress().value));

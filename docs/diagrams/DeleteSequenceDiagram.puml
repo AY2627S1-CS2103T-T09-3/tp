@@ -1,6 +1,7 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+skinparam ParticipantFontColor #FFFFFF
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
@@ -27,11 +28,11 @@ activate DeleteCommandParser
 DeleteCommandParser --> AddressBookParser
 deactivate DeleteCommandParser
 
-AddressBookParser -> DeleteCommandParser : parse("1")
+AddressBookParser -> DeleteCommandParser : parse(" 1")
 activate DeleteCommandParser
 
 create DeleteCommand
-DeleteCommandParser -> DeleteCommand
+DeleteCommandParser -> DeleteCommand : new DeleteCommand(index)
 activate DeleteCommand
 
 DeleteCommand --> DeleteCommandParser :
@@ -39,9 +40,6 @@ deactivate DeleteCommand
 
 DeleteCommandParser --> AddressBookParser : d
 deactivate DeleteCommandParser
-'Hidden arrow to position the destroy marker below the end of the activation bar.
-DeleteCommandParser -[hidden]-> AddressBookParser
-destroy DeleteCommandParser
 
 AddressBookParser --> LogicManager : d
 deactivate AddressBookParser
@@ -49,22 +47,43 @@ deactivate AddressBookParser
 LogicManager -> DeleteCommand : execute(m)
 activate DeleteCommand
 
-DeleteCommand -> Model : deletePerson(1)
+DeleteCommand -> Model : getFilteredPersonList()
 activate Model
-
-Model --> DeleteCommand
+Model --> DeleteCommand : displayedPersons
 deactivate Model
 
-create CommandResult
-DeleteCommand -> CommandResult
-activate CommandResult
+note over DeleteCommand, Model
+The index refers to the currently displayed list,
+including any active search filter.
+end note
 
-CommandResult --> DeleteCommand
-deactivate CommandResult
+alt index outside displayed list
+    DeleteCommand --> LogicManager : throws CommandException
+    LogicManager -->[ : throws CommandException
+else valid displayed index
+    note over DeleteCommand
+    Resolve the index to personToDelete
+    before changing the model.
+    end note
+    DeleteCommand -> Model : deletePerson(personToDelete)
+    activate Model
+    Model --> DeleteCommand
+    deactivate Model
 
-DeleteCommand --> LogicManager : r
+    create CommandResult
+    DeleteCommand -> CommandResult : new CommandResult(successMessage)
+    activate CommandResult
+    CommandResult --> DeleteCommand : r
+    deactivate CommandResult
+
+    DeleteCommand --> LogicManager : r
+    LogicManager -->[ : r
+end
 deactivate DeleteCommand
-
-[<--LogicManager
 deactivate LogicManager
+
+note over LogicManager, Model
+LogicManager's data snapshot, save and save-failure
+recovery are outside this diagram's scope.
+end note
 @enduml

@@ -13,10 +13,13 @@ import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
 import seedu.address.logic.commands.FindSkillCommand;
+import seedu.address.logic.commands.FollowUpCommand;
+import seedu.address.logic.commands.FollowUpsCommand;
 import seedu.address.logic.commands.HelpCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.RemarkCommand;
 import seedu.address.logic.commands.StageCommand;
+import seedu.address.logic.commands.SummaryCommand;
 import seedu.address.logic.commands.ViewCommand;
 
 /** Shared offline command catalogue for assistance, completion and help. */
@@ -38,8 +41,14 @@ public final class CommandReference {
                     StageCommand.MESSAGE_USAGE, "stage 1 s/"),
             new CommandReference(RemarkCommand.COMMAND_WORD, "Update a candidate remark",
                     RemarkCommand.MESSAGE_USAGE, "remark 1 r/"),
+            new CommandReference(FollowUpCommand.COMMAND_WORD, "Schedule, complete or clear a follow-up",
+                    FollowUpCommand.MESSAGE_USAGE, "followup 1 d/"),
+            new CommandReference(FollowUpsCommand.COMMAND_WORD, "Find candidate follow-ups",
+                    FollowUpsCommand.MESSAGE_USAGE, "followups "),
+            new CommandReference(SummaryCommand.COMMAND_WORD, "Summarize the entire hiring pipeline",
+                    SummaryCommand.MESSAGE_USAGE, "summary"),
             new CommandReference(ListCommand.COMMAND_WORD, "Show all candidates",
-                    "list: Shows all candidates.", "list"),
+                    ListCommand.MESSAGE_USAGE, "list"),
             new CommandReference(ClearCommand.COMMAND_WORD, "Remove all candidates",
                     "clear: Removes all candidates. This action cannot be undone.", "clear"),
             new CommandReference(HelpCommand.COMMAND_WORD, "Open the command reference",

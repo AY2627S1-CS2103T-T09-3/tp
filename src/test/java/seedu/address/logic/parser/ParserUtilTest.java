@@ -78,6 +78,12 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseNameForLookup_legacyLongName_returnsName() throws Exception {
+        String legacyName = "A".repeat(101);
+        assertEquals(Name.fromLegacyValue(legacyName), ParserUtil.parseNameForLookup(legacyName));
+    }
+
+    @Test
     public void parsePhone_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parsePhone((String) null));
     }

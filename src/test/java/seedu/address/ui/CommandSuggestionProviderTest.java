@@ -41,6 +41,16 @@ public class CommandSuggestionProviderTest {
     }
 
     @Test
+    public void upstreamCommandsAndStageFilters_offerCurrentCompletions() {
+        assertTrue(provider.suggest("fol", 3).stream().anyMatch(suggestion -> suggestion.apply("fol")
+                .equals("followup ")));
+        assertTrue(provider.suggest("fol", 3).stream().anyMatch(suggestion -> suggestion.apply("fol")
+                .equals("followups ")));
+        assertEquals("summary ", provider.suggest("sum", 3).get(0).apply("sum"));
+        assertEquals("list s/Interview", provider.suggest("list s/in", 9).get(0).apply("list s/in"));
+    }
+
+    @Test
     public void invalidRanges_failEarly() {
         assertThrows(NullPointerException.class, () -> provider.suggest(null, 0));
         assertThrows(IllegalArgumentException.class, () -> provider.suggest("view", -1));

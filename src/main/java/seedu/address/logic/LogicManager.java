@@ -2,6 +2,7 @@ package seedu.address.logic;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.Comparator;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -50,24 +51,33 @@ public class LogicManager implements Logic {
         Command command = addressBookParser.parseCommand(commandText);
         AddressBook originalData = new AddressBook(model.getAddressBook());
         Predicate<Person> originalFilter = model.getFilteredPersonListPredicate();
+        Comparator<? super Person> originalComparator = model.getFilteredPersonListComparator();
         commandResult = command.execute(model);
+
+        if (originalData.equals(model.getAddressBook())) {
+            return commandResult;
+        }
 
         try {
             storage.saveAddressBook(model.getAddressBook());
         } catch (AccessDeniedException e) {
-            restoreModel(originalData, originalFilter);
+            restoreModel(originalData, originalFilter, originalComparator);
             throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
         } catch (IOException ioe) {
-            restoreModel(originalData, originalFilter);
+            restoreModel(originalData, originalFilter, originalComparator);
             throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
         }
 
         return commandResult;
     }
 
-    private void restoreModel(AddressBook originalData, Predicate<Person> originalFilter) {
+    private void restoreModel(AddressBook originalData, Predicate<Person> originalFilter,
+            Comparator<? super Person> originalComparator) {
         model.setAddressBook(originalData);
         model.updateFilteredPersonList(originalFilter);
+        if (originalComparator != null) {
+            model.sortFilteredPersonList(originalComparator);
+        }
     }
 
     @Override

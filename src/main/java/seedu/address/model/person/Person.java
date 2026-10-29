@@ -25,6 +25,7 @@ public class Person {
     // Data fields
     private final Address address;
     private final Remark remark;
+    private final FollowUp followUp;
     private final HiringStage stage;
     private final Set<Tag> tags = new HashSet<>();
     private final Set<Skill> skills = new LinkedHashSet<>();
@@ -56,7 +57,16 @@ public class Person {
      */
     public Person(Name name, Phone phone, Email email, Address address, Remark remark,
             HiringStage stage, Set<Tag> tags, Set<Skill> skills) {
-        requireAllNonNull(name, phone, email, address, remark, stage, tags, skills);
+        this(name, phone, email, address, remark, stage, tags, skills, FollowUp.empty());
+    }
+
+    /**
+     * Creates a candidate with all details, including a follow-up.
+     */
+    public Person(Name name, Phone phone, Email email, Address address, Remark remark,
+            HiringStage stage, Set<Tag> tags, Set<Skill> skills, FollowUp followUp) {
+        requireAllNonNull(name, phone, email, address, remark, stage, tags, skills, followUp);
+        this.followUp = followUp;
         this.stage = stage;
         this.remark = remark;
         this.name = name;
@@ -81,6 +91,17 @@ public class Person {
 
     public Remark getRemark() {
         return remark;
+    }
+
+    public FollowUp getFollowUp() {
+        return followUp;
+    }
+
+    /**
+     * Returns a copy with a replacement follow-up, retaining all other candidate details.
+     */
+    public Person withFollowUp(FollowUp updatedFollowUp) {
+        return new Person(name, phone, email, address, remark, stage, tags, skills, updatedFollowUp);
     }
 
     public HiringStage getStage() {
@@ -142,6 +163,7 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
                 && remark.equals(otherPerson.remark)
+                && followUp.equals(otherPerson.followUp)
                 && stage == otherPerson.stage
                 && tags.equals(otherPerson.tags)
                 && skills.equals(otherPerson.skills);
@@ -150,7 +172,7 @@ public class Person {
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, remark, stage, tags, skills);
+        return Objects.hash(name, phone, email, address, remark, stage, tags, skills, followUp);
     }
 
     @Override
@@ -161,6 +183,7 @@ public class Person {
                 .add("email", email)
                 .add("address", address)
                 .add("remark", remark)
+                .add("followUp", followUp)
                 .add("stage", stage)
                 .add("tags", tags)
                 .add("skills", skills)

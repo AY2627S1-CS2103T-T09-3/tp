@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -17,6 +19,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
@@ -114,6 +117,30 @@ public class WorkspaceUiTest {
             assertEquals("Not provided", label(profile, "profileRemark"));
             assertTrue(profile.getRoot().lookup("#copyEmail").isDisabled());
             assertTrue(((ScrollPane) profile.getRoot().lookup("#profileContent")).isFitToWidth());
+        });
+    }
+
+    @Test
+    public void profile_followUpUpdatesAcrossDueStatesCompletionAndClearing() throws Exception {
+        FxTestUtil.run(() -> {
+            Person person = new PersonBuilder().build();
+            ObservableList<Person> all = FXCollections.observableArrayList(person);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            CandidateProfilePanel profile = new CandidateProfilePanel(selection);
+            new Scene(profile.getRoot());
+            profile.getRoot().applyCss();
+            selection.select(person);
+            assertEquals("No follow-up scheduled", label(profile, "profileFollowUp"));
+            LocalDate today = LocalDate.now();
+            for (LocalDate date : java.util.List.of(today.minusDays(1), today, today.plusDays(1))) {
+                FollowUp reminder = new FollowUp(date.toString(), "Call candidate", false);
+                all.set(0, person.withFollowUp(reminder));
+                assertEquals(reminder.format(today), label(profile, "profileFollowUp"));
+                all.set(0, person.withFollowUp(reminder.complete()));
+                assertEquals(reminder.complete().format(today), label(profile, "profileFollowUp"));
+            }
+            all.set(0, person);
+            assertEquals("No follow-up scheduled", label(profile, "profileFollowUp"));
         });
     }
 

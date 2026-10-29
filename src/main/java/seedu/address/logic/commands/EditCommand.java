@@ -119,7 +119,8 @@ public class EditCommand extends Command {
         Set<Skill> updatedSkills = editPersonDescriptor.getSkills().orElse(personToEdit.getSkills());
 
         return new Person(updatedName, updatedPhone, updatedEmail, updatedAddress,
-                personToEdit.getRemark(), personToEdit.getStage(), updatedTags, updatedSkills);
+                personToEdit.getRemark(), personToEdit.getStage(), updatedTags, updatedSkills,
+                personToEdit.getFollowUp());
     }
 
     @Override

@@ -7,5 +7,6 @@
     <Label fx:id="name" minWidth="0" styleClass="candidate-name" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
   </HBox>
   <Label fx:id="hiringStage" styleClass="stage-badge" />
+  <Label fx:id="followUp" wrapText="true" styleClass="follow-up" />
   <FlowPane fx:id="skills" hgap="5" vgap="5" />
 </VBox>

@@ -26,6 +26,8 @@
       <FlowPane fx:id="profileSkills" hgap="6" vgap="6" />
       <Label text="TAGS" styleClass="field-title" />
       <FlowPane fx:id="profileTags" hgap="6" vgap="6" />
+      <Label text="FOLLOW-UP" styleClass="field-title" />
+      <Label fx:id="profileFollowUp" wrapText="true" />
       <Label text="REMARK" styleClass="field-title" />
       <Label fx:id="profileRemark" wrapText="true" />
     </VBox>

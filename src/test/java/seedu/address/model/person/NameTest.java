@@ -20,6 +20,14 @@ public class NameTest {
     }
 
     @Test
+    public void constructor_invalidName_reportsCorrectConstraintMessage() {
+        String expectedMessage = "Invalid name: names must start with a letter or number, "
+                + "may only contain letters, numbers, spaces, hyphens, and apostrophes, "
+                + "and must be 1-100 characters long.";
+        assertThrows(IllegalArgumentException.class, expectedMessage, () -> new Name("a".repeat(101)));
+    }
+
+    @Test
     public void isValidName() {
         // null name
         assertThrows(NullPointerException.class, () -> Name.isValidName(null));

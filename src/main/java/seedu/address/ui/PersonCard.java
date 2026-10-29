@@ -2,6 +2,7 @@ package seedu.address.ui;
 
 import static java.util.Objects.requireNonNull;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
@@ -27,6 +28,8 @@ public class PersonCard extends UiPart<Region> {
     private Label hiringStage;
     @FXML
     private FlowPane skills;
+    @FXML
+    private Label followUp;
 
     /** Creates a card with an index matching the model's displayed list. */
     public PersonCard(Person person, int displayedIndex) {
@@ -38,6 +41,10 @@ public class PersonCard extends UiPart<Region> {
         id.setText(displayedIndex + ". ");
         name.setText(person.getName().fullName);
         name.setTooltip(new Tooltip(person.getName().fullName));
+        followUp.setText(person.getFollowUp().format(LocalDate.now()));
+        followUp.setVisible(person.getFollowUp().isScheduled());
+        followUp.setManaged(person.getFollowUp().isScheduled());
+        followUp.setTooltip(new Tooltip(followUp.getText()));
         hiringStage.setText(person.getStage().toString());
         hiringStage.getStyleClass().add("stage-" + person.getStage().name().toLowerCase(Locale.ROOT));
         List<Skill> orderedSkills = person.getSkills().stream().sorted(Skill.DISPLAY_ORDER).toList();

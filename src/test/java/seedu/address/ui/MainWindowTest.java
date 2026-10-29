@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 
@@ -130,6 +131,43 @@ public class MainWindowTest {
                         .getWidth() > 500);
                 assertTrue(window.getPrimaryStage().getScene().lookup("#profileContent").getBoundsInParent()
                         .getHeight() > 100);
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void sortingAndFollowUps_preserveProfileTargetsAndRecoverAfterFailedDeletion() throws Exception {
+        FxTestUtil.run(() -> {
+            AtomicBoolean failSave = new AtomicBoolean();
+            MainWindow window = createWindow(failSave);
+            try {
+                window.show();
+                execute(window, "view 1");
+                execute(window, "edit 1 n/Zara Morgan");
+                execute(window, "followup 1 d/" + LocalDate.now().plusDays(1) + " r/Call candidate");
+                assertTrue(label(window, "profileFollowUp").contains("Call candidate"));
+                execute(window, "list sort/name");
+                execute(window, "view 1");
+                assertEquals("Jamie Tan", label(window, "profileName"));
+                execute(window, "view 4");
+                assertEquals("Zara Morgan", label(window, "profileName"));
+                failSave.set(true);
+                execute(window, "delete 4");
+                assertTrue(result(window).startsWith("Error:"));
+                assertEquals("Zara Morgan", label(window, "profileName"));
+                execute(window, "view 1");
+                assertEquals("Jamie Tan", label(window, "profileName"));
+                execute(window, "followups all");
+                execute(window, "view 1");
+                assertEquals("Zara Morgan", label(window, "profileName"));
+                assertEquals("All candidates: 4  •  Displayed: 1", label(window, "pipelineCount"));
+                failSave.set(false);
+                execute(window, "followup 1 done");
+                assertTrue(label(window, "profileFollowUp").contains("completed"));
+                execute(window, "followup 1 clear");
+                assertEquals("No follow-up scheduled", label(window, "profileFollowUp"));
             } finally {
                 window.getPrimaryStage().close();
             }

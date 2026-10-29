@@ -34,7 +34,8 @@ public class CommandSuggestionProvider {
                     .map(entry -> new CommandSuggestion(start, commandEnd, entry.getWord() + suffix,
                             entry.toString())).toList();
         }
-        if (!input.substring(commandStart, commandEnd).equals("stage")) {
+        String commandWord = input.substring(commandStart, commandEnd);
+        if (!commandWord.equals("stage") && !commandWord.equals("list")) {
             return List.of();
         }
         Matcher matcher = STAGE_VALUE.matcher(input.substring(0, caret));

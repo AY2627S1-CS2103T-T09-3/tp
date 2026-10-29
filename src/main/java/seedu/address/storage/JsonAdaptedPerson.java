@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
 import seedu.address.model.person.Email;
+import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
@@ -37,6 +38,7 @@ class JsonAdaptedPerson {
     private final String address;
     private final String remark;
     private final String stage;
+    private final JsonAdaptedFollowUp followUp;
     private final List<JsonAdaptedTag> tags = new ArrayList<>();
     private final List<JsonAdaptedSkill> skills = new ArrayList<>();
 
@@ -66,18 +68,28 @@ class JsonAdaptedPerson {
     /**
      * Constructs a stored person, accepting older files without a remark or hiring stage.
      */
+    public JsonAdaptedPerson(String name, String phone, String email, String address,
+            String remark, String stage, List<JsonAdaptedTag> tags, List<JsonAdaptedSkill> skills) {
+        this(name, phone, email, address, remark, stage, tags, skills, null);
+    }
+
+    /**
+     * Reads candidates with or without the optional follow-up field.
+     */
     @JsonCreator
     public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("remark") String remark, @JsonProperty("stage") String stage,
             @JsonProperty("tags") List<JsonAdaptedTag> tags,
-            @JsonProperty("skills") List<JsonAdaptedSkill> skills) {
+            @JsonProperty("skills") List<JsonAdaptedSkill> skills,
+            @JsonProperty("followUp") JsonAdaptedFollowUp followUp) {
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.remark = remark == null ? "" : remark;
         this.stage = stage;
+        this.followUp = followUp;
         if (tags != null) {
             this.tags.addAll(tags);
         }
@@ -96,6 +108,7 @@ class JsonAdaptedPerson {
         address = source.getAddress().value;
         remark = source.getRemark().value;
         stage = source.getStage().toString();
+        followUp = new JsonAdaptedFollowUp(source.getFollowUp());
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
@@ -112,6 +125,9 @@ class JsonAdaptedPerson {
     public Person toModelType() throws IllegalValueException {
         final List<Tag> personTags = new ArrayList<>();
         for (JsonAdaptedTag tag : tags) {
+            if (tag == null) {
+                throw new IllegalValueException(Tag.MESSAGE_CONSTRAINTS);
+            }
             personTags.add(tag.toModelType());
         }
         final Map<String, Skill> skillsByLowerCase = new LinkedHashMap<>();
@@ -171,8 +187,9 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException e) {
             throw new IllegalValueException(HiringStage.MESSAGE_CONSTRAINTS, e);
         }
+        FollowUp modelFollowUp = followUp == null ? FollowUp.empty() : followUp.toModelType();
         return new Person(modelName, modelPhone, modelEmail, modelAddress, new Remark(remark), modelStage, modelTags,
-                personSkills);
+                personSkills, modelFollowUp);
     }
 
 }
