@@ -3,9 +3,9 @@ package seedu.address.ui;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -124,13 +124,16 @@ public class PersonListPanel extends UiPart<Region> {
         dialog.setTitle("Update candidate stages");
         dialog.setHeaderText("Choose the stage for the selected candidates");
         Optional<String> chosen = dialog.showAndWait();
-        chosen.ifPresent(stage -> executeBulkStage(stage));
+        chosen.ifPresent(this::executeBulkStage);
     }
 
-    private void executeBulkStage(String stage) {
+    void executeBulkStage(String stage) {
         List<Person> selected = new ArrayList<>(personListView.getSelectionModel().getSelectedItems());
-        for (Person candidate : selected) {
-            executeCommand("stage " + displayedIndex(candidate) + " s/" + stage);
+        List<Integer> indexes = selected.stream().map(this::displayedIndex).toList();
+        for (int index : indexes) {
+            if (!executeCommand("stage " + index + " s/" + stage)) {
+                return;
+            }
         }
         personListView.getSelectionModel().clearSelection();
     }
@@ -150,12 +153,22 @@ public class PersonListPanel extends UiPart<Region> {
                 != javafx.scene.control.ButtonType.OK) {
             return;
         }
+        executeBulkDelete();
+    }
+
+    /** Executes the selected deletion as one command so LogicManager can save or roll back atomically. */
+    void executeBulkDelete() {
+        if (commandExecutor == null || personListView.getSelectionModel().getSelectedItems().isEmpty()) {
+            return;
+        }
         List<Integer> indexes = personListView.getSelectionModel().getSelectedItems().stream()
                 .map(this::displayedIndex)
-                .sorted(Comparator.reverseOrder())
+                .sorted()
                 .toList();
-        indexes.forEach(index -> executeCommand("delete " + index));
-        personListView.getSelectionModel().clearSelection();
+        if (executeCommand("delete " + indexes.stream().map(String::valueOf)
+                .collect(Collectors.joining(",")))) {
+            personListView.getSelectionModel().clearSelection();
+        }
     }
 
     @FXML
@@ -164,11 +177,13 @@ public class PersonListPanel extends UiPart<Region> {
         selection.select(null);
     }
 
-    private void executeCommand(String command) {
+    private boolean executeCommand(String command) {
         try {
             commandExecutor.execute(command);
+            return true;
         } catch (CommandException | ParseException exception) {
             // The shared MainWindow executor has already displayed the failure feedback.
+            return false;
         }
     }
 

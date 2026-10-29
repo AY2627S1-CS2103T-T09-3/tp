@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -24,6 +26,8 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.model.person.FollowUp;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
@@ -159,11 +163,57 @@ public class WorkspaceUiTest {
             PersonListPanel panel = new PersonListPanel(all, all, selection);
             new Scene(panel.getRoot());
             ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
-            list.getSelectionModel().selectIndices(0, 1);
+            list.getSelectionModel().selectAll();
 
             assertEquals(SelectionMode.MULTIPLE, list.getSelectionModel().getSelectionMode());
             assertEquals(2, list.getSelectionModel().getSelectedItems().size());
             assertNotNull(panel.getRoot().lookup("#bulkStage"));
+        });
+    }
+
+    @Test
+    public void bulkDelete_usesOneBatchCommandForSelectedIndexes() throws Exception {
+        FxTestUtil.run(() -> {
+            Person first = new PersonBuilder().build();
+            Person second = new PersonBuilder().withName("Other").build();
+            ObservableList<Person> all = FXCollections.observableArrayList(first, second);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            List<String> commands = new ArrayList<>();
+            PersonListPanel panel = new PersonListPanel(all, all, selection, command -> {
+                commands.add(command);
+                return new CommandResult("Deleted");
+            });
+            new Scene(panel.getRoot());
+            ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
+            list.getSelectionModel().selectAll();
+
+            panel.executeBulkDelete();
+
+            assertEquals(List.of("delete 1,2"), commands);
+            assertEquals(0, list.getSelectionModel().getSelectedItems().size());
+        });
+    }
+
+    @Test
+    public void bulkStage_stopsAfterFirstFailureAndKeepsSelectionForRetry() throws Exception {
+        FxTestUtil.run(() -> {
+            Person first = new PersonBuilder().build();
+            Person second = new PersonBuilder().withName("Other").build();
+            ObservableList<Person> all = FXCollections.observableArrayList(first, second);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            List<String> commands = new ArrayList<>();
+            PersonListPanel panel = new PersonListPanel(all, all, selection, command -> {
+                commands.add(command);
+                throw new CommandException("save failed");
+            });
+            new Scene(panel.getRoot());
+            ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
+            list.getSelectionModel().selectAll();
+
+            panel.executeBulkStage("Interview");
+
+            assertEquals(List.of("stage 1 s/Interview"), commands);
+            assertEquals(2, list.getSelectionModel().getSelectedItems().size());
         });
     }
 

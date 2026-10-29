@@ -28,7 +28,9 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
 
     private final Logic logic;
     private final Consumer<String> feedback;
+    private final Runnable filterChanged;
     private boolean toolbarFilterActive;
+    private boolean suppressFilterChanges;
 
     @FXML
     private TextField searchField;
@@ -53,9 +55,15 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
 
     /** Creates workspace controls bound to the shared Logic model. */
     public CandidateWorkspaceToolbar(Logic logic, Consumer<String> feedback) {
+        this(logic, feedback, () -> { });
+    }
+
+    /** Creates workspace controls and notifies the owner when visibility may have changed. */
+    public CandidateWorkspaceToolbar(Logic logic, Consumer<String> feedback, Runnable filterChanged) {
         super("CandidateWorkspaceToolbar.fxml");
         this.logic = requireNonNull(logic);
         this.feedback = requireNonNull(feedback);
+        this.filterChanged = requireNonNull(filterChanged);
         stageFilter.getItems().add(ALL_STAGES);
         for (HiringStage stage : HiringStage.values()) {
             stageFilter.getItems().add(stage.toString());
@@ -81,6 +89,26 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
         } else {
             updateStatus();
         }
+    }
+
+    /**
+     * Gives an explicit list/search command ownership of the displayed predicate.
+     *
+     * The toolbar controls are cleared without firing intermediate filters, so the command's
+     * result remains visible and the controls do not display stale search criteria.
+     */
+    public void clearForCommand() {
+        suppressFilterChanges = true;
+        try {
+            searchField.clear();
+            stageFilter.getSelectionModel().selectFirst();
+            dueFollowUps.setSelected(false);
+            missingContact.setSelected(false);
+        } finally {
+            suppressFilterChanges = false;
+        }
+        toolbarFilterActive = false;
+        updateStatus();
     }
 
     @FXML
@@ -123,6 +151,9 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
     }
 
     private void applyFilter(boolean announce) {
+        if (suppressFilterChanges) {
+            return;
+        }
         String query = searchField.getText().trim().toLowerCase(Locale.ROOT);
         String selectedStage = stageFilter.getValue();
         HiringStage stage = ALL_STAGES.equals(selectedStage) ? null : HiringStage.fromString(selectedStage);
@@ -131,6 +162,7 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
         Predicate<Person> predicate = candidate -> matches(candidate, query, stage, dueFollowUps.isSelected(),
                 missingContact.isSelected());
         logic.updateFilteredPersonList(predicate);
+        filterChanged.run();
         updateStatus();
         if (announce) {
             feedback.accept(filterStatus.getText());

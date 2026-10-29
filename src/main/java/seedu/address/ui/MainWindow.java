@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
@@ -150,7 +151,8 @@ public class MainWindow extends UiPart<Stage> {
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
 
         candidateSelection = new CandidateSelectionModel(logic.getAllPersons(), logic.getFilteredPersonList());
-        workspaceToolbar = new CandidateWorkspaceToolbar(logic, this::showUiFeedback);
+        workspaceToolbar = new CandidateWorkspaceToolbar(logic, this::showUiFeedback,
+                candidateSelection::reconcileVisibility);
         workspaceToolbarPlaceholder.getChildren().add(workspaceToolbar.getRoot());
         dashboardPlaceholder.getChildren().add(
                 new PipelineDashboard(logic.getAllPersons(), logic.getFilteredPersonList(),
@@ -291,6 +293,9 @@ public class MainWindow extends UiPart<Stage> {
         Person previousSelection = candidateSelection.selectedPersonProperty().get();
         try {
             CommandResult commandResult = logic.execute(commandText);
+            if (workspaceToolbar != null && commandOwnsDisplayedList(commandText)) {
+                workspaceToolbar.clearForCommand();
+            }
             commandResult.getProfileTarget().ifPresent(candidateSelection::select);
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getProfileTarget()
@@ -322,5 +327,16 @@ public class MainWindow extends UiPart<Stage> {
                 workspaceToolbar.refreshFromModel();
             }
         }
+    }
+
+    /** Returns whether a command intentionally replaces the current displayed-list predicate. */
+    private boolean commandOwnsDisplayedList(String commandText) {
+        String trimmed = commandText.trim();
+        if (trimmed.isEmpty()) {
+            return false;
+        }
+        String commandWord = trimmed.split("\\s+", 2)[0].toLowerCase(Locale.ROOT);
+        return commandWord.equals("find") || commandWord.equals("findskill")
+                || commandWord.equals("list") || commandWord.equals("followups");
     }
 }

@@ -10,20 +10,20 @@
 }
 .workspace { -fx-background-color: #edf2f7; }
 .workspace-inset { -fx-padding: 0 18; }
-.brand-bar { -fx-background-color: #203849; -fx-padding: 12 22; }
-.brand-title { -fx-text-fill: white; -fx-font-size: 26px; }
-.workspace-title { -fx-font-size: 23px; -fx-text-fill: #25374a; }
+.brand-bar { -fx-background-color: #203849; -fx-padding: 8 18; }
+.brand-title { -fx-text-fill: white; -fx-font-size: 22px; }
+.workspace-title { -fx-font-size: 19px; -fx-text-fill: #25374a; }
 .section-title { -fx-font-size: 18px; -fx-text-fill: #25374a; }
 .muted, .field-title { -fx-text-fill: #5d7085; }
 .field-title { -fx-font-size: 11px; }
-.surface { -fx-background-color: white; -fx-background-radius: 12; -fx-padding: 16; }
+.surface { -fx-background-color: white; -fx-background-radius: 12; -fx-padding: 10; }
 .stage-tile {
     -fx-background-color: white;
     -fx-background-radius: 10;
-    -fx-padding: 12 18;
+    -fx-padding: 8 12;
     -fx-min-width: 125;
 }
-.tile-count { -fx-font-size: 23px; -fx-text-fill: #087d87; }
+.tile-count { -fx-font-size: 19px; -fx-text-fill: #087d87; }
 .profile-name { -fx-font-size: 25px; -fx-text-fill: #25374a; }
 .profile-body { -fx-padding: 4 12 12 0; }
 .scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
