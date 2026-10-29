@@ -82,9 +82,45 @@ The `UI` component,
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Person` objects from the model.
 
-Candidate cards display the hiring stage as a labelled badge. `PersonCard` derives a stage-specific CSS class from the `HiringStage` enum name using `Locale.ROOT`. `PersonListCard.fxml` keeps the badge at its content width, while `DarkTheme.css` defines its colours. The stage name remains visible so that users do not need to distinguish stages by colour alone. When a candidate is updated, `PersonListPanel` rebuilds the affected card with its current stage.
+#### Candidate workspace state
 
-`PersonCardTest` loads the application theme and checks that all five stage backgrounds are distinct, with text contrast of at least 4.5:1 in both normal and selected cards.
+`Logic#getAllPersons` exposes the address book's read-only observable source list. `PipelineDashboard`
+observes that list for global hiring-stage totals, and observes `getFilteredPersonList` separately for
+the displayed count. `PipelineSummary` computes immutable counts for all five stages.
+
+`ViewCommand` resolves its target through the existing index/name lookup and returns it in
+`CommandResult#getProfileTarget`. `MainWindow` uses this structured target to open the profile; it does
+not parse feedback text. `CandidateSelectionModel` tracks immutable replacements using source-list
+replacement positions, including name/phone edits. After each command, the window reconciles visibility
+and restores the list highlight. User list gestures update profile selection; automatic selection
+changes during deletion do not select a different profile. A failed command restores the prior profile
+when the rolled-back candidate remains visible, including failed delete and clear operations.
+
+The list displays the model's filtered and sorted order directly, keeping command indexes consistent
+with `list sort/name`, stage filters and follow-up filters. Follow-up reminders appear on compact
+cards and in the full profile, including completion state and notes. Profiles display only stored current stages;
+there is no stage-history or job-role data in the model.
+
+#### Command workspace state
+
+`CommandHistory` maintains a bounded session history and an independent unfinished draft.
+`CommandSuggestionProvider` computes token-range replacements without invoking command execution.
+`CommandSuggestion` preserves input outside that range, including arguments after the caret.
+`CommandBox` retains invalid input and routes every submitted command through its existing executor.
+`CommandAssistPanel` handles suggestion presentation and contextual syntax.
+
+`CommandReference` is the shared immutable catalogue for suggestions, syntax help, and searchable
+`HelpWindow` entries. It reuses command `MESSAGE_USAGE` constants where available. Templates are
+inserted through a callback; only Enter executes them. Feedback uses an error pseudo-class alongside
+explicit Success/Error text. JavaFX focus changes preserve the input's anchor and caret.
+
+JavaFX regression tests share `FxTestUtil` so the toolkit starts once per test worker. `MainWindowTest`
+exercises real command execution, save rollback, and layout integration, and writes a rendered workspace
+preview to `build/reports/ui/workspace.png`.
+
+Candidate cards display the hiring stage as a labelled badge. `PersonCard` derives a stage-specific CSS class from the `HiringStage` enum name using `Locale.ROOT`. `PersonListCard.fxml` keeps the badge at its content width, while `Workspace.css` defines its colours. The stage name remains visible so that users do not need to distinguish stages by colour alone. When a candidate is updated, `PersonListPanel` rebuilds the affected card with its current stage.
+
+`PersonCardTest` loads the current workspace theme and checks that all five stage backgrounds are distinct, with text contrast of at least 4.5:1 in both normal and selected cards.
 
 ### Logic component
 
@@ -202,7 +238,7 @@ Each `Person` stores a non-null `HiringStage` enum: `APPLIED`, `SCREENED`, `INTE
 
 `StageCommand` resolves the candidate using the current filtered list. If the requested stage is already current, it returns `[Name] is already at [Stage].` without replacing the candidate. Otherwise, it replaces that candidate with a new immutable `Person` through `Model#setPerson`. It preserves every other field and the current filter. All transitions, including backwards moves and setting the current stage again, are allowed so recruiters can correct mistakes. `EditCommand` and `RemarkCommand` carry forward the existing stage when replacing a person.
 
-`PersonCard` displays the stage, and `ViewCommand` includes it in profile output. `JsonAdaptedPerson` persists the stage name in the `stage` JSON field. Missing or null stages in older data default to Applied; unrecognized or blank stored stages are rejected with an `IllegalValueException`. Existing fixtures without stages exercise backward compatibility, alongside new valid-stage and invalid-stage fixtures.
+`PersonCard` displays a stage badge, and `ViewCommand` includes it in structured profile output. `JsonAdaptedPerson` persists the stage name in the `stage` JSON field. Missing or null stages in older data default to Applied; unrecognized or blank stored stages are rejected with an `IllegalValueException`. Existing fixtures without stages exercise backward compatibility, alongside new valid-stage and invalid-stage fixtures.
 
 ### Hiring-stage summary
 

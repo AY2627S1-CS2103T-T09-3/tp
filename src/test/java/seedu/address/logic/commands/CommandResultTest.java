@@ -3,11 +3,27 @@ package seedu.address.logic.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
+
 public class CommandResultTest {
+    @Test
+    public void profileTarget_participatesInEqualityAndIsOptional() {
+        Person person = new PersonBuilder().build();
+        CommandResult profile = CommandResult.showProfile("feedback", person);
+        assertEquals(person, profile.getProfileTarget().orElseThrow());
+        assertEquals(profile, CommandResult.showProfile("feedback", person));
+        assertEquals(profile.hashCode(), CommandResult.showProfile("feedback", person).hashCode());
+        assertNotEquals(profile, new CommandResult("feedback"));
+        assertTrue(new CommandResult("feedback").getProfileTarget().isEmpty());
+        assertThrows(NullPointerException.class, () -> CommandResult.showProfile("feedback", null));
+    }
+
     @Test
     public void equals() {
         CommandResult commandResult = new CommandResult("feedback");

@@ -50,7 +50,8 @@ public class ViewCommandTest {
         String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: amy@gmail.com\n"
                 + "Address: 123, Jurong West Ave 6, #08-111\nTags: Backend, Java\nRemark: Available in November\n"
                 + "Hiring stage: Interview\nSkills: Java, SQL";
-        assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), model, expected, expectedModel);
+        assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), model,
+                CommandResult.showProfile(expected, candidate), expectedModel);
     }
 
     @Test
@@ -63,7 +64,8 @@ public class ViewCommandTest {
                 + "Hiring stage: Applied\nSkills: None";
         Model expectedModel = new ModelManager(model.getAddressBook(), new UserPrefs());
 
-        assertCommandSuccess(new ViewCommand(lastIndex), model, expected, expectedModel);
+        assertCommandSuccess(new ViewCommand(lastIndex), model,
+                CommandResult.showProfile(expected, candidate), expectedModel);
     }
 
     @Test
@@ -83,8 +85,10 @@ public class ViewCommandTest {
                         + (address.isEmpty() ? "None" : address)
                         + "\nTags: None\nRemark: None\nHiring stage: Applied\nSkills: None";
 
-                assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), actualModel, expected, expectedModel);
-                assertCommandSuccess(new ViewCommand(new Name("amy bee")), actualModel, expected, expectedModel);
+                assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), actualModel,
+                        CommandResult.showProfile(expected, candidate), expectedModel);
+                assertCommandSuccess(new ViewCommand(new Name("amy bee")), actualModel,
+                        CommandResult.showProfile(expected, candidate), expectedModel);
                 assertEquals(email, actualModel.getAddressBook().getPersonList().get(1).getEmail().value);
                 assertEquals(address, actualModel.getAddressBook().getPersonList().get(1).getAddress().value);
             }
@@ -100,7 +104,8 @@ public class ViewCommandTest {
                 + "Email: johnd@example.com\nAddress: 311, Clementi Ave 2, #02-25\n"
                 + "Tags: friends, owesMoney\nRemark: None\nHiring stage: Applied\nSkills: None";
 
-        assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), model, expected, expectedModel);
+        assertCommandSuccess(new ViewCommand(INDEX_FIRST_PERSON), model,
+                CommandResult.showProfile(expected, model.getFilteredPersonList().get(0)), expectedModel);
     }
 
     @Test
@@ -262,7 +267,8 @@ public class ViewCommandTest {
         Model expectedModel = new ModelManager(workflowModel.getAddressBook(), new UserPrefs());
         String expected = "Candidate profile:\nName: Amy Bee\nPhone: 85355255\nEmail: None\n"
                 + "Address: None\nTags: None\nRemark: Ready for interview\nHiring stage: Interview\nSkills: Java, SQL";
-        assertCommandSuccess(parser.parseCommand("view amy bee"), workflowModel, expected, expectedModel);
+        assertCommandSuccess(parser.parseCommand("view amy bee"), workflowModel,
+                CommandResult.showProfile(expected, workflowModel.getFilteredPersonList().get(0)), expectedModel);
         parser.parseCommand("delete Amy Bee").execute(workflowModel);
         assertCommandFailure(parser.parseCommand("view Amy Bee"), workflowModel, ViewCommand.MESSAGE_NAME_NOT_FOUND);
     }
@@ -279,7 +285,8 @@ public class ViewCommandTest {
                 ViewCommand.MESSAGE_INVALID_CANDIDATE_DISPLAYED_INDEX);
         String expected = "Candidate profile:\nName: 123\nPhone: 91234567\nEmail: None\nAddress: None\n"
                 + "Tags: None\nRemark: None\nHiring stage: Applied\nSkills: SQL";
-        assertCommandSuccess(parser.parseCommand("view 2"), workflowModel, expected, expectedModel);
+        assertCommandSuccess(parser.parseCommand("view 2"), workflowModel,
+                CommandResult.showProfile(expected, workflowModel.getFilteredPersonList().get(1)), expectedModel);
     }
 
     @Test

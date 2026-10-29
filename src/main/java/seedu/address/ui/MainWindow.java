@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import static java.util.Objects.requireNonNull;
+
 import java.nio.file.Path;
 import java.util.logging.Logger;
 
@@ -7,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -17,6 +20,7 @@ import seedu.address.logic.Logic;
 import seedu.address.logic.commands.CommandResult;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.person.Person;
 
 /**
  * The Main Window. Provides the basic application layout containing
@@ -28,14 +32,22 @@ public class MainWindow extends UiPart<Stage> {
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
-    private Stage primaryStage;
-    private Logic logic;
-    private Path dataFilePath;
+    private final Stage primaryStage;
+    private final Logic logic;
+    private final Path dataFilePath;
 
     // Independent Ui parts residing in this Ui container
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
-    private HelpWindow helpWindow;
+    private final HelpWindow helpWindow;
+    private CandidateSelectionModel candidateSelection;
+    private CommandBox commandBox;
+
+    @FXML
+    private StackPane dashboardPlaceholder;
+
+    @FXML
+    private StackPane profilePlaceholder;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -57,19 +69,24 @@ public class MainWindow extends UiPart<Stage> {
      * and the data file path to show in the status bar.
      */
     public MainWindow(Stage primaryStage, Logic logic, Path dataFilePath) {
-        super(FXML, primaryStage);
+        super(FXML, requireNonNull(primaryStage));
 
         // Set dependencies
         this.primaryStage = primaryStage;
-        this.logic = logic;
-        this.dataFilePath = dataFilePath;
+        this.logic = requireNonNull(logic);
+        this.dataFilePath = requireNonNull(dataFilePath);
 
         // Configure the UI
         setWindowDefaultSize(logic.getGuiSettings());
 
         setAccelerators();
 
-        helpWindow = new HelpWindow();
+        helpWindow = new HelpWindow(template -> commandBox.insertTemplate(template));
+        helpWindow.getRoot().setOnHidden(event -> {
+            if (commandBox != null) {
+                commandBox.requestFocus();
+            }
+        });
     }
 
     public Stage getPrimaryStage() {
@@ -78,6 +95,12 @@ public class MainWindow extends UiPart<Stage> {
 
     private void setAccelerators() {
         setAccelerator(helpMenuItem, KeyCombination.valueOf("F1"));
+        getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.L && event.isShortcutDown() && commandBox != null) {
+                commandBox.requestFocus();
+                event.consume();
+            }
+        });
     }
 
     /**
@@ -114,7 +137,12 @@ public class MainWindow extends UiPart<Stage> {
      * Fills up all the placeholders of this window.
      */
     void fillInnerParts() {
-        personListPanel = new PersonListPanel(logic.getFilteredPersonList());
+        candidateSelection = new CandidateSelectionModel(logic.getAllPersons(), logic.getFilteredPersonList());
+        dashboardPlaceholder.getChildren().add(
+                new PipelineDashboard(logic.getAllPersons(), logic.getFilteredPersonList()).getRoot());
+        profilePlaceholder.getChildren().add(new CandidateProfilePanel(candidateSelection).getRoot());
+        personListPanel = new PersonListPanel(
+                logic.getAllPersons(), logic.getFilteredPersonList(), candidateSelection);
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
 
         resultDisplay = new ResultDisplay();
@@ -123,7 +151,7 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand);
+        commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
     }
 
@@ -153,6 +181,7 @@ public class MainWindow extends UiPart<Stage> {
 
     void show() {
         primaryStage.show();
+        commandBox.requestFocus();
     }
 
     /**
@@ -177,10 +206,14 @@ public class MainWindow extends UiPart<Stage> {
      * @see seedu.address.logic.Logic#execute(String)
      */
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
+        Person previousSelection = candidateSelection.selectedPersonProperty().get();
         try {
             CommandResult commandResult = logic.execute(commandText);
+            commandResult.getProfileTarget().ifPresent(candidateSelection::select);
             logger.info("Result: " + commandResult.getFeedbackToUser());
-            resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            resultDisplay.setFeedbackToUser(commandResult.getProfileTarget()
+                    .map(candidate -> "Profile opened: " + candidate.getName())
+                    .orElse(commandResult.getFeedbackToUser()));
 
             if (commandResult.isShowHelp()) {
                 handleHelp();
@@ -193,8 +226,16 @@ public class MainWindow extends UiPart<Stage> {
             return commandResult;
         } catch (CommandException | ParseException e) {
             logger.info("An error occurred while executing command: " + commandText);
-            resultDisplay.setFeedbackToUser(e.getMessage());
+            // A failed save rolls back the model. Restore a profile cleared by a temporary
+            // deletion/clear as well, rather than leaving the UI in the failed command's state.
+            if (previousSelection != null && logic.getFilteredPersonList().contains(previousSelection)) {
+                candidateSelection.select(previousSelection);
+            }
+            resultDisplay.showFailure(e.getMessage());
             throw e;
+        } finally {
+            candidateSelection.reconcileVisibility();
+            personListPanel.refreshSelection();
         }
     }
 }

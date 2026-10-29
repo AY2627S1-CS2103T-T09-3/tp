@@ -2,20 +2,17 @@ package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import javafx.application.Platform;
 import javafx.css.PseudoClass;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -30,78 +27,48 @@ import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 public class PersonCardTest {
-
     @BeforeAll
     public static void setUpJavaFx() throws Exception {
-        CountDownLatch ready = new CountDownLatch(1);
-        Platform.startup(() -> {
-            Platform.setImplicitExit(false);
-            ready.countDown();
-        });
-        assertTrue(ready.await(10, TimeUnit.SECONDS));
+        FxTestUtil.initialize();
     }
 
     @Test
-    public void constructor_personWithRemark_displaysRemark() throws Exception {
-        assertDisplayedRemark("Likes swimming");
-    }
-
-    @Test
-    public void constructor_personWithEmptyRemark_displaysEmptyRemark() throws Exception {
-        assertDisplayedRemark("");
-    }
-
-    @Test
-    public void constructor_followUp_displaysDateStatusAndNoteOrHidesEmptyLabel() throws Exception {
-        FutureTask<Void> assertion = new FutureTask<>(() -> {
-            FollowUp reminder = new FollowUp("2026-11-05", "Call candidate", false);
-            Person person = new PersonBuilder().build().withFollowUp(reminder);
-            PersonCard card = new PersonCard(person, 1);
-            Label label = (Label) card.getRoot().lookup("#followUp");
-            assertEquals(reminder.format(LocalDate.now()), label.getText());
-            assertTrue(label.isVisible());
-            assertTrue(label.isManaged());
-            PersonCard empty = new PersonCard(person.withFollowUp(FollowUp.empty()), 1);
-            Label emptyLabel = (Label) empty.getRoot().lookup("#followUp");
-            assertEquals("", emptyLabel.getText());
-            assertFalse(emptyLabel.isVisible());
-            assertFalse(emptyLabel.isManaged());
-            return null;
-        });
-        Platform.runLater(assertion);
-        assertion.get(10, TimeUnit.SECONDS);
-    }
-
-    private void assertDisplayedRemark(String remark) throws Exception {
-        FutureTask<Void> assertion = new FutureTask<>(() -> {
-            Person person = new PersonBuilder().withRemark(remark).build();
-            PersonCard card = new PersonCard(person, 1);
-            Label remarkLabel = (Label) card.getRoot().lookup("#remark");
-            assertEquals(remark, remarkLabel.getText());
-            return null;
-        });
-        Platform.runLater(assertion);
-        assertion.get(10, TimeUnit.SECONDS);
-    }
-
-    @Test
-    public void constructor_eachHiringStage_displaysStage() throws Exception {
-        FutureTask<Void> assertion = new FutureTask<>(() -> {
+    public void constructor_eachStage_displaysReadableBadge() throws Exception {
+        FxTestUtil.run(() -> {
             for (HiringStage stage : HiringStage.values()) {
-                Person person = new PersonBuilder().withStage(stage).build();
-                PersonCard card = new PersonCard(person, 1);
-                Label stageLabel = (Label) card.getRoot().lookup("#hiringStage");
-                assertEquals("Hiring stage: " + stage, stageLabel.getText());
+                PersonCard card = new PersonCard(new PersonBuilder().withStage(stage).build(), 1);
+                Label label = (Label) card.getRoot().lookup("#hiringStage");
+                assertEquals(stage.toString(), label.getText());
+                assertTrue(label.getStyleClass().contains("stage-badge"));
             }
-            return null;
         });
-        Platform.runLater(assertion);
-        assertion.get(10, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void skills_areSortedAndLimitedToThreeWithOverflow() throws Exception {
+        FxTestUtil.run(() -> {
+            PersonCard card = new PersonCard(new PersonBuilder().withSkills("SQL", "Java", "Python", "C").build(), 2);
+            FlowPane skills = (FlowPane) card.getRoot().lookup("#skills");
+            List<String> values = skills.getChildren().stream().map(node -> ((Label) node).getText()).toList();
+            assertEquals(List.of("C", "Java", "Python", "+1 more"), values);
+            assertEquals("2. ", ((Label) card.getRoot().lookup("#id")).getText());
+        });
+    }
+
+    @Test
+    public void emptySkillsAndInvalidInputs_areHandled() throws Exception {
+        FxTestUtil.run(() -> {
+            PersonCard card = new PersonCard(new PersonBuilder().build(), 1);
+            FlowPane skills = (FlowPane) card.getRoot().lookup("#skills");
+            assertEquals("No skills", ((Label) skills.getChildren().get(0)).getText());
+            assertThrows(NullPointerException.class, () -> new PersonCard(null, 1));
+            assertThrows(IllegalArgumentException.class, () -> new PersonCard(new PersonBuilder().build(), 0));
+        });
     }
 
     @Test
     public void constructor_stageBadges_distinctAndReadableWhenSelected() throws Exception {
-        FutureTask<Void> assertion = new FutureTask<>(() -> {
+        FxTestUtil.run(() -> {
             Set<Paint> backgrounds = new HashSet<>();
             for (HiringStage stage : HiringStage.values()) {
                 PersonCard card = new PersonCard(new PersonBuilder().withStage(stage).build(), 1);
@@ -109,13 +76,13 @@ public class PersonCardTest {
                 cell.setGraphic(card.getRoot());
                 StackPane root = new StackPane(cell);
                 Scene scene = new Scene(root);
-                scene.getStylesheets().add(getClass().getResource("/view/DarkTheme.css").toExternalForm());
+                scene.getStylesheets().add(getClass().getResource("/view/Workspace.css").toExternalForm());
                 root.applyCss();
                 root.layout();
 
                 Label badge = (Label) card.getRoot().lookup("#hiringStage");
-                assertEquals("Hiring stage: " + stage, badge.getText());
-                assertTrue(badge.getStyleClass().contains("hiring-stage-badge"));
+                assertEquals(stage.toString(), badge.getText());
+                assertTrue(badge.getStyleClass().contains("stage-badge"));
                 assertReadableBadge(badge);
                 backgrounds.add(badge.getBackground().getFills().get(0).getFill());
 
@@ -124,10 +91,7 @@ public class PersonCardTest {
                 assertReadableBadge(badge);
             }
             assertEquals(HiringStage.values().length, backgrounds.size());
-            return null;
         });
-        Platform.runLater(assertion);
-        assertion.get(10, TimeUnit.SECONDS);
     }
 
     private void assertReadableBadge(Label badge) {
@@ -152,33 +116,21 @@ public class PersonCardTest {
     }
 
     @Test
-    public void constructor_personWithSkills_displaysSkillsInOrder() throws Exception {
-        FutureTask<Void> assertion = new FutureTask<>(() -> {
-            Person person = new PersonBuilder().withSkills("SQL", "Java").build();
+    public void constructor_followUp_displaysDateStatusAndNoteOrHidesEmptyLabel() throws Exception {
+        FxTestUtil.run(() -> {
+            FollowUp reminder = new FollowUp("2026-11-05", "Call candidate", false);
+            Person person = new PersonBuilder().build().withFollowUp(reminder);
             PersonCard card = new PersonCard(person, 1);
-            FlowPane skills = (FlowPane) card.getRoot().lookup("#skills");
-            List<String> displayedSkills = skills.getChildren().stream()
-                    .map(node -> ((Label) node).getText())
-                    .toList();
-            assertEquals(List.of("Java", "SQL"), displayedSkills);
-            return null;
+            Label label = (Label) card.getRoot().lookup("#followUp");
+            assertEquals(reminder.format(LocalDate.now()), label.getText());
+            assertTrue(label.isVisible());
+            assertTrue(label.isManaged());
+            PersonCard empty = new PersonCard(person.withFollowUp(FollowUp.empty()), 1);
+            Label emptyLabel = (Label) empty.getRoot().lookup("#followUp");
+            assertEquals("", emptyLabel.getText());
+            assertFalse(emptyLabel.isVisible());
+            assertFalse(emptyLabel.isManaged());
         });
-        Platform.runLater(assertion);
-        assertion.get(10, TimeUnit.SECONDS);
     }
 
-    @Test
-    public void constructor_personWithEmptySkills_displaysNone() throws Exception {
-        FutureTask<Void> assertion = new FutureTask<>(() -> {
-            Person person = new PersonBuilder().withSkills().build();
-            PersonCard card = new PersonCard(person, 1);
-            FlowPane skills = (FlowPane) card.getRoot().lookup("#skills");
-            assertEquals(List.of("None"), skills.getChildren().stream()
-                    .map(node -> ((Label) node).getText())
-                    .toList());
-            return null;
-        });
-        Platform.runLater(assertion);
-        assertion.get(10, TimeUnit.SECONDS);
-    }
 }

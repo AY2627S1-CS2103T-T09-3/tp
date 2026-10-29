@@ -13,13 +13,16 @@ Scoutly is a desktop candidate pipeline and recruitment management application f
 - Summarize the full hiring pipeline, including candidates hidden by a search.
 - Delete individual candidates or a batch of displayed indexes.
 - Schedule, complete and clear candidate follow-ups; filter overdue, today and upcoming tasks.
+- View live hiring-stage totals and search result counts alongside compact candidate cards.
+- Inspect scrollable candidate profiles with contact-copy actions.
+- Recall command history, use keyboard autocomplete, and search offline command help.
 - Save candidate data locally and reload it on the next launch.
 
 ## Get started
 
 Download the appropriate JAR from [Scoutly releases](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases) and launch it with Java 25 from a writable folder. Apple Silicon Macs use `addressbook-mac-arm64.jar`; Windows, Linux, and Intel Macs use `addressbook.jar`.
 
-Enter commands in the command box. Read feedback and candidate profiles in the result area, and use the numbered candidate list to select records. For example:
+Enter commands in the command box. Read feedback in the result area, inspect candidate details in the profile panel, and use the numbered candidate list to select records. For example:
 
 ```text
 add n/Jordan Lee p/91234567 s/Java s/SQL

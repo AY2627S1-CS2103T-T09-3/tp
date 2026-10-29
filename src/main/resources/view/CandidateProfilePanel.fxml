@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox spacing="12" styleClass="surface" xmlns:fx="http://javafx.com/fxml/1">
+  <Label text="Candidate profile" styleClass="section-title" />
+  <Label fx:id="emptyProfile" text="Select a candidate or type view INDEX to inspect their profile."
+         wrapText="true" styleClass="muted" />
+  <ScrollPane fx:id="profileContent" fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+    <VBox spacing="9" styleClass="profile-body">
+      <Label fx:id="profileName" wrapText="true" styleClass="profile-name" />
+      <Label fx:id="profileStage" styleClass="stage-badge" />
+      <Label text="EMAIL" styleClass="field-title" />
+      <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label fx:id="profileEmail" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        <Button fx:id="copyEmail" text="Copy email" onAction="#handleCopyEmail" minWidth="-Infinity" />
+      </HBox>
+      <Label text="PHONE" styleClass="field-title" />
+      <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label fx:id="profilePhone" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+        <Button fx:id="copyPhone" text="Copy phone" onAction="#handleCopyPhone" minWidth="-Infinity" />
+      </HBox>
+      <Label fx:id="copyFeedback" styleClass="muted" wrapText="true" />
+      <Label text="ADDRESS" styleClass="field-title" />
+      <Label fx:id="profileAddress" wrapText="true" />
+      <Label text="SKILLS" styleClass="field-title" />
+      <FlowPane fx:id="profileSkills" hgap="6" vgap="6" />
+      <Label text="TAGS" styleClass="field-title" />
+      <FlowPane fx:id="profileTags" hgap="6" vgap="6" />
+      <Label text="FOLLOW-UP" styleClass="field-title" />
+      <Label fx:id="profileFollowUp" wrapText="true" />
+      <Label text="REMARK" styleClass="field-title" />
+      <Label fx:id="profileRemark" wrapText="true" />
+    </VBox>
+  </ScrollPane>
+</VBox>
