@@ -95,8 +95,16 @@ public class PersonListPanel extends UiPart<Region> {
 
         private void render() {
             setText(null);
-            setGraphic(isEmpty() || getItem() == null || getIndex() < 0
-                    ? null : new PersonCard(getItem(), getIndex() + 1).getRoot());
+            if (isEmpty() || getItem() == null || getIndex() < 0) {
+                setGraphic(null);
+                return;
+            }
+            Region card = new PersonCard(getItem(), getIndex() + 1).getRoot();
+            // Reserve space for the vertical scrollbar; long names must not widen the list.
+            card.setMinWidth(0);
+            card.prefWidthProperty().bind(personListView.widthProperty().subtract(24));
+            card.maxWidthProperty().bind(card.prefWidthProperty());
+            setGraphic(card);
         }
     }
 }

@@ -4,7 +4,7 @@
 <VBox fx:id="cardPane" id="cardPane" spacing="8" xmlns:fx="http://javafx.com/fxml/1">
   <HBox spacing="4" alignment="CENTER_LEFT">
     <Label fx:id="id" minWidth="-Infinity" />
-    <Label fx:id="name" styleClass="candidate-name" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+    <Label fx:id="name" minWidth="0" styleClass="candidate-name" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
   </HBox>
   <Label fx:id="hiringStage" styleClass="stage-badge" />
   <FlowPane fx:id="skills" hgap="5" vgap="5" />

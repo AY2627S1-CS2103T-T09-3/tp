@@ -15,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import seedu.address.model.person.HiringStage;
 import seedu.address.model.person.Person;
@@ -57,6 +58,13 @@ public class WorkspaceUiTest {
             ObservableList<Person> all = FXCollections.observableArrayList(first, second);
             FilteredList<Person> visible = new FilteredList<>(all);
             PipelineDashboard dashboard = new PipelineDashboard(all, visible);
+            new Scene(dashboard.getRoot(), 760, 160);
+            dashboard.getRoot().applyCss();
+            dashboard.getRoot().layout();
+            HBox tiles = (HBox) dashboard.getRoot().lookup("#stageTiles");
+            assertEquals(5, tiles.getChildren().size());
+            assertTrue(tiles.getChildren().stream().allMatch(tile -> tile.getBoundsInParent().getMaxX()
+                    <= tiles.getWidth()));
             visible.setPredicate(first::equals);
             assertEquals("1", label(dashboard, "countINTERVIEW"));
             assertEquals("All candidates: 2  •  Displayed: 1", label(dashboard, "pipelineCount"));

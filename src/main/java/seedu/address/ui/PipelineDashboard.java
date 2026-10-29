@@ -9,7 +9,8 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import seedu.address.model.person.HiringStage;
@@ -22,7 +23,7 @@ public class PipelineDashboard extends UiPart<Region> {
     private final ObservableList<Person> visiblePersons;
 
     @FXML
-    private FlowPane stageTiles;
+    private HBox stageTiles;
     @FXML
     private Label pipelineCount;
 
@@ -38,6 +39,8 @@ public class PipelineDashboard extends UiPart<Region> {
             Label title = new Label(stage.toString());
             VBox tile = new VBox(5, title, count);
             tile.getStyleClass().add("stage-tile");
+            tile.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(tile, Priority.ALWAYS);
             stageTiles.getChildren().add(tile);
             stageCounts.put(stage, count);
         }

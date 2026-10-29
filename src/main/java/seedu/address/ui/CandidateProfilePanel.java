@@ -63,9 +63,12 @@ public class CandidateProfilePanel extends UiPart<Region> {
         emptyProfile.setVisible(!hasSelection);
         emptyProfile.setManaged(!hasSelection);
         copyFeedback.setText("");
+        copyFeedback.setVisible(false);
+        copyFeedback.setManaged(false);
         if (!hasSelection) {
             return;
         }
+        profileContent.setVvalue(0);
         profileName.setText(person.getName().fullName);
         profileStage.setText(person.getStage().toString());
         profileEmail.setText(displayOptional(person.getEmail().value));
@@ -115,5 +118,7 @@ public class CandidateProfilePanel extends UiPart<Region> {
         ClipboardContent content = new ClipboardContent();
         content.putString(value);
         copyFeedback.setText(Clipboard.getSystemClipboard().setContent(content) ? message : "Copy unavailable");
+        copyFeedback.setVisible(true);
+        copyFeedback.setManaged(true);
     }
 }
