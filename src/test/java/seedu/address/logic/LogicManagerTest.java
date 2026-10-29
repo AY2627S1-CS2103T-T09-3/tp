@@ -17,8 +17,10 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +64,19 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void allPersons_isObservableReadOnlyAndIndependentOfSearch() {
+        var all = logic.getAllPersons();
+        model.addPerson(AMY);
+        model.addPerson(BOB);
+        model.updateFilteredPersonList(AMY::equals);
+        assertEquals(List.of(AMY, BOB), all);
+        assertEquals(List.of(AMY), logic.getFilteredPersonList());
+        assertThrows(UnsupportedOperationException.class, () -> all.clear());
+        model.deletePerson(BOB);
+        assertEquals(List.of(AMY), all);
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);
@@ -88,7 +103,7 @@ public class LogicManagerTest {
         storage.failNextSave(DUMMY_AD_EXCEPTION);
 
         for (String command : List.of("view 1", "summary", "help", "exit", "list sort/name", "list",
-                "find Amy", "findskill Java", "list s/Applied")) {
+                "find Amy", "findskill Java", "list s/Applied", "followups", "followups overdue")) {
             logic.execute(command);
             assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()), command);
             assertEquals(List.of(AMY, BOB), model.getAddressBook().getPersonList(), command);
@@ -159,6 +174,40 @@ public class LogicManagerTest {
     public void execute_invalidAdd_doesNotModifyModel() {
         assertParseException(AddCommand.COMMAND_WORD + NAME_DESC_AMY + PHONE_DESC_AMY,
                 AddCommand.MESSAGE_NO_SKILL);
+    }
+
+    @Test
+    public void execute_repeatedRemarkPrefixes_preservesDataDisplayAndFile() throws Exception {
+        logic.execute("add n/Bob p/81234567 s/Python");
+        logic.execute("add n/Alice p/91234567 s/Java");
+        logic.execute("add n/Carol p/71234567 s/SQL");
+        logic.execute("remark 1 r/Keep this note");
+        logic.execute("remark 2 r/Keep Alice's note");
+        Path file = temporaryFolder.resolve("addressBook.json");
+        AddressBook originalData = new AddressBook(model.getAddressBook());
+        String expectedError = "Multiple values specified for the following single-valued field(s): r/";
+
+        for (String displayCommand : List.of("list", "find Alice", "list sort/name")) {
+            logic.execute(displayCommand);
+            byte[] originalFile = Files.readAllBytes(file);
+            List<Person> originalDisplay = List.copyOf(logic.getFilteredPersonList());
+            Predicate<Person> originalFilter = model.getFilteredPersonListPredicate();
+            Comparator<? super Person> originalSort = model.getFilteredPersonListComparator();
+
+            for (String command : List.of("remark 1 r/Contacted r/Interview tomorrow", "remark 1 r/Contacted r/",
+                    "remark 1 r/Same r/Same", "remark 1 r/ r/")) {
+                String scenario = displayCommand + ": " + command;
+                assertThrows(ParseException.class, expectedError, () -> logic.execute(command));
+                assertEquals(originalData, model.getAddressBook(), scenario);
+                assertEquals(originalDisplay, logic.getFilteredPersonList(), scenario);
+                for (Person person : originalData.getPersonList()) {
+                    assertEquals(originalFilter.test(person),
+                            model.getFilteredPersonListPredicate().test(person), scenario);
+                }
+                assertSame(originalSort, model.getFilteredPersonListComparator(), scenario);
+                assertArrayEquals(originalFile, Files.readAllBytes(file), scenario);
+            }
+        }
     }
 
     @Test
@@ -394,6 +443,40 @@ public class LogicManagerTest {
             logic.execute("stage 1 s/Interview");
             assertEquals(1, model.getFilteredPersonList().size(), command);
             assertEquals(HiringStage.INTERVIEW, model.getFilteredPersonList().get(0).getStage(), command);
+        }
+    }
+
+    @Test
+    public void execute_failedFollowUpSave_restoresDataFilterOrderAndFile() throws Exception {
+        for (IOException failure : List.of(DUMMY_IO_EXCEPTION, DUMMY_AD_EXCEPTION)) {
+            for (String operation : List.of("followup 1 d/2026-11-06 r/Rescheduled",
+                    "followup 1 done", "followup 1 clear")) {
+                model = new ModelManager();
+                model.addPerson(BOB);
+                model.addPerson(AMY);
+                FailOnceAddressBookStorage storage = useFailOnceStorage();
+                logic.execute("followup 2 d/2026-11-05 r/Call");
+                logic.execute("followups pending");
+                model.sortFilteredPersonList(Comparator.comparing(person -> person.getName().fullName));
+                AddressBook original = new AddressBook(model.getAddressBook());
+                List<Person> displayed = List.copyOf(model.getFilteredPersonList());
+                Predicate<Person> filter = model.getFilteredPersonListPredicate();
+                Comparator<? super Person> comparator = model.getFilteredPersonListComparator();
+                byte[] originalFile = Files.readAllBytes(storage.getAddressBookFilePath());
+                storage.failNextSave(failure);
+
+                assertThrows(CommandException.class, () -> logic.execute(operation));
+
+                assertEquals(original, model.getAddressBook());
+                assertEquals(displayed, model.getFilteredPersonList());
+                for (Person candidate : original.getPersonList()) {
+                    assertEquals(filter.test(candidate), model.getFilteredPersonListPredicate().test(candidate));
+                }
+                assertSame(comparator, model.getFilteredPersonListComparator());
+                assertArrayEquals(originalFile, Files.readAllBytes(storage.getAddressBookFilePath()));
+                logic.execute(operation);
+                assertEquals(model.getAddressBook(), storage.readAddressBook().orElseThrow());
+            }
         }
     }
 

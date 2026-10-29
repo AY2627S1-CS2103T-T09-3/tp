@@ -26,6 +26,7 @@ Scoutly is a **desktop application for managing recruitment candidates through t
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
    **Apple Silicon Mac:** Run `java -jar addressbook-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
+   Launch Scoutly from a folder where you have permission to create and update files. If double-clicking the JAR does not work, use the terminal command above.
    The application window should appear in a few seconds. On first launch, it contains sample candidates.
    Use the command box to enter commands, the result area to read feedback, and the candidate list to find displayed indexes.
 
@@ -43,6 +44,34 @@ Scoutly is a **desktop application for managing recruitment candidates through t
    * `exit` : Exits the app.
 
 1. Refer to the [Features](#features) section below for details of each command.
+
+### Using the workspace
+
+The five dashboard tiles count **all stored candidates** by their current hiring stage, even during
+a search. The displayed count shows how many candidates are in the current results. The tiles
+update after additions, edits, stage changes, and deletions. They show current stages, not a history
+of transitions.
+
+Candidate cards show their current command index, stage, and up to three skills. Open the profile
+for the complete skill list, contact information and follow-up details. An empty pipeline and a search with no matches
+have different prompts; use `list` to reset a search.
+
+### Command assistance and keyboard shortcuts
+
+| Key | Action |
+| --- | --- |
+| Up / Down | Recall older/newer commands when suggestions are hidden. Returning past the newest entry restores your unfinished draft. |
+| Up / Down with suggestions open | Select a completion. |
+| Ctrl+Up / Ctrl+Down | Recall history even while suggestions are visible. |
+| Tab | Accept the selected command-name or hiring-stage completion. Existing arguments are preserved. |
+| Escape | Dismiss suggestions until the input changes. |
+| Ctrl+L (Windows/Linux), Command+L (Mac) | Focus the command box while preserving its text and caret. |
+| F1 | Open or restore the offline command reference. |
+
+Syntax help appears below the input for recognized command names. Suggestions do not execute commands;
+press **Enter** to submit. Failed commands remain available for correction. History stores up to
+200 attempted commands for the current session, omits consecutive duplicates, and resets when Scoutly closes.
+Success and failure feedback use both text labels and different colours.
 
 ### Opening Scoutly more than once
 
@@ -101,6 +130,8 @@ Command | Purpose
 * Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/shortlisted` or `t/shortlisted t/referral`.
 
+* Command words are case-sensitive. Separate the command and prefixed fields with ordinary spaces.<br>
+
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
@@ -115,7 +146,11 @@ Command | Purpose
 
 ### Viewing help: `help`
 
-Shows a message with a link to Scoutly's User Guide.
+Opens a searchable, offline command reference. Search by command name, description, or syntax,
+then select a command to read its usage and examples. **Insert template** places a starter command
+in the command box for you to complete. It never executes the command automatically.
+You can also open the reference with **F1** or **Help → Command reference**.
+Opening help again restores it if it was minimized.
 
 You can also open the [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html) directly.
 
@@ -133,7 +168,7 @@ Format: `add n/NAME p/PHONE s/SKILL [s/SKILL]...`
 
 * `n/NAME` and `p/PHONE` are required exactly once.
 * At least one `s/SKILL` is required. Multiple skills may be provided.
-* Names must contain 1–100 letters, numbers, spaces, hyphens, or apostrophes. Leading/trailing whitespace is
+* Names must contain 1–100 characters and start with a letter or number. Remaining characters may be letters, numbers, spaces, hyphens, or apostrophes. Leading/trailing whitespace is
   removed and repeated spaces are normalized.
 * Phone numbers must contain 7–15 digits and may have one leading `+`.
 * Skills must contain 1–30 alphanumeric characters with no spaces.
@@ -142,7 +177,7 @@ Format: `add n/NAME p/PHONE s/SKILL [s/SKILL]...`
   the same name but different phone numbers, or different names but the same phone number, are allowed.
 
 Successful additions use the message `New candidate added: NAME | PHONE | Skills: SKILL1, SKILL2`.
-* Invalid names report `Invalid name: names may only contain letters, numbers, hyphens, spaces, and apostrophes, and must be 1-100 characters long.`
+* Invalid names report `Invalid name: names must start with a letter or number, may only contain letters, numbers, spaces, hyphens, and apostrophes, and must be 1-100 characters long.`
 * Invalid phone numbers report `Invalid phone number: must be 7-15 digits, optionally starting with +.`
 * Invalid skills report `Invalid skill: skills must be 1-30 alphanumeric characters with no spaces.`
 * Missing skills report `At least one skill (s/) must be provided.`
@@ -157,7 +192,7 @@ Examples:
 
 Shows candidates currently stored in Scoutly and reports the number of candidates listed. You can optionally filter the list by hiring stage. If there are no candidates, Scoutly displays `No candidates in your pipeline yet. Use 'add' to add one.`
 
-Format: `list [s/STAGE]`
+Format: `list`, `list s/STAGE`, or `list sort/name`
 
 * `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
 * `list` displays all candidates.
@@ -166,13 +201,13 @@ Format: `list [s/STAGE]`
 * Invalid parameters show either the command usage instructions or the allowed stage values.
 
 Use `list sort/name` to display candidates in ascending alphabetical order by name. Name sorting is case-insensitive.
-The plain `list` command preserves the existing candidate order.
+The plain `list` command restores the stored candidate order, which follows insertion order; it clears any active search, stage filter, or alphabetical sort. Displayed indexes can change. Recheck the candidate’s index before viewing, editing, or deleting.
 
 The only supported sorting parameter is `sort/name`; sorting cannot be combined with a hiring-stage filter. Use either
 `list sort/name` or `list s/STAGE`.
 
 Examples:
-* `list` displays all candidates in the current order.
+* `list` displays all candidates in stored order.
 * `list sort/name` displays all candidates alphabetically by name.
 
 ### Summarizing the hiring pipeline: `summary`
@@ -204,9 +239,15 @@ An empty pipeline shows zero for every stage and the total. Running `summary` af
 
 ### Viewing a candidate profile: `view`
 
-Displays a candidate's name, phone, email, address, tags, remark, hiring stage, and skills in the command result area.
-Scroll within the result area to read the full profile. Tags are shown in alphabetical order;
-skills are shown in deterministic alphabetical order. Missing email, address, tags, skills, or an empty remark are shown as `None`.
+Opens the candidate's name, phone, email, address, tags, remark, current hiring stage, and skills
+in the **Candidate profile** panel. Scroll within the panel to read long profiles. Tags and skills
+are shown in alphabetical order. Missing tags or skills appear as `None`; empty email, address,
+or remark fields appear as `Not provided`. Copy buttons let you copy available contact details.
+The profile also displays the scheduled follow-up date, status and note, or `No follow-up scheduled`.
+
+You can also select a candidate in the list using the mouse or keyboard. The profile refreshes
+after edits. Deleting the candidate or hiding them through a search clears the profile;
+a failed save restores the previous profile and candidate data.
 
 Format: `view INDEX` or `view FULL_NAME`
 
@@ -234,7 +275,7 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL
 
 * Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
+* Existing values will be updated to the input values. After a successful edit, all candidates are displayed in stored order; recheck indexes before the next command.
 * Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
 * If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
 * Successful edits use candidate-oriented feedback; when skills are changed, the resulting skills are listed in deterministic alphabetical order.
@@ -299,6 +340,60 @@ Format: `remark INDEX [r/REMARK]`
   `NAME has no remark to remove.` Both leave candidate data, the displayed list, and its sort order unchanged.
 * Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
 
+### Managing candidate follow-ups: `followup`
+
+Schedules one follow-up per candidate, with an optional note. The candidate card shows
+the date, note and whether it is overdue, due today, upcoming or completed.
+
+Format: `followup INDEX d/YYYY-MM-DD [r/NOTE]`
+
+* `INDEX` refers to the currently displayed list and must be a positive integer.
+* Dates must be valid calendar dates from `0001-01-01` to `9999-12-31`, using exactly `YYYY-MM-DD`.
+* Past dates are accepted, allowing recruiters to record an overdue task.
+* Notes are optional, limited to 200 characters, and cannot contain control characters or line breaks.
+* `d/` and `r/` may appear in either order. Repeating either prefix is rejected.
+* Scheduling again replaces the previous date and note, and marks the follow-up as pending.
+  Omitting `r/` clears the previous follow-up note. This note is separate from the candidate's remark.
+* `followup INDEX done` marks the follow-up completed while keeping its date and note.
+  It fails if no follow-up exists or it is already completed.
+* `followup INDEX clear` removes the follow-up, including its note and completion state.
+* A successful update displays all candidates again. Editing candidate details or remarks preserves the follow-up.
+* Follow-ups are saved with candidate data and restored on the next launch. Older data files remain supported.
+
+Examples:
+
+* `followup 1 d/2026-11-05 r/Call about interview availability`
+* `followup 1 done`
+* `followup 1 clear`
+
+### Listing candidate follow-ups: `followups`
+
+Format: `followups [pending|overdue|today|upcoming|completed|all]`
+
+View | Candidates displayed
+-----|---------------------
+`pending` | All unfinished follow-ups; this is the default when the view is omitted.
+`overdue` | Unfinished follow-ups dated before today.
+`today` | Unfinished follow-ups dated today.
+`upcoming` | Unfinished follow-ups dated after today.
+`completed` | Completed follow-ups, regardless of date.
+`all` | All candidates with a follow-up, including completed ones.
+
+* Every view excludes candidates without a follow-up.
+* Views search the entire candidate list, including candidates hidden by a previous `find`.
+* View names are case-insensitive. Only one view may be supplied.
+* Results retain the usual candidate order and display new indices for use with `followup`, `edit` and `delete`.
+* The result message includes the number of matching candidates and counts overdue and due-today tasks within that view.
+* Dates use your computer's local calendar day. Run the command again after midnight to refresh the view.
+* These are in-app reminders; the application does not send notifications while closed.
+* Use `list` to display all candidates again.
+
+Examples:
+
+* `followups` shows all pending follow-ups.
+* `followups overdue` shows unfinished follow-ups whose dates have passed.
+* `followups today` shows the candidates to contact today.
+
 ### Updating a candidate's hiring stage: `stage`
 
 Sets the hiring stage of a candidate in the currently displayed list.
@@ -346,9 +441,9 @@ Format: `delete INDEX`, `delete INDEX,INDEX[,INDEX]...`, or `delete FULL_NAME`
 * Leading/trailing whitespace is ignored and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
 * If no displayed candidate matches the name, no record is deleted and an error is shown.
-* If multiple displayed candidates match the name, no record is deleted. The error lists each matching candidate's displayed index, name, and email. Use `delete INDEX` with one of those indexes to choose the intended candidate.
+* If multiple displayed candidates match the name, no record is deleted. The error lists each matching candidate's displayed index, name, and phone number. Use `delete INDEX` with one of those indexes to choose the intended candidate.
 * Input containing only digits is always treated as an index. To delete a candidate whose name consists only of digits, use their displayed index.
-* Deletion removes the record completely; it does not archive the candidate.
+* Deletion removes the record completely; it does not archive the candidate. There is no undo command. Back up your data before deleting records you may need later.
 * Deleting one candidate reports `Deleted candidate: ...`; batch deletion reports the number of deleted candidates.
 
 Examples:
@@ -364,18 +459,20 @@ For example, if two displayed candidates match `delete Alice Pauline`, the feedb
 
 ```text
 Multiple candidates match "Alice Pauline":
-1. Alice Pauline — alice@example.com
-3. ALICE PAULINE — alice.work@example.com
+1. Alice Pauline — Phone: 91234567
+3. ALICE PAULINE — Phone: 81234567
 Use delete INDEX to choose a candidate.
 ```
 
-The numbers refer to positions in the currently displayed list, including after `find`; they are not a separate numbering of the matches. In this example, `delete 3` deletes the candidate with email `alice.work@example.com`.
+The numbers refer to positions in the currently displayed list, including after `find`; they are not a separate numbering of the matches. In this example, `delete 3` deletes the candidate with phone number `81234567`.
 
 ### Clearing all entries: `clear`
 
 Clears all entries from the candidate pipeline.
 
 Format: `clear`
+
+This removes every candidate, including candidates hidden by the current filter. There is no undo command. Back up your data first if you may need it later.
 
 The success message is `Candidate pipeline has been cleared!`.
 
@@ -417,7 +514,6 @@ Launch Scoutly from the new home folder to load your candidates.
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
-2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -431,8 +527,10 @@ Action     | Format, Examples
 **Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Available immediately`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL]...`<br> e.g., `edit 2 n/James Lee s/Java s/SQL`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Follow-up** | `followup INDEX d/YYYY-MM-DD [r/NOTE]`, `followup INDEX done`, `followup INDEX clear`
+**Follow-ups** | `followups [VIEW]`<br> e.g., `followups overdue`
 **Find skill** | `findskill SKILL`, `findskill any s/SKILL [s/SKILL]...`, or `findskill all s/SKILL [s/SKILL]...`<br> e.g., `findskill any s/Java s/Python`
-**List**   | `list [s/STAGE]`<br>e.g., `list s/Interview` or `list sort/name`
+**List**   | `list`, `list s/STAGE`, or `list sort/name`<br>e.g., `list s/Interview` or `list sort/name`
 **Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
 **Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`

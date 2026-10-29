@@ -1,5 +1,6 @@
 package seedu.address.storage;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static seedu.address.testutil.Assert.assertThrows;
@@ -9,8 +10,10 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -58,6 +61,35 @@ public class JsonAddressBookStorageTest {
     @Test
     public void readAddressBook_invalidAndValidPersonAddressBook_throwDataLoadingException() {
         assertThrows(DataLoadingException.class, () -> readAddressBook("invalidAndValidPersonAddressBook.json"));
+    }
+
+    @Test
+    public void readAddressBook_trailingContent_rejectsWithoutChangingFile() throws Exception {
+        Path file = testFolder.resolve("addressbook.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        storage.saveAddressBook(getTypicalAddressBook());
+        String validData = Files.readString(file);
+        for (String suffix : List.of("{invalid-json", "{\"persons\":[]}", "null", "garbage")) {
+            Files.writeString(file, validData + "\n" + suffix);
+            byte[] original = Files.readAllBytes(file);
+
+            assertThrows(DataLoadingException.class, storage::readAddressBook);
+
+            assertArrayEquals(original, Files.readAllBytes(file));
+        }
+    }
+
+    @Test
+    public void readAddressBook_trailingWhitespace_preservesCandidatesAndFile() throws Exception {
+        Path file = testFolder.resolve("addressbook.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(file);
+        AddressBook original = getTypicalAddressBook();
+        storage.saveAddressBook(original);
+        Files.writeString(file, Files.readString(file) + " \t\r\n ");
+        byte[] originalBytes = Files.readAllBytes(file);
+
+        assertEquals(original, new AddressBook(storage.readAddressBook().orElseThrow()));
+        assertArrayEquals(originalBytes, Files.readAllBytes(file));
     }
 
     @Test

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -56,6 +57,33 @@ public class JsonUtilTest {
 
         assertTrue(exception.getCause() instanceof IllegalValueException);
         assertEquals(contents, Files.readString(file));
+    }
+
+    @Test
+    public void fromJsonString_trailingValue_rejected() {
+        for (String suffix : List.of("{}", "[]", "null", "true", "123", "\"extra\"")) {
+            String json = SerializableTestClass.JSON_STRING_REPRESENTATION + "\n" + suffix;
+            assertThrows(IOException.class, () -> JsonUtil.fromJsonString(json, SerializableTestClass.class), suffix);
+        }
+    }
+
+    @Test
+    public void fromJsonString_trailingMalformedContent_rejected() {
+        for (String suffix : List.of("{invalid-json", "garbage", "]")) {
+            String json = SerializableTestClass.JSON_STRING_REPRESENTATION + "\n" + suffix;
+            assertThrows(IOException.class, () -> JsonUtil.fromJsonString(json, SerializableTestClass.class), suffix);
+        }
+    }
+
+    @Test
+    public void fromJsonString_trailingWhitespace_readsCompleteObject() throws IOException {
+        String json = SerializableTestClass.JSON_STRING_REPRESENTATION + " \t\r\n ";
+
+        SerializableTestClass actual = JsonUtil.fromJsonString(json, SerializableTestClass.class);
+
+        assertEquals(SerializableTestClass.getNameTestValue(), actual.getName());
+        assertEquals(SerializableTestClass.getListTestValues(), actual.getListOfLocalDateTimes());
+        assertEquals(SerializableTestClass.getHashMapTestValues(), actual.getMapOfIntegerToString());
     }
 
     //TODO: @Test jsonUtil_readJsonStringToObjectInstance_correctObject()

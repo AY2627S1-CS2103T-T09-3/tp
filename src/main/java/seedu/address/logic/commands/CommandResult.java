@@ -3,8 +3,10 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import seedu.address.commons.util.ToStringBuilder;
+import seedu.address.model.person.Person;
 
 /**
  * Represents the result of a command execution.
@@ -19,11 +21,18 @@ public class CommandResult {
     /** The application should exit. */
     private final boolean exit;
 
+    private final Person profileTarget;
+
     /**
      * Constructs a {@code CommandResult} with the specified fields.
      */
     public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
+        this(feedbackToUser, showHelp, exit, null);
+    }
+
+    private CommandResult(String feedbackToUser, boolean showHelp, boolean exit, Person profileTarget) {
         this.feedbackToUser = requireNonNull(feedbackToUser);
+        this.profileTarget = profileTarget;
         this.showHelp = showHelp;
         this.exit = exit;
     }
@@ -34,6 +43,15 @@ public class CommandResult {
      */
     public CommandResult(String feedbackToUser) {
         this(feedbackToUser, false, false);
+    }
+
+    /** Creates feedback that also opens the resolved candidate in the profile panel. */
+    public static CommandResult showProfile(String feedback, Person candidate) {
+        return new CommandResult(feedback, false, false, requireNonNull(candidate));
+    }
+
+    public Optional<Person> getProfileTarget() {
+        return Optional.ofNullable(profileTarget);
     }
 
     public String getFeedbackToUser() {
@@ -61,12 +79,13 @@ public class CommandResult {
 
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
-                && exit == otherCommandResult.exit;
+                && exit == otherCommandResult.exit
+                && Objects.equals(profileTarget, otherCommandResult.profileTarget);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(feedbackToUser, showHelp, exit);
+        return Objects.hash(feedbackToUser, showHelp, exit, profileTarget);
     }
 
     @Override

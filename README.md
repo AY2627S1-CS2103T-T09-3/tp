@@ -4,19 +4,35 @@
 
 Scoutly is a desktop candidate pipeline and recruitment management application for recruiters who prefer typing commands. It combines a command line with a graphical interface to help recruiters manage candidate details and track progress through the hiring process.
 
-![Planned Scoutly interface showing a candidate list, hiring stages, and candidate profile](docs/images/Ui.png)
-
-*UI mockup of the intended product. Features and layout are under development.*
-
 ## Current features
 
-- Add, list, and delete candidates.
-- View a candidate’s profile.
-- Update a candidate’s hiring stage: Applied, Screened, Interview, Offered, or Rejected.
-- Summarize all candidates by hiring stage with `summary`.
-- Receive clear feedback for successful commands and invalid input.
+- Add candidates with their phone numbers and skills, and edit their details.
+- Find candidates by name or skill; filter by hiring stage or sort alphabetically.
+- View candidate profiles and record recruitment remarks.
+- Track Applied, Screened, Interview, Offered, and Rejected stages.
+- Summarize the full hiring pipeline, including candidates hidden by a search.
+- Delete individual candidates or a batch of displayed indexes.
+- Schedule, complete and clear candidate follow-ups; filter overdue, today and upcoming tasks.
+- View live hiring-stage totals and search result counts alongside compact candidate cards.
+- Inspect scrollable candidate profiles with contact-copy actions.
+- Recall command history, use keyboard autocomplete, and search offline command help.
+- Save candidate data locally and reload it on the next launch.
 
-Use `stage INDEX s/STAGE`, for example `stage 1 s/Interview`, to update a candidate's hiring stage. New candidates default to Applied; stages appear on candidate cards and in `view` output and are saved across restarts. The dashboard shown above remains a planned layout.
+## Get started
+
+Download the appropriate JAR from [Scoutly releases](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases) and launch it with Java 25 from a writable folder. Apple Silicon Macs use `addressbook-mac-arm64.jar`; Windows, Linux, and Intel Macs use `addressbook.jar`.
+
+Enter commands in the command box. Read feedback in the result area, inspect candidate details in the profile panel, and use the numbered candidate list to select records. For example:
+
+```text
+add n/Jordan Lee p/91234567 s/Java s/SQL
+find Jordan
+view 1
+stage 1 s/Interview
+summary
+```
+
+Indexes refer to the currently displayed list. Check the index again after commands that change the filter or order. The User Guide explains each command and how to back up your data.
 
 ## Documentation
 
