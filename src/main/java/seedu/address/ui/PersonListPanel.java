@@ -128,10 +128,16 @@ public class PersonListPanel extends UiPart<Region> {
     }
 
     void executeBulkStage(String stage) {
+        if (commandExecutor == null) {
+            return;
+        }
+        HiringStage targetStage = HiringStage.fromString(requireNonNull(stage));
         List<Person> selected = new ArrayList<>(personListView.getSelectionModel().getSelectedItems());
-        List<Integer> indexes = selected.stream().map(this::displayedIndex).toList();
-        for (int index : indexes) {
-            if (!executeCommand("stage " + index + " s/" + stage)) {
+        for (Person candidate : selected) {
+            // Updating a stage may remove that row from the active filter. Keep candidate targets,
+            // not their old positions, so the next update cannot affect an unselected candidate.
+            int index = displayedIndex(candidate);
+            if (!executeCommand("stage " + index + " s/" + targetStage)) {
                 return;
             }
         }

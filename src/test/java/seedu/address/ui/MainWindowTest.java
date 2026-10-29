@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
@@ -212,6 +213,41 @@ public class MainWindowTest {
                 assertEquals(List.of("Alex Morgan", "Jamie Tan", "Priya Shah", "Sam Lee"),
                         candidateNames(candidates));
                 assertEquals("", toolbarSearch.getText());
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void bulkStage_resolvesSelectedCandidatesAfterStageFilterIndexesShift() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.show();
+                execute(window, "stage 2 s/Applied");
+                execute(window, "stage 3 s/Applied");
+                for (boolean useToolbar : List.of(false, true)) {
+                    execute(window, "list");
+                    execute(window, "stage 1 s/Applied");
+                    execute(window, "stage 2 s/Applied");
+                    if (useToolbar) {
+                        ComboBox<?> stages = (ComboBox<?>) window.getPrimaryStage().getScene()
+                                .lookup("#stageFilter");
+                        stages.getSelectionModel().select(1);
+                    } else {
+                        execute(window, "list s/Applied");
+                    }
+                    ListView<?> candidates = (ListView<?>) window.getPrimaryStage().getScene()
+                            .lookup("#personListView");
+                    candidates.getSelectionModel().selectIndices(0, 1);
+                    window.getPersonListPanel().executeBulkStage("Interview");
+                    // Priya was not selected and must stay Applied as the first two rows disappear.
+                    execute(window, "list");
+                    assertEquals(List.of("Interview", "Interview", "Applied", "Offered"),
+                            candidates.getItems().stream().map(person -> ((Person) person).getStage().toString())
+                                    .toList());
+                }
             } finally {
                 window.getPrimaryStage().close();
             }
