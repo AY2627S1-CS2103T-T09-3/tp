@@ -14,6 +14,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.Logic;
@@ -65,6 +67,33 @@ public class CandidateWorkspaceToolbarTest {
             contactFilter.fire();
 
             assertEquals(List.of(missingEmail), logic.getFilteredPersonList());
+        });
+    }
+
+    @Test
+    public void smartFilters_combineWithSearchAndClearRestoresAllCandidates() throws Exception {
+        FxTestUtil.run(() -> {
+            Person matching = new PersonBuilder().withName("Java Follow Up").withEmail("").withSkills("Java").build()
+                    .withFollowUp(new FollowUp(LocalDate.now().toString(), "Call", false));
+            Person dueButDifferentSkill = new PersonBuilder().withName("Python Follow Up").withSkills("Python").build()
+                    .withFollowUp(new FollowUp(LocalDate.now().toString(), "Call", false));
+            Person missingButNotDue = new PersonBuilder().withName("Java Missing Contact").withEmail("")
+                    .withSkills("Java").build();
+            StubLogic logic = new StubLogic(matching, dueButDifferentSkill, missingButNotDue);
+            CandidateWorkspaceToolbar toolbar = new CandidateWorkspaceToolbar(logic, message -> { });
+            new Scene(toolbar.getRoot());
+            TextField search = (TextField) toolbar.getRoot().lookup("#searchField");
+            ToggleButton dueFilter = (ToggleButton) toolbar.getRoot().lookup("#dueFollowUps");
+            ToggleButton contactFilter = (ToggleButton) toolbar.getRoot().lookup("#missingContact");
+            Button clear = (Button) toolbar.getRoot().lookup("#clearFilters");
+
+            search.setText("java");
+            dueFilter.fire();
+            contactFilter.fire();
+            assertEquals(List.of(matching), logic.getFilteredPersonList());
+
+            clear.fire();
+            assertEquals(List.of(matching, dueButDifferentSkill, missingButNotDue), logic.getFilteredPersonList());
         });
     }
 

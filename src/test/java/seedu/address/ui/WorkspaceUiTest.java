@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -54,6 +55,31 @@ public class WorkspaceUiTest {
             all.clear();
             assertTrue(profile.getRoot().lookup("#emptyProfile").isVisible());
             assertFalse(profile.getRoot().lookup("#profileContent").isVisible());
+        });
+    }
+
+    @Test
+    public void profile_quickActionPassesSelectedCandidateToHandler() throws Exception {
+        FxTestUtil.run(() -> {
+            Person candidate = new PersonBuilder().build();
+            ObservableList<Person> all = FXCollections.observableArrayList(candidate);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            AtomicReference<CandidateProfilePanel.QuickAction> action = new AtomicReference<>();
+            AtomicReference<Person> selected = new AtomicReference<>();
+            CandidateProfilePanel profile = new CandidateProfilePanel(selection, (chosenAction, chosenPerson) -> {
+                action.set(chosenAction);
+                selected.set(chosenPerson);
+            });
+            new Scene(profile.getRoot());
+            selection.select(candidate);
+            profile.getRoot().applyCss();
+            Button editButton = (Button) profile.getRoot().lookup("#editCandidate");
+
+            assertNotNull(editButton);
+            editButton.fire();
+
+            assertEquals(CandidateProfilePanel.QuickAction.EDIT, action.get());
+            assertEquals(candidate, selected.get());
         });
     }
 

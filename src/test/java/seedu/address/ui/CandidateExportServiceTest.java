@@ -1,5 +1,6 @@
 package seedu.address.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -10,6 +11,11 @@ import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 public class CandidateExportServiceTest {
+    @Test
+    public void toCsv_emptyCollection_containsHeaderOnly() {
+        assertEquals("Name,Email,Phone,Stage,Skills,Tags,Remark\n", CandidateExportService.toCsv(List.of()));
+    }
+
     @Test
     public void toCsv_includesHeadersEscapesFieldsAndPreservesOrder() {
         Person candidate = new PersonBuilder().withName("A Candidate").withEmail("ab@example.com")
@@ -35,5 +41,15 @@ public class CandidateExportServiceTest {
         assertTrue(json.contains("\"skills\": [\"Java\"]"));
         assertTrue(json.contains("\"remark\": \"He said \\\"Call soon\\\"\""));
         assertTrue(json.endsWith("  ]\n}\n"));
+    }
+
+    @Test
+    public void toJson_preservesCandidateOrder() {
+        Person first = new PersonBuilder().withName("First Candidate").build();
+        Person second = new PersonBuilder().withName("Second Candidate").withPhone("81234567").build();
+
+        String json = CandidateExportService.toJson(List.of(first, second));
+
+        assertTrue(json.indexOf("First Candidate") < json.indexOf("Second Candidate"));
     }
 }
