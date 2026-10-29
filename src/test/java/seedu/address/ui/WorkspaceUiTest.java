@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -214,6 +215,25 @@ public class WorkspaceUiTest {
 
             assertEquals(List.of("stage 1 s/Interview"), commands);
             assertEquals(2, list.getSelectionModel().getSelectedItems().size());
+        });
+    }
+
+    @Test
+    public void bulkStage_validatesStageBeforeExecutingAndSupportsReadOnlyPanels() throws Exception {
+        FxTestUtil.run(() -> {
+            ObservableList<Person> all = FXCollections.observableArrayList(new PersonBuilder().build());
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            List<String> commands = new ArrayList<>();
+            PersonListPanel panel = new PersonListPanel(all, all, selection, command -> {
+                commands.add(command);
+                return new CommandResult("Updated");
+            });
+            ListView<?> list = (ListView<?>) panel.getRoot().lookup("#personListView");
+            list.getSelectionModel().selectAll();
+            assertThrows(IllegalArgumentException.class, () -> panel.executeBulkStage("Unknown"));
+            assertThrows(NullPointerException.class, () -> panel.executeBulkStage(null));
+            assertTrue(commands.isEmpty());
+            new PersonListPanel(all, all, selection).executeBulkStage("Interview");
         });
     }
 

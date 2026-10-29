@@ -20,13 +20,21 @@
           </Menu>
         </MenuBar>
         <HBox styleClass="brand-bar"><Label text="Scoutly" styleClass="brand-title" /></HBox>
-        <StackPane fx:id="dashboardPlaceholder" minHeight="0" maxHeight="118" styleClass="workspace-inset" />
-        <StackPane fx:id="workspaceToolbarPlaceholder" minHeight="0" maxHeight="96"
-                   styleClass="workspace-inset" />
-        <SplitPane dividerPositions="0.42" minHeight="140" VBox.vgrow="ALWAYS" styleClass="workspace-inset">
-          <StackPane fx:id="personListPanelPlaceholder" minWidth="280" minHeight="120" />
-          <StackPane fx:id="profilePlaceholder" minWidth="280" minHeight="120" />
-        </SplitPane>
+        <!-- Keep controls at their natural height. Scroll the workspace on small windows
+             instead of allowing its children to overlap; command input remains outside. -->
+        <ScrollPane fx:id="workspaceScroll" fitToWidth="true" fitToHeight="true"
+                    hbarPolicy="NEVER" minHeight="0" VBox.vgrow="ALWAYS">
+          <VBox spacing="6">
+            <StackPane fx:id="dashboardPlaceholder" minHeight="-Infinity" maxHeight="-Infinity"
+                       styleClass="workspace-inset" />
+            <StackPane fx:id="workspaceToolbarPlaceholder" minHeight="-Infinity" maxHeight="-Infinity"
+                       styleClass="workspace-inset" />
+            <SplitPane dividerPositions="0.42" minHeight="260" VBox.vgrow="ALWAYS" styleClass="workspace-inset">
+              <StackPane fx:id="personListPanelPlaceholder" minWidth="280" minHeight="240" />
+              <StackPane fx:id="profilePlaceholder" minWidth="280" minHeight="240" />
+            </SplitPane>
+          </VBox>
+        </ScrollPane>
         <StackPane fx:id="resultDisplayPlaceholder" minHeight="42" prefHeight="48" maxHeight="72"
                    styleClass="workspace-inset" />
         <StackPane fx:id="commandBoxPlaceholder" styleClass="workspace-inset" />
