@@ -30,6 +30,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -83,6 +85,72 @@ public class MainWindowTest {
                 execute(window, "delete 2");
                 assertTrue(window.getPrimaryStage().getScene().lookup("#emptyProfile").isVisible());
                 assertEquals("All candidates: 3  •  Displayed: 3", label(window, "pipelineCount"));
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+    }
+
+    @Test
+    public void viewCommands_replaceBulkSelectionWithRequestedCandidate() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.show();
+                ListView<?> candidates = (ListView<?>) lookup(window, "personListView");
+                execute(window, "view 1");
+                execute(window, "view 2");
+                assertEquals(List.of("Jamie Tan"), candidates.getSelectionModel().getSelectedItems().stream()
+                        .map(person -> ((Person) person).getName().fullName).toList());
+                assertEquals("Jamie Tan", label(window, "profileName"));
+                assertEquals("1 selected", label(window, "bulkSelectionCount"));
+
+                execute(window, "view Priya Shah");
+                assertEquals(List.of("Priya Shah"), candidates.getSelectionModel().getSelectedItems().stream()
+                        .map(person -> ((Person) person).getName().fullName).toList());
+                assertEquals("Priya Shah", label(window, "profileName"));
+                window.getPersonListPanel().executeBulkStage("Rejected");
+                assertEquals(List.of("Applied", "Screened", "Rejected", "Offered"), candidates.getItems().stream()
+                        .map(person -> ((Person) person).getStage().toString()).toList());
+            } finally {
+                window.getPrimaryStage().close();
+            }
+        });
+        ReadOnlyAddressBook saved = new JsonAddressBookStorage(temporaryFolder.resolve("candidates.json"))
+                .readAddressBook().orElseThrow();
+        assertEquals(List.of("Applied", "Screened", "Rejected", "Offered"), saved.getPersonList().stream()
+                .map(person -> person.getStage().toString()).toList());
+    }
+
+    @Test
+    public void viewSameProfile_clearsMultiSelectionWhileOtherCommandsPreserveIt() throws Exception {
+        FxTestUtil.run(() -> {
+            MainWindow window = createWindow(new AtomicBoolean());
+            try {
+                window.show();
+                execute(window, "view 2");
+                ListView<?> candidates = (ListView<?>) lookup(window, "personListView");
+                candidates.getSelectionModel().selectIndices(0, 1);
+                candidates.fireEvent(new KeyEvent(KeyEvent.KEY_RELEASED, "", "", KeyCode.ENTER,
+                        false, false, false, false));
+                assertEquals(2, candidates.getSelectionModel().getSelectedItems().size());
+                assertEquals("Jamie Tan", label(window, "profileName"));
+
+                execute(window, "summary");
+                assertEquals(2, candidates.getSelectionModel().getSelectedItems().size());
+                execute(window, "stage 2 s/Interview");
+                assertEquals(2, candidates.getSelectionModel().getSelectedItems().size());
+                assertEquals(List.of("Applied", "Interview", "Interview", "Offered"), candidates.getItems().stream()
+                        .map(person -> ((Person) person).getStage().toString()).toList());
+
+                execute(window, "view 2");
+                assertEquals(List.of("Jamie Tan"), candidates.getSelectionModel().getSelectedItems().stream()
+                        .map(person -> ((Person) person).getName().fullName).toList());
+                assertEquals("1 selected", label(window, "bulkSelectionCount"));
+                execute(window, "view 999");
+                assertTrue(result(window).startsWith("Error:"));
+                assertEquals("Jamie Tan", label(window, "profileName"));
+                assertEquals(1, candidates.getSelectionModel().getSelectedItems().size());
             } finally {
                 window.getPrimaryStage().close();
             }
