@@ -66,7 +66,7 @@ The workspace toolbar provides quick controls for common browsing tasks:
 * Click a dashboard stage tile to activate that stage filter. Use **Refresh** to reapply the current in-memory
   workspace filters; it does not reload candidate data changed externally in the JSON file.
 * Use **Export CSV** or **Export JSON** to save the currently displayed candidates in their visible order.
-  The export includes names, email addresses, phone numbers, postal addresses, hiring stages, skills, tags, and remarks.
+  The export includes names, email addresses, phone numbers, postal addresses, hiring stages, skills, tags, remarks, and follow-up details (date, note, and completion status).
 * Select several candidate cards with Command-click (macOS) or Ctrl-click (Windows/Linux). **Stage selected**
   applies one hiring stage to all selected candidates, while **Delete selected** asks for confirmation before
   deleting them. Stage updates continue to target the selected candidates when a stage filter removes
