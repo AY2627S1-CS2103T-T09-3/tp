@@ -18,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
+import javafx.geometry.Bounds;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -266,6 +268,41 @@ public class WorkspaceUiTest {
             assertTrue(profile.getRoot().lookup("#copyEmail").isDisabled());
             assertTrue(((ScrollPane) profile.getRoot().lookup("#profileContent")).isFitToWidth());
         });
+    }
+
+    @Test
+    public void profile_longSkillsAndTags_wrapWithinProfileAndExposeFullText() throws Exception {
+        FxTestUtil.run(() -> {
+            String longSkill = "W".repeat(30);
+            String longTag = "TAG".repeat(12);
+            Person person = new PersonBuilder().withSkills(longSkill).withTags(longTag).build();
+            ObservableList<Person> all = FXCollections.observableArrayList(person);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, all);
+            CandidateProfilePanel profile = new CandidateProfilePanel(selection);
+            StackPane root = new StackPane(profile.getRoot());
+            new Scene(root, 360, 500);
+            selection.select(person);
+            root.applyCss();
+            root.layout();
+
+            assertChipIsContained((FlowPane) profile.getRoot().lookup("#profileSkills"), longSkill);
+            assertChipIsContained((FlowPane) profile.getRoot().lookup("#profileTags"), longTag);
+        });
+    }
+
+    private void assertChipIsContained(FlowPane pane, String expectedText) {
+        Label chip = (Label) pane.getChildren().stream()
+                .filter(node -> node instanceof Label && ((Label) node).getText().equals(expectedText))
+                .findFirst().orElseThrow();
+        Bounds paneBounds = pane.localToScene(pane.getBoundsInLocal());
+        Bounds chipBounds = chip.localToScene(chip.getBoundsInLocal());
+        assertTrue(chip.isWrapText());
+        assertEquals(expectedText, chip.getTooltip().getText());
+        assertEquals(expectedText, chip.getAccessibleText());
+        assertTrue(chip.getHeight() > chip.getFont().getSize());
+        assertTrue(chipBounds.getMinX() >= paneBounds.getMinX() - 1);
+        assertTrue(chipBounds.getMaxX() <= paneBounds.getMaxX() + 1,
+                "Chip extends beyond its flow pane: chip=" + chipBounds + ", pane=" + paneBounds);
     }
 
     @Test

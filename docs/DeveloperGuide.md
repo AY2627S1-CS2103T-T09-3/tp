@@ -21,6 +21,9 @@ Scoutly is adapted from [AddressBook Level 3 by SE-EDU](https://github.com/se-ed
 * Codex was used for preliminary PR reviews, checking correctness, SE-EDU coding standards, duplicated code, and the Single Level of Abstraction Principle (SLAP).
 * Codex assisted with exploratory testing, reproducing bugs, diagnosing their causes, and suggesting fixes.
 * Codex helped draft and refine documentation, PlantUML diagrams, GitHub issue reports, and PR descriptions.
+* [@antaradaw](https://github.com/antaradaw) used OpenAI Codex extensively across their Scoutly contributions
+  to generate and refine implementation code, write tests, investigate and fix bugs, and draft and revise
+  project documentation, including work on candidate profiles and follow-up reminders.
 
 --------------------------------------------------------------------------------------------------------------------
 
