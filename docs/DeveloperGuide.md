@@ -15,6 +15,13 @@
 
 Scoutly is adapted from [AddressBook Level 3 by SE-EDU](https://github.com/se-edu/addressbook-level3). It uses [JavaFX](https://openjfx.io/) for the desktop interface, [Jackson](https://github.com/FasterXML/jackson) for JSON persistence, [JUnit 5](https://junit.org/junit5/) for tests, and [MarkBind](https://markbind.org/) for this website.
 
+**Notable uses of AI:**
+
+* @sidharthbairy used OpenAI Codex to generate and refine implementation code and regression tests for hiring-stage features and bug fixes.
+* Codex was used for preliminary PR reviews, checking correctness, SE-EDU coding standards, duplicated code, and the Single Level of Abstraction Principle (SLAP).
+* Codex assisted with exploratory testing, reproducing bugs, diagnosing their causes, and suggesting fixes.
+* Codex helped draft and refine documentation, PlantUML diagrams, GitHub issue reports, and PR descriptions.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## **Setting up, getting started**
