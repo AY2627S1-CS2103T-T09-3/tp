@@ -1,100 +1,20 @@
 @startuml
 !include style.puml
 skinparam ArrowFontStyle plain
+skinparam ParticipantFontColor #FFFFFF
 
-actor User as user USER_COLOR
-
-box Logic LOGIC_COLOR_T1
-participant ":LogicManager" as LogicManager LOGIC_COLOR
-participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
-participant ":EditCommandParser" as EditCommandParser LOGIC_COLOR
 participant "command:EditCommand" as EditCommand LOGIC_COLOR
-participant "result:CommandResult" as CommandResult LOGIC_COLOR
-end box
+participant "model:Model" as Model MODEL_COLOR
 
-box Model MODEL_COLOR_T1
-participant ":Model" as Model MODEL_COLOR
-end box
+[-> EditCommand : execute(model)
+activate EditCommand
+EditCommand -> Model : getFilteredPersonList()
+Model --> EditCommand : displayedPersons
 
-box Storage STORAGE_COLOR_T1
-participant ":Storage" as Storage STORAGE_COLOR
-end box
+EditCommand -> EditCommand : createEditedPerson(personToEdit,\neditPersonDescriptor)
+EditCommand -> Model : setPerson(personToEdit, editedPerson)
+EditCommand -> Model : updateFilteredPersonList(\nPREDICATE_SHOW_ALL_PERSONS)
 
-user -> LogicManager : execute("edit 1 s/Java s/SQL")
-activate LogicManager
-LogicManager -> AddressBookParser : parseCommand(commandText)
-activate AddressBookParser
-
-create EditCommandParser
-AddressBookParser -> EditCommandParser
-activate EditCommandParser
-AddressBookParser -> EditCommandParser : parse("1 s/Java s/SQL")
-
-alt valid skill input
-    note over EditCommandParser
-    Tokenize the arguments, parse the index, and validate each
-    s/ value with ParserUtil.parseSkill(...).
-    end note
-    create EditCommand
-    EditCommandParser -> EditCommand : new EditCommand(index, descriptor)
-    EditCommand --> EditCommandParser
-    EditCommandParser --> AddressBookParser : command
-    deactivate EditCommandParser
-    AddressBookParser --> LogicManager : command
-    deactivate AddressBookParser
-
-    LogicManager -> Model : getAddressBook()
-    Model --> LogicManager : originalData copy
-    LogicManager -> Model : getFilteredPersonListPredicate()
-    Model --> LogicManager : originalFilter
-
-    LogicManager -> EditCommand : execute(model)
-    activate EditCommand
-    EditCommand -> Model : getFilteredPersonList()
-    Model --> EditCommand : displayed candidates
-    EditCommand -> EditCommand : select displayed index 1
-    EditCommand -> EditCommand : createEditedPerson(...)
-    note right of EditCommand
-    Replace the complete skill set with Java and SQL.
-    Preserve name, phone, email, address, tags,
-    remark, and hiring stage.
-    end note
-    EditCommand -> Model : setPerson(personToEdit, editedPerson)
-    EditCommand -> Model : updateFilteredPersonList(show all)
-    EditCommand -> CommandResult : new CommandResult(success feedback)
-    CommandResult --> EditCommand
-    EditCommand --> LogicManager : commandResult
-    deactivate EditCommand
-
-    LogicManager -> Model : getAddressBook()
-    Model --> LogicManager : updated address book
-    LogicManager -> Storage : saveAddressBook(updated address book)
-    activate Storage
-    alt save succeeds
-        Storage --> LogicManager : saved successfully
-        deactivate Storage
-        LogicManager --> user : commandResult
-    else save fails
-        Storage --> LogicManager : IOException or AccessDeniedException
-        deactivate Storage
-        LogicManager -> Model : setAddressBook(originalData)
-        LogicManager -> Model : updateFilteredPersonList(originalFilter)
-        LogicManager --> user : CommandException
-    end
-else invalid skill input
-    note over EditCommandParser
-    Tokenization or skill validation fails, for example s/.
-    ParserUtil.parseSkill(...) raises ParseException.
-    No command is constructed.
-    end note
-    EditCommandParser --> AddressBookParser : ParseException
-    deactivate EditCommandParser
-    AddressBookParser --> LogicManager : ParseException
-    deactivate AddressBookParser
-    LogicManager --> user : ParseException
-    note over Model, Storage
-    No model update or storage save occurs.
-    end note
-end
-deactivate LogicManager
+EditCommand -->[ : CommandResult(success feedback)
+deactivate EditCommand
 @enduml

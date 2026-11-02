@@ -8,6 +8,8 @@
     -fx-faint-focus-color: #127d8622;
     -fx-text-background-color: #25374a;
 }
+.workspace-scroll { -fx-background-color: transparent; }
+.workspace-scroll > .viewport { -fx-background-color: transparent; }
 .workspace { -fx-background-color: #edf2f7; }
 .workspace-inset { -fx-padding: 0 18; }
 .brand-bar { -fx-background-color: #203849; -fx-padding: 8 18; }

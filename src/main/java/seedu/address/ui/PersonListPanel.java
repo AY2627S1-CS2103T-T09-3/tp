@@ -94,6 +94,11 @@ public class PersonListPanel extends UiPart<Region> {
         showSelection(selection.selectedPersonProperty().get());
     }
 
+    /** Clears bulk selection before a command opens a single profile. */
+    public void clearBulkSelection() {
+        personListView.getSelectionModel().clearSelection();
+    }
+
     private void showSelection(Person candidate) {
         if (candidate == null) {
             personListView.getSelectionModel().clearSelection();
@@ -128,18 +133,15 @@ public class PersonListPanel extends UiPart<Region> {
     }
 
     void executeBulkStage(String stage) {
-        if (commandExecutor == null) {
+        if (commandExecutor == null || personListView.getSelectionModel().getSelectedItems().isEmpty()) {
             return;
         }
         HiringStage targetStage = HiringStage.fromString(requireNonNull(stage));
         List<Person> selected = new ArrayList<>(personListView.getSelectionModel().getSelectedItems());
-        for (Person candidate : selected) {
-            // Updating a stage may remove that row from the active filter. Keep candidate targets,
-            // not their old positions, so the next update cannot affect an unselected candidate.
-            int index = displayedIndex(candidate);
-            if (!executeCommand("stage " + index + " s/" + targetStage)) {
-                return;
-            }
+        String indexes = selected.stream().map(this::displayedIndex)
+                .sorted().map(String::valueOf).collect(Collectors.joining(","));
+        if (!executeCommand("stage " + indexes + " s/" + targetStage)) {
+            return;
         }
         personListView.getSelectionModel().clearSelection();
     }

@@ -3,6 +3,7 @@ package seedu.address.logic.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.logic.commands.CommandTestUtil.showPersonAtIndex;
@@ -10,6 +11,8 @@ import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalIndexes.INDEX_FIRST_PERSON;
 import static seedu.address.testutil.TypicalIndexes.INDEX_SECOND_PERSON;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -103,6 +106,31 @@ public class StageCommandTest {
     }
 
     @Test
+    public void execute_multipleIndexes_resolvesAllTargetsBeforeChangingFilter() throws Exception {
+        Person first = new PersonBuilder().withName("First Candidate")
+                .withStage(HiringStage.APPLIED).build();
+        Person second = new PersonBuilder().withName("Second Candidate")
+                .withStage(HiringStage.APPLIED).build();
+        Person existingInterview = new PersonBuilder().withName("Existing Interview")
+                .withStage(HiringStage.INTERVIEW).build();
+        AddressBook book = new AddressBook();
+        book.addPerson(first);
+        book.addPerson(second);
+        book.addPerson(existingInterview);
+        Model filteredModel = new ModelManager(book, new UserPrefs());
+        filteredModel.updateFilteredPersonList(person -> person.getStage() == HiringStage.APPLIED);
+
+        CommandResult result = new StageCommand(List.of(INDEX_FIRST_PERSON, INDEX_SECOND_PERSON),
+                HiringStage.INTERVIEW).execute(filteredModel);
+
+        assertEquals("Updated 2 candidates to Interview.", result.getFeedbackToUser());
+        assertEquals(HiringStage.INTERVIEW, filteredModel.getAddressBook().getPersonList().get(0).getStage());
+        assertEquals(HiringStage.INTERVIEW, filteredModel.getAddressBook().getPersonList().get(1).getStage());
+        assertEquals(HiringStage.INTERVIEW, filteredModel.getAddressBook().getPersonList().get(2).getStage());
+        assertTrue(filteredModel.getFilteredPersonList().isEmpty());
+    }
+
+    @Test
     public void execute_editAndRemarkCommands_preserveStage() throws Exception {
         Person original = model.getFilteredPersonList().get(0);
         new StageCommand(INDEX_FIRST_PERSON, HiringStage.OFFERED).execute(model);
@@ -117,7 +145,7 @@ public class StageCommandTest {
 
     @Test
     public void nullArguments_throwNullPointerException() {
-        assertThrows(NullPointerException.class, () -> new StageCommand(null, HiringStage.APPLIED));
+        assertThrows(NullPointerException.class, () -> new StageCommand((Index) null, HiringStage.APPLIED));
         assertThrows(NullPointerException.class, () -> new StageCommand(INDEX_FIRST_PERSON, null));
         StageCommand command = new StageCommand(INDEX_FIRST_PERSON, HiringStage.APPLIED);
         assertThrows(NullPointerException.class, () -> command.execute(null));

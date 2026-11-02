@@ -21,7 +21,7 @@ Scoutly is a desktop candidate pipeline and recruitment management application f
 
 ## Get started
 
-Download the appropriate JAR from [Scoutly releases](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases) and launch it with Java 25 from a writable folder. Apple Silicon Macs use `addressbook-mac-arm64.jar`; Windows, Linux, and Intel Macs use `addressbook.jar`.
+Download the appropriate JAR from [Scoutly releases](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases) and launch it with Java 25 from a writable folder. Apple Silicon Macs use `scoutly-mac-arm64.jar`; Windows, Linux, and Intel Macs use `scoutly.jar`.
 
 Enter commands in the command box. Read feedback and candidate profiles in the result area, and use the numbered candidate list to select records. For example:
 

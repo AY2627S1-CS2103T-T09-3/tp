@@ -19,13 +19,13 @@ Scoutly is a **desktop application for managing recruitment candidates through t
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
 1. Open the latest [Scoutly release](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases), expand **Assets**, and download the `.jar` file for your computer.
-   Choose `addressbook-mac-arm64.jar` for an Apple Silicon Mac (M-series chip), or `addressbook.jar` for
+   Choose `scoutly-mac-arm64.jar` for an Apple Silicon Mac (M-series chip), or `scoutly.jar` for
    an Intel Mac, Windows, or Linux. On Mac, check **Apple menu → About This Mac** to identify your chip.
 
 1. Copy the file to a writable folder you want to use as the _home folder_ for Scoutly.
 
-1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar addressbook.jar`.<br>
-   **Apple Silicon Mac:** Run `java -jar addressbook-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
+1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar scoutly.jar`.<br>
+   **Apple Silicon Mac:** Run `java -jar scoutly-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
    Launch Scoutly from a folder where you have permission to create and update files. If double-clicking the JAR does not work, use the terminal command above.
    The application window should appear in a few seconds. On first launch, it contains sample candidates.
    Use the command box to enter commands, the result area to read feedback, and the candidate list to find displayed indexes.
@@ -63,8 +63,8 @@ The workspace toolbar provides quick controls for common browsing tasks:
 * Enable **Due follow-ups** to show pending follow-ups scheduled for today or an earlier date. Enable
   **Needs contact** to find candidates whose email or phone number is missing; these smart filters can be
   combined with the text and stage filters.
-* Click a dashboard stage tile to activate that stage filter. Use **Refresh** after an external data change
-  to reapply the current workspace filter.
+* Click a dashboard stage tile to activate that stage filter. Use **Refresh** to reapply the current in-memory
+  workspace filters; it does not reload candidate data changed externally in the JSON file.
 * Use **Export CSV** or **Export JSON** to save the currently displayed candidates in their visible order.
   The export includes names, email addresses, phone numbers, postal addresses, hiring stages, skills, tags, and remarks.
 * Select several candidate cards with Command-click (macOS) or Ctrl-click (Windows/Linux). **Stage selected**
@@ -280,6 +280,8 @@ Format: `view INDEX` or `view FULL_NAME`
 
 * `INDEX` must be a positive integer referring to the currently displayed list.
 * Viewing a profile leaves the candidate data and the displayed list unchanged.
+* A successful `view` selects only the candidate whose profile is opened, replacing any earlier bulk selection.
+  Use Command-click (macOS) or Ctrl-click (Windows/Linux) to select several candidates for bulk actions.
 * `FULL_NAME` must match the full name of exactly one candidate in the displayed list, ignoring case.
   Leading/trailing whitespace is removed and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
@@ -423,11 +425,14 @@ Examples:
 
 ### Updating a candidate's hiring stage: `stage`
 
-Sets the hiring stage of a candidate in the currently displayed list.
+Sets the hiring stage of one or more candidates in the currently displayed list.
 
-Format: `stage INDEX s/STAGE`
+Format: `stage INDEX[,INDEX]... s/STAGE`
 
 * `INDEX` must be a positive integer from the displayed list. After `find`, it refers to the search results.
+  Separate multiple indexes with commas, for example `stage 1,3,5 s/Interview`. All indexes are resolved
+  against the displayed list before any stage is changed, so the command remains correct even when an
+  active stage filter causes an updated candidate to disappear from the results.
 * The `s/` prefix is required and may appear only once. `STAGE` must be **Applied**, **Screened**, **Interview**, **Offered**, or **Rejected**. Stage names are case-insensitive.
 * Any stage can be changed to any other stage, including going back to correct an earlier update. Setting the same stage again is allowed and reports `[Name] is already at [Stage].` without changing the candidate.
 * The command preserves the current search filter and all other candidate details.
@@ -438,6 +443,7 @@ Format: `stage INDEX s/STAGE`
 
 Examples:
 * `stage 1 s/Interview` moves the first displayed candidate to Interview.
+* `stage 1,2 s/Interview` moves the first and second displayed candidates to Interview as one operation.
 * Running it again for Alex Yeoh already at Interview displays `Alex Yeoh is already at Interview.`
 * `find Betsy` followed by `stage 1 s/screened` moves the first search result to Screened, keeping the search results visible.
 * `stage 1 s/Applied` resets that candidate's stage to Applied.
@@ -560,6 +566,6 @@ Action     | Format, Examples
 **List**   | `list`, `list s/STAGE`, or `list sort/name`<br>e.g., `list s/Interview` or `list sort/name`
 **Summary** | `summary`
 **View**   | `view INDEX` or `view FULL_NAME`<br> e.g., `view 2` or `view Alice Pauline`
-**Stage**  | `stage INDEX s/STAGE`<br> e.g., `stage 2 s/Interview`
+**Stage**  | `stage INDEX[,INDEX]... s/STAGE`<br> e.g., `stage 2 s/Interview` or `stage 2,4 s/Interview`
 **Help**   | `help`
 **Exit**   | `exit`
