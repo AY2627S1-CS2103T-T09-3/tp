@@ -296,7 +296,10 @@ public class MainWindow extends UiPart<Stage> {
             if (workspaceToolbar != null && commandOwnsDisplayedList(commandText)) {
                 workspaceToolbar.clearForCommand();
             }
-            commandResult.getProfileTarget().ifPresent(candidateSelection::select);
+            commandResult.getProfileTarget().ifPresent(candidate -> {
+                personListPanel.clearBulkSelection();
+                candidateSelection.select(candidate);
+            });
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getProfileTarget()
                     .map(candidate -> "Profile opened: " + candidate.getName())

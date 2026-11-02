@@ -94,6 +94,11 @@ public class PersonListPanel extends UiPart<Region> {
         showSelection(selection.selectedPersonProperty().get());
     }
 
+    /** Clears bulk selection before a command opens a single profile. */
+    public void clearBulkSelection() {
+        personListView.getSelectionModel().clearSelection();
+    }
+
     private void showSelection(Person candidate) {
         if (candidate == null) {
             personListView.getSelectionModel().clearSelection();

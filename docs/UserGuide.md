@@ -277,6 +277,8 @@ Format: `view INDEX` or `view FULL_NAME`
 
 * `INDEX` must be a positive integer referring to the currently displayed list.
 * Viewing a profile leaves the candidate data and the displayed list unchanged.
+* A successful `view` selects only the candidate whose profile is opened, replacing any earlier bulk selection.
+  Use Command-click (macOS) or Ctrl-click (Windows/Linux) to select several candidates for bulk actions.
 * `FULL_NAME` must match the full name of exactly one candidate in the displayed list, ignoring case.
   Leading/trailing whitespace is removed and repeated internal whitespace is treated as one space,
   consistently with candidate identity.
