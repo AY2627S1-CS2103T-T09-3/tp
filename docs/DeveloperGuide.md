@@ -24,6 +24,10 @@ Scoutly is adapted from [AddressBook Level 3 by SE-EDU](https://github.com/se-ed
 * [@antaradaw](https://github.com/antaradaw) used OpenAI Codex extensively across their Scoutly contributions
   to generate and refine implementation code, write tests, investigate and fix bugs, and draft and revise
   project documentation, including work on candidate profiles and follow-up reminders.
+* [@rahulg1507](https://github.com/rahulg1507) used ChatGPT and AI coding assistance to generate and refine
+  implementation code, develop regression tests, investigate and resolve bugs, and review pull requests. AI
+  assistance was also used for Git troubleshooting, merge-conflict resolution, documentation improvements, and
+  release preparation, including candidate export reliability and Scoutly v1.5/v1.6 verification.
 
 --------------------------------------------------------------------------------------------------------------------
 
