@@ -66,7 +66,7 @@ The workspace toolbar provides quick controls for common browsing tasks:
 * Click a dashboard stage tile to activate that stage filter. Use **Refresh** to reapply the current in-memory
   workspace filters; it does not reload candidate data changed externally in the JSON file.
 * Use **Export CSV** or **Export JSON** to save the currently displayed candidates in their visible order.
-  The export includes contact details, address, hiring stage, skills, tags, remarks, and follow-up details.
+  The export includes names, email addresses, phone numbers, postal addresses, hiring stages, skills, tags, remarks, and follow-up details (date, note, and completion status).
 * Select several candidate cards with Command-click (macOS) or Ctrl-click (Windows/Linux). **Stage selected**
   applies one hiring stage to all selected candidates, while **Delete selected** asks for confirmation before
   deleting them. Stage updates continue to target the selected candidates when a stage filter removes
@@ -105,7 +105,10 @@ input and feedback remain visible outside the scrolling area.
 | Tab | Accept the selected command-name or hiring-stage completion. Existing arguments are preserved. |
 | Escape | Dismiss suggestions until the input changes. |
 | Ctrl+L (Windows/Linux), Command+L (Mac) | Focus the command box while preserving its text and caret. |
-| F1 | Open or restore the offline command reference. |
+| F1 (Fn+F1 on Mac) | Open or restore the offline command reference. |
+
+On Mac keyboards, hold **Fn** (or the **Globe** key) while pressing **F1**. If your keyboard settings
+already use F1, F2, etc. as standard function keys, press **F1** on its own.
 
 Syntax help appears below the input for recognized command names. Suggestions do not execute commands;
 press **Enter** to submit. Failed commands remain available for correction. History stores up to
@@ -188,7 +191,7 @@ Command | Purpose
 Opens a searchable, offline command reference. Search by command name, description, or syntax,
 then select a command to read its usage and examples. **Insert template** places a starter command
 in the command box for you to complete. It never executes the command automatically.
-You can also open the reference with **F1** or **Help → Command reference**.
+You can also open the reference with **F1** (**Fn+F1** on Mac) or **Help → Command reference**.
 Opening help again restores it if it was minimized.
 
 You can also open the [Scoutly user guide](https://AY2627S1-CS2103T-T09-3.github.io/tp/UserGuide.html) directly.

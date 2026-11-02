@@ -36,7 +36,8 @@ public class CommandAssistPanel extends UiPart<Region> {
     public void update(String input, List<CommandSuggestion> completions) {
         requireNonNull(completions);
         String hint = CommandReference.forInput(input).map(CommandReference::getUsage)
-                .orElse("Type a command • Tab accepts suggestions • ↑/↓ recalls history • F1 opens help");
+                .orElse("Type a command • Tab accepts suggestions • ↑/↓ recalls history"
+                        + " • F1 (Fn+F1 on Mac) opens help");
         commandHint.setText(hint);
         commandHint.setTooltip(new Tooltip(hint));
         suggestions.setItems(FXCollections.observableArrayList(completions));
