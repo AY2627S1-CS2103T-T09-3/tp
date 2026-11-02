@@ -21,12 +21,12 @@ Scoutly is a **desktop application for managing recruitment candidates through t
 1. Open the latest [Scoutly release](https://github.com/AY2627S1-CS2103T-T09-3/tp/releases), expand **Assets**, and download the `.jar` file for your computer.
    Choose `scoutly-mac-arm64.jar` for an Apple Silicon Mac (M-series chip), or `scoutly.jar` for
    an Intel Mac, Windows, or Linux. On Mac, check **Apple menu → About This Mac** to identify your chip.
+   If the separate Apple Silicon JAR is unavailable, try the standard `scoutly.jar` using `java -jar scoutly.jar`.
 
 1. Copy the file to a writable folder you want to use as the _home folder_ for Scoutly.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar scoutly.jar`.<br>
-   **Apple Silicon Mac:** Run `java -jar scoutly-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
-   If the separate Apple Silicon JAR is unavailable, you can also try the standard `scoutly.jar` using `java -jar scoutly.jar`.
+   **Apple Silicon Mac:** If you downloaded `scoutly-mac-arm64.jar`, run `java -jar scoutly-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
    Launch Scoutly from a folder where you have permission to create and update files. If double-clicking the JAR does not work, use the terminal command above.
    The application window should appear in a few seconds. On first launch, it contains sample candidates.
    Use the command box to enter commands, the result area to read feedback, and the candidate list to find displayed indexes.
