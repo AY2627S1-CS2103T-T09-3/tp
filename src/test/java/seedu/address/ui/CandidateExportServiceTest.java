@@ -7,13 +7,16 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import seedu.address.model.person.Person;
 import seedu.address.testutil.PersonBuilder;
 
 public class CandidateExportServiceTest {
     @Test
     public void toCsv_emptyCollection_containsHeaderOnly() {
-        assertEquals("Name,Email,Phone,Stage,Skills,Tags,Remark\n", CandidateExportService.toCsv(List.of()));
+        assertEquals("Name,Email,Phone,Address,Stage,Skills,Tags,Remark\n", CandidateExportService.toCsv(List.of()));
     }
 
     @Test
@@ -23,10 +26,39 @@ public class CandidateExportServiceTest {
 
         String csv = CandidateExportService.toCsv(List.of(candidate));
 
-        assertTrue(csv.startsWith("Name,Email,Phone,Stage,Skills,Tags,Remark\n"));
+        assertTrue(csv.startsWith("Name,Email,Phone,Address,Stage,Skills,Tags,Remark\n"));
         assertTrue(csv.contains("\"A Candidate\""));
         assertTrue(csv.contains("\"Java; SQL\""));
         assertTrue(csv.contains("\"Call, soon\""));
+    }
+
+    @Test
+    public void toCsv_includesEscapedAndEmptyAddressesInCandidateOrder() {
+        Person first = new PersonBuilder().withName("First").withEmail("").withPhone("91234567")
+                .withAddress("123, \"Main\" Street \\ 北京").withSkills().withTags().withRemark("").build();
+        Person second = new PersonBuilder(first).withName("Second").withAddress("").build();
+
+        String csv = CandidateExportService.toCsv(List.of(first, second));
+
+        assertEquals("Name,Email,Phone,Address,Stage,Skills,Tags,Remark\n"
+                + "\"First\",\"\",\"91234567\",\"123, \"\"Main\"\" Street \\ 北京\",\"Applied\",\"\",\"\",\"\"\n"
+                + "\"Second\",\"\",\"91234567\",\"\",\"Applied\",\"\",\"\",\"\"\n", csv);
+    }
+
+    @Test
+    public void toJson_preservesEscapedAndEmptyAddressesInCandidateOrder() throws Exception {
+        String address = "123, \"Main\" Street \\ 北京";
+        Person first = new PersonBuilder().withName("First").withAddress(address).build();
+        Person second = new PersonBuilder(first).withName("Second").withAddress("").build();
+
+        JsonNode candidates = new ObjectMapper().readTree(CandidateExportService.toJson(List.of(first, second)))
+                .get("candidates");
+
+        assertEquals(2, candidates.size());
+        assertEquals("First", candidates.get(0).get("name").asText());
+        assertEquals(address, candidates.get(0).get("address").asText());
+        assertEquals("Second", candidates.get(1).get("name").asText());
+        assertEquals("", candidates.get(1).get("address").asText());
     }
 
     @Test

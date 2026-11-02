@@ -8,7 +8,8 @@ import seedu.address.model.person.Person;
 
 /** Provides deterministic, dependency-free exports for the candidate workspace. */
 public final class CandidateExportService {
-    private static final String[] CSV_HEADERS = {"Name", "Email", "Phone", "Stage", "Skills", "Tags", "Remark"};
+    private static final String[] CSV_HEADERS = {
+        "Name", "Email", "Phone", "Address", "Stage", "Skills", "Tags", "Remark"};
 
     private CandidateExportService() {
     }
@@ -21,6 +22,7 @@ public final class CandidateExportService {
                 csv(candidate.getName().fullName),
                 csv(candidate.getEmail().value),
                 csv(candidate.getPhone().value),
+                csv(candidate.getAddress().value),
                 csv(candidate.getStage().toString()),
                 csv(joinSkills(candidate)),
                 csv(candidate.getTags().stream().map(tag -> tag.tagName).sorted().collect(Collectors.joining("; "))),
@@ -38,6 +40,7 @@ public final class CandidateExportService {
                     .append("      \"name\": \"").append(json(candidate.getName().fullName)).append("\",\n")
                     .append("      \"email\": \"").append(json(candidate.getEmail().value)).append("\",\n")
                     .append("      \"phone\": \"").append(json(candidate.getPhone().value)).append("\",\n")
+                    .append("      \"address\": \"").append(json(candidate.getAddress().value)).append("\",\n")
                     .append("      \"stage\": \"").append(json(candidate.getStage().toString())).append("\",\n")
                     .append("      \"skills\": [").append(jsonArray(candidate.getSkills().stream()
                             .map(skill -> skill.value).sorted().collect(Collectors.toList()))).append("],\n")
