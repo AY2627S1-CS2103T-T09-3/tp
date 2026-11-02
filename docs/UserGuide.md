@@ -58,7 +58,7 @@ have different prompts; use `list` to reset a search.
 
 The workspace toolbar provides quick controls for common browsing tasks:
 
-* Type in **Find** to search the displayed candidates by name or skill. Select a hiring stage to combine
+* Type in **Find** to search candidates by name or skill. Select a hiring stage to combine
   the stage filter with the text search, or choose **Clear** to restore the full list.
 * Enable **Due follow-ups** to show pending follow-ups scheduled for today or an earlier date. Enable
   **Needs contact** to find candidates whose email or phone number is missing; these smart filters can be
@@ -75,6 +75,21 @@ The workspace toolbar provides quick controls for common browsing tasks:
   command or confirmation without requiring you to retype the candidate index.
 * Enable **High contrast** when stronger borders and text contrast are needed. The setting applies to the
   current window and does not alter saved candidate data.
+
+Toolbar filters remain active after candidate updates, including `followup`, `edit`, and `remark`.
+They take precedence over those commands' list resets: only candidates matching all active toolbar
+filters remain visible. An updated candidate can disappear if they no longer match a filter;
+their saved data is retained. Recheck displayed indexes before the next command.
+
+For example, with Alice and Ben stored and all other toolbar filters cleared, type `Alice` in the
+toolbar's **Find** field, then run `followup 1 d/2026-11-05 r/Call`. Alice's follow-up is saved,
+and only Alice remains visible because the toolbar search is still active. Click the toolbar's
+**Clear** button or run `list` to show both candidates again.
+
+Successful `list`, `find`, `findskill`, and `followups` commands clear the toolbar controls and display
+their own results. For example, `list` restores all candidates, while `followups` shows pending
+follow-ups. Changing a toolbar filter afterward replaces the command's results with the toolbar's
+filters applied to all stored candidates.
 
 On smaller windows, scroll the central workspace to reach the candidate list and profile. The dashboard
 and toolbar retain their content height, action buttons wrap to fit the available width, and command
@@ -301,7 +316,9 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... [s/SKILL
 
 * Edits the candidate at the specified `INDEX`. The index refers to the index number shown in the displayed candidate list. The index **must be a positive integer** 1, 2, 3, ...
 * At least one of the optional fields must be provided.
-* Existing values will be updated to the input values. After a successful edit, all candidates are displayed in stored order; recheck indexes before the next command.
+* Existing values will be updated to the input values. After a successful edit, candidates are displayed in stored order,
+  with any active toolbar filters reapplied. With no active toolbar filters, all candidates are displayed.
+  Recheck indexes before the next command.
 * Editing candidate details or tags preserves the candidate's skills, remark, and hiring stage. Use `remark` or `stage` to change the remark or stage.
 * If one or more `s/SKILL` fields are provided, they replace all existing skills. Skills must be 1–30 alphanumeric characters; duplicate skills are removed case-insensitively while preserving the first spelling. If no `s/` field is provided, existing skills are preserved.
 * Successful edits use candidate-oriented feedback; when skills are changed, the resulting skills are listed in deterministic alphabetical order.
@@ -361,7 +378,8 @@ Format: `remark INDEX [r/REMARK]`
 * Example: `remark 2 r/Available for interviews next week`.
 * Use `remark 2 r/` (or `remark 2`) to remove the remark.
 * Remarks are shown on candidate cards and saved with your candidates. Editing other details preserves the remark.
-* After changing or removing an existing remark, all candidates are displayed again.
+* After changing or removing an existing remark, all candidates are displayed again unless toolbar filters
+  are active. Active toolbar filters are reapplied; use the toolbar's **Clear** button or `list` to show all candidates.
 * Setting the same remark again reports `Remark unchanged for NAME.` Removing an already-empty remark reports
   `NAME has no remark to remove.` Both leave candidate data, the displayed list, and its sort order unchanged.
 * Successful updates report `Added remark to candidate: ...` or `Removed remark from candidate: ...`.
@@ -383,7 +401,9 @@ Format: `followup INDEX d/YYYY-MM-DD [r/NOTE]`
 * `followup INDEX done` marks the follow-up completed while keeping its date and note.
   It fails if no follow-up exists or it is already completed.
 * `followup INDEX clear` removes the follow-up, including its note and completion state.
-* A successful update displays all candidates again. Editing candidate details or remarks preserves the follow-up.
+* A successful update clears command-based searches and follow-up views, but reapplies any active toolbar
+  filters. With no active toolbar filters, all candidates are displayed again. To restore the full list,
+  click the toolbar's **Clear** button or run `list`. Editing candidate details or remarks preserves the follow-up.
 * Follow-ups are saved with candidate data and restored on the next launch. Older data files remain supported.
 
 Examples:
