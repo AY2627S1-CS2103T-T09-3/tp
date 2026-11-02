@@ -151,10 +151,12 @@ Command | Purpose
 [`find`](#finding-candidates-by-name-find) | Search candidates by name.
 [`findskill`](#finding-candidates-by-skill-findskill) | Search candidates by skills.
 [`remark`](#adding-or-removing-a-remark-remark) | Add, replace, or remove a recruitment note.
+[`followup`](#managing-candidate-follow-ups-followup) | Schedule, complete, or clear a candidate's follow-up.
+[`followups`](#listing-candidate-follow-ups-followups) | List candidates by follow-up status or due date.
 [`stage`](#updating-a-candidate-s-hiring-stage-stage) | Update a candidate's hiring stage.
 [`delete`](#deleting-candidates-delete) | Delete candidates by displayed index or full name.
 [`clear`](#clearing-all-entries-clear) | Remove all candidates.
-[`help`](#viewing-help-help) | Find the User Guide link.
+[`help`](#viewing-help-help) | Open the searchable offline command reference.
 [`exit`](#exiting-the-program-exit) | Close Scoutly.
 
 ## Features
