@@ -26,6 +26,7 @@ Scoutly is a **desktop application for managing recruitment candidates through t
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar scoutly.jar`.<br>
    **Apple Silicon Mac:** Run `java -jar scoutly-mac-arm64.jar` using an ARM64 Java 25 installation.<br>
+   If the separate Apple Silicon JAR is unavailable, you can also try the standard `scoutly.jar` using `java -jar scoutly.jar`.
    Launch Scoutly from a folder where you have permission to create and update files. If double-clicking the JAR does not work, use the terminal command above.
    The application window should appear in a few seconds. On first launch, it contains sample candidates.
    Use the command box to enter commands, the result area to read feedback, and the candidate list to find displayed indexes.
