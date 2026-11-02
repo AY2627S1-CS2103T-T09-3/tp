@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.FlowPane;
@@ -21,6 +23,9 @@ import seedu.address.model.person.Skill;
 
 /** Read-only, scrollable profile for the currently selected candidate. */
 public class CandidateProfilePanel extends UiPart<Region> {
+    private static final double CHIP_HORIZONTAL_MARGIN = 24;
+    private static final double MIN_CHIP_WIDTH = 160;
+
     @FXML
     private Label emptyProfile;
     @FXML
@@ -124,6 +129,12 @@ public class CandidateProfilePanel extends UiPart<Region> {
         }
         values.forEach(value -> {
             Label chip = new Label(value);
+            chip.setWrapText(true);
+            chip.setTooltip(new Tooltip(value));
+            chip.setAccessibleText(value);
+            chip.maxWidthProperty().bind(Bindings.createDoubleBinding(() -> Math.max(MIN_CHIP_WIDTH,
+                    pane.getWidth() - CHIP_HORIZONTAL_MARGIN),
+                    pane.widthProperty()));
             chip.getStyleClass().add("chip");
             pane.getChildren().add(chip);
         });
