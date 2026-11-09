@@ -176,6 +176,53 @@ public class WorkspaceUiTest {
     }
 
     @Test
+    public void bulkSelection_deletingSelectedCandidateDoesNotSelectUnchosenCandidates() throws Exception {
+        FxTestUtil.run(() -> {
+            Person alice = new PersonBuilder().withName("PE Alice").withPhone("91234567").build();
+            Person ben = new PersonBuilder().withName("PE Ben").withPhone("81234567").build();
+            Person chloe = new PersonBuilder().withName("PE Chloe").withPhone("71234567").build();
+            Person david = new PersonBuilder().withName("PE David").withPhone("61234567").build();
+            ObservableList<Person> all = FXCollections.observableArrayList(alice, ben, chloe, david);
+            FilteredList<Person> visible = new FilteredList<>(all);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, visible);
+            PersonListPanel panel = new PersonListPanel(all, visible, selection);
+            new Scene(panel.getRoot());
+            @SuppressWarnings("unchecked")
+            ListView<Person> list = (ListView<Person>) panel.getRoot().lookup("#personListView");
+            list.getSelectionModel().select(alice);
+            list.getSelectionModel().select(chloe);
+
+            all.remove(alice);
+
+            assertEquals(List.of(chloe), List.copyOf(list.getSelectionModel().getSelectedItems()));
+            assertEquals("1 selected", ((Label) panel.getRoot().lookup("#bulkSelectionCount")).getText());
+        });
+    }
+
+    @Test
+    public void bulkSelection_keepsEditedCandidateSelected() throws Exception {
+        FxTestUtil.run(() -> {
+            Person first = new PersonBuilder().withName("First").withPhone("91234567").build();
+            Person second = new PersonBuilder().withName("Second").withPhone("81234567").build();
+            Person third = new PersonBuilder().withName("Third").withPhone("71234567").build();
+            ObservableList<Person> all = FXCollections.observableArrayList(first, second, third);
+            FilteredList<Person> visible = new FilteredList<>(all);
+            CandidateSelectionModel selection = new CandidateSelectionModel(all, visible);
+            PersonListPanel panel = new PersonListPanel(all, visible, selection);
+            new Scene(panel.getRoot());
+            @SuppressWarnings("unchecked")
+            ListView<Person> list = (ListView<Person>) panel.getRoot().lookup("#personListView");
+            list.getSelectionModel().select(first);
+            list.getSelectionModel().select(third);
+            Person editedThird = new PersonBuilder(third).withName("Third Edited").build();
+
+            all.set(2, editedThird);
+
+            assertEquals(List.of(first, editedThird), List.copyOf(list.getSelectionModel().getSelectedItems()));
+        });
+    }
+
+    @Test
     public void bulkDelete_usesOneBatchCommandForSelectedIndexes() throws Exception {
         FxTestUtil.run(() -> {
             Person first = new PersonBuilder().build();

@@ -3,7 +3,9 @@ package seedu.address.ui;
 import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,6 +46,10 @@ public class PersonListPanel extends UiPart<Region> {
 
     private final CommandBox.CommandExecutor commandExecutor;
 
+    /** The candidates the user has chosen for bulk actions, kept independent of list positions. */
+    private List<Person> bulkSelection = new ArrayList<>();
+    private boolean adjustingSelection;
+
     /** Creates the list without introducing a second sort or filter. */
     public PersonListPanel(ObservableList<Person> allPersons, ObservableList<Person> visiblePersons,
             CandidateSelectionModel selection) {
@@ -58,7 +64,12 @@ public class PersonListPanel extends UiPart<Region> {
         this.visiblePersons = requireNonNull(visiblePersons);
         this.selection = requireNonNull(selection);
         this.commandExecutor = commandExecutor;
+        // Registered before the ListView's own listener: JavaFX shifts selected indexes when rows are
+        // removed, which can select a candidate the user never chose. Freeze the remembered selection
+        // until the list change has been applied, then restore it by candidate rather than by index.
+        visiblePersons.addListener((ListChangeListener<Person>) change -> adjustingSelection = true);
         personListView.setItems(visiblePersons);
+        visiblePersons.addListener(this::restoreBulkSelection);
         personListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         personListView.setCellFactory(listView -> new PersonListViewCell());
         // ListView changes its selection automatically during replacement/removal. Only user gestures
@@ -73,10 +84,42 @@ public class PersonListPanel extends UiPart<Region> {
         visiblePersons.addListener((ListChangeListener<Person>) change -> refreshResults());
         allPersons.addListener((ListChangeListener<Person>) change -> refreshResults());
         personListView.getSelectionModel().getSelectedItems()
-                .addListener((ListChangeListener<Person>) change -> refreshBulkControls());
+                .addListener((ListChangeListener<Person>) change -> {
+                    if (!adjustingSelection) {
+                        bulkSelection = new ArrayList<>(personListView.getSelectionModel().getSelectedItems());
+                    }
+                    refreshBulkControls();
+                });
         bulkStage.setDisable(commandExecutor == null);
         bulkDelete.setDisable(commandExecutor == null);
         refreshResults();
+        refreshBulkControls();
+    }
+
+    /**
+     * Re-selects only candidates that were selected before the displayed list changed. A candidate
+     * replaced by an edit stays selected; removed or hidden candidates drop out of the selection.
+     */
+    private void restoreBulkSelection(ListChangeListener.Change<? extends Person> change) {
+        Map<Person, Person> replacements = new IdentityHashMap<>();
+        while (change.next()) {
+            if (change.wasReplaced() && change.getRemovedSize() == change.getAddedSize()) {
+                for (int i = 0; i < change.getRemovedSize(); i++) {
+                    replacements.put(change.getRemoved().get(i), change.getAddedSubList().get(i));
+                }
+            }
+        }
+        List<Person> retained = bulkSelection.stream()
+                .map(candidate -> replacements.getOrDefault(candidate, candidate))
+                .filter(visiblePersons::contains)
+                .toList();
+        try {
+            personListView.getSelectionModel().clearSelection();
+            retained.forEach(candidate -> personListView.getSelectionModel().select(candidate));
+        } finally {
+            adjustingSelection = false;
+        }
+        bulkSelection = new ArrayList<>(retained);
         refreshBulkControls();
     }
 
