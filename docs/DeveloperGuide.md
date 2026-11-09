@@ -326,7 +326,7 @@ Candidate identity is the normalized, case-insensitive name together with the ex
 
 ### Filtering and sorting
 
-`find` matches full words in candidate names using OR semantics. `findskill` supports a complete single-skill match and `any` or `all` prefixed skill queries. Skill matching is case-insensitive. `list s/STAGE` uses a stage predicate. All these commands expose results through the same displayed list, so subsequent indexed commands act on those results.
+`find` matches partial, case-insensitive keywords in candidate names using OR semantics, consistent with the toolbar search field. `findskill` supports a complete single-skill match and `any` or `all` prefixed skill queries. Skill matching is case-insensitive. `list s/STAGE` uses a stage predicate. All these commands expose results through the same displayed list, so subsequent indexed commands act on those results.
 
 `ModelManager` wraps the stored candidates in a `FilteredList` and then a `SortedList`. `list sort/name` applies a case-insensitive name comparator without changing stored order. Updating the filter clears this comparator. Plain `list` therefore shows all candidates in stored order; sorting is a display operation and is not persisted. `view`, `summary`, and successful deletion preserve the active display order and filter. Adding, editing, or updating a remark shows all candidates in stored order.
 
