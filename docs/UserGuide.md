@@ -74,6 +74,8 @@ The workspace toolbar provides quick controls for common browsing tasks:
   updated rows. **Clear selection** removes the multi-selection.
 * In a candidate profile, **Edit**, **Update stage**, **Add remark**, and **Delete** open the corresponding
   command or confirmation without requiring you to retype the candidate index.
+  **Add remark** shows the candidate's current remark for editing; clearing the text and clicking **Save**
+  removes the remark, like `remark INDEX r/`.
 * Enable **High contrast** when stronger borders and text contrast are needed. The setting applies to the
   current window and does not alter saved candidate data.
 

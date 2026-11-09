@@ -192,7 +192,7 @@ public class MainWindow extends UiPart<Stage> {
                 showStageDialog(index);
                 break;
             case ADD_REMARK:
-                showRemarkDialog(index);
+                showRemarkDialog(index, candidate);
                 break;
             case DELETE:
                 confirmDelete(index, candidate);
@@ -211,11 +211,17 @@ public class MainWindow extends UiPart<Stage> {
         dialog.showAndWait().ifPresent(stage -> runQuickCommand("stage " + index + " s/" + stage));
     }
 
-    private void showRemarkDialog(int index) {
-        TextInputDialog dialog = new TextInputDialog();
+    private void showRemarkDialog(int index, Person candidate) {
+        String existingRemark = candidate.getRemark().value;
+        TextInputDialog dialog = new TextInputDialog(existingRemark);
         dialog.setTitle("Add candidate remark");
-        dialog.setHeaderText("Enter a remark for this candidate");
-        dialog.showAndWait().filter(remark -> !remark.isBlank())
+        dialog.setHeaderText(existingRemark.isEmpty()
+                ? "Enter a remark for this candidate"
+                : "Edit the remark for this candidate, or clear the text and save to remove it");
+        dialog.showAndWait()
+                .map(String::strip)
+                // A blank entry only means "remove" when there is an existing remark to remove.
+                .filter(remark -> !remark.isEmpty() || !existingRemark.isEmpty())
                 .ifPresent(remark -> runQuickCommand("remark " + index + " r/" + remark));
     }
 
