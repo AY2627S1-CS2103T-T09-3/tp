@@ -27,6 +27,7 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
 
     private final Logic logic;
     private final Consumer<String> feedback;
+    private final Consumer<String> failureFeedback;
     private final Runnable filterChanged;
     private boolean toolbarFilterActive;
     private boolean suppressFilterChanges;
@@ -59,9 +60,19 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
 
     /** Creates workspace controls and notifies the owner when visibility may have changed. */
     public CandidateWorkspaceToolbar(Logic logic, Consumer<String> feedback, Runnable filterChanged) {
+        this(logic, feedback, feedback, filterChanged);
+    }
+
+    /**
+     * Creates workspace controls that report failures, such as an unsuccessful export,
+     * through {@code failureFeedback} so they are not presented as successes.
+     */
+    public CandidateWorkspaceToolbar(Logic logic, Consumer<String> feedback, Consumer<String> failureFeedback,
+            Runnable filterChanged) {
         super("CandidateWorkspaceToolbar.fxml");
         this.logic = requireNonNull(logic);
         this.feedback = requireNonNull(feedback);
+        this.failureFeedback = requireNonNull(failureFeedback);
         this.filterChanged = requireNonNull(filterChanged);
         stageFilter.getItems().add(ALL_STAGES);
         for (HiringStage stage : HiringStage.values()) {
@@ -219,7 +230,7 @@ public class CandidateWorkspaceToolbar extends UiPart<Region> {
             feedback.accept("Exported " + logic.getFilteredPersonList().size() + " candidates to "
                     + selected.getName() + ".");
         } catch (IOException exception) {
-            feedback.accept("Could not export candidates: " + exception.getMessage());
+            failureFeedback.accept("Could not export candidates: " + exception.getMessage());
         }
     }
 

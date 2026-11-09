@@ -152,7 +152,7 @@ public class MainWindow extends UiPart<Stage> {
 
         candidateSelection = new CandidateSelectionModel(logic.getAllPersons(), logic.getFilteredPersonList());
         workspaceToolbar = new CandidateWorkspaceToolbar(logic, this::showUiFeedback,
-                candidateSelection::reconcileVisibility);
+                resultDisplay::showFailure, candidateSelection::reconcileVisibility);
         workspaceToolbarPlaceholder.getChildren().add(workspaceToolbar.getRoot());
         dashboardPlaceholder.getChildren().add(
                 new PipelineDashboard(logic.getAllPersons(), logic.getFilteredPersonList(),
